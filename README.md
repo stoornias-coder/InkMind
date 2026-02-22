@@ -19,7 +19,7 @@ An AI Game Master for text-based roleplay. Write your scenario, and InkMind narr
 
 ## 🚀 Try it
 
-👉 [Live on Hugging Face Spaces](#) *(replace with your Space URL)*
+👉 https://huggingface.co/spaces/Stornias/InkMind
 
 ---
 
