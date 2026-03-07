@@ -33,9 +33,14 @@ jobs:
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
 
+      - name: Prepare www folder
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+
       - name: Add Android platform
         run: |
-          npx cap add android || true
+          npx cap add android
           npx cap sync android
 
       - name: Make gradlew executable
