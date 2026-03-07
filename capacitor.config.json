@@ -4,7 +4,8 @@
   "webDir": "www",
   "android": {
     "backgroundColor": "#0a0908",
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": false
   },
   "plugins": {
     "SplashScreen": {
@@ -14,8 +15,9 @@
       "showSpinner": false
     },
     "Keyboard": {
-      "resize": "body",
-      "resizeOnFullScreen": true
+      "resize": "native",
+      "resizeOnFullScreen": true,
+      "style": "dark"
     }
   }
 }
