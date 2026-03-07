@@ -59,7 +59,10 @@ jobs:
             mkdir -p android/app/src/main/res/mipmap-${density}
             cp assets/icons/mipmap-${density}.png android/app/src/main/res/mipmap-${density}/ic_launcher.png
             cp assets/icons/mipmap-${density}.png android/app/src/main/res/mipmap-${density}/ic_launcher_round.png
+            cp assets/icons/mipmap-${density}.png android/app/src/main/res/mipmap-${density}/ic_launcher_foreground.png
           done
+          find android/app/src/main/res -name "ic_launcher.xml" -delete
+          find android/app/src/main/res -name "ic_launcher_round.xml" -delete
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
