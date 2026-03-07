@@ -42,9 +42,8 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
-          # Désactiver le geste retour Android
-          sed -i 's/<activity/<activity android:enableOnBackInvokedCallback="false"/' android/app/src/main/AndroidManifest.xml
-
+          # Intercepter le bouton retour dans Capacitor
+          sed -i 's/super.onBackPressed();//g' android/app/src/main/java/com/inkmind/app/MainActivity.java 2>/dev/null || true
       - name: Copy splash screens
         run: |
           mkdir -p android/app/src/main/res/drawable
