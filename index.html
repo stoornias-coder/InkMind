@@ -693,68 +693,52 @@ let renameTargetId=null;
 
 try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}
 
-// ══ PASTE FIX — clipboard API pour Android WebView ══
-document.addEventListener("paste", function(e){
+// ══ PASTE FIX ══
+async function pasteTextInto(target){
+  if(!target||(target.tagName!=="TEXTAREA"&&target.tagName!=="INPUT"))return;
+  let text="";
+  try{if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Clipboard){const r=await window.Capacitor.Plugins.Clipboard.read();text=r.value||"";}}catch(e){}
+  if(!text){try{text=await navigator.clipboard.readText();}catch(e){}}
+  if(!text)return;
+  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  const s=target.selectionStart!=null?target.selectionStart:target.value.length;
+  const en=target.selectionEnd!=null?target.selectionEnd:target.value.length;
+  target.value=target.value.slice(0,s)+text+target.value.slice(en);
+  target.selectionStart=target.selectionEnd=s+text.length;
+  target.dispatchEvent(new Event("input",{bubbles:true}));
+}
+document.addEventListener("paste",function(e){
   const target=e.target;
-  if(!target||target.tagName!=="TEXTAREA")return;
-  e.preventDefault();
+  if(!target||(target.tagName!=="TEXTAREA"&&target.tagName!=="INPUT"))return;
   let text="";
   if(e.clipboardData){text=e.clipboardData.getData("text/plain")||e.clipboardData.getData("text");}
   else if(window.clipboardData){text=window.clipboardData.getData("Text");}
   if(!text)return;
+  e.preventDefault();
+  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
   const s=target.selectionStart,en=target.selectionEnd;
   target.value=target.value.slice(0,s)+text+target.value.slice(en);
   target.selectionStart=target.selectionEnd=s+text.length;
   target.dispatchEvent(new Event("input",{bubbles:true}));
 },true);
 
-// Bouton coller pour Android — fallback si paste ne marche pas
-function pasteToFocused(){
-  navigator.clipboard.readText().then(text=>{
-    const t=document.activeElement;
-    if(!t||t.tagName!=="TEXTAREA")return;
-    const s=t.selectionStart,e=t.selectionEnd;
-    t.value=t.value.slice(0,s)+text+t.value.slice(e);
-    t.selectionStart=t.selectionEnd=s+text.length;
-    t.dispatchEvent(new Event("input",{bubbles:true}));
-  }).catch(()=>{});
-}
-
-// ══ BOUTON COLLER FLOTTANT ══
-(function(){
-  const btn=document.createElement("button");
-  btn.id="paste-btn";
-  btn.textContent="📋 Coller";
-  btn.style.cssText="display:none;position:fixed;bottom:80px;right:12px;background:var(--bg3);border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold);font-size:.7rem;font-family:'Jost',sans-serif;padding:.35rem .8rem;z-index:500;cursor:pointer;";
-  btn.onclick=pasteToFocused;
-  document.body.appendChild(btn);
-  document.addEventListener("focusin",e=>{
-    if(e.target.tagName==="TEXTAREA"){btn.style.display="block";}
-  });
-  document.addEventListener("focusout",e=>{
-    if(e.target.tagName==="TEXTAREA"){setTimeout(()=>{btn.style.display="none";},300);}
-  });
-})();
-
-// ══ BACK BUTTON HANDLER (Capacitor/Android) ══
-document.addEventListener("backbutton", function(e){
-  e.preventDefault();
-  // Si sidebar ouverte → fermer
+// ══ BACK BUTTON HANDLER (Capacitor/Android — bouton ET gestes) ══
+function handleBack(){
   if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
-  // Si modal ouverte → fermer
   const modals=document.querySelectorAll(".modal-overlay");
   for(const m of modals){if(m.style.display!=="none"){m.style.display="none";return;}}
-  // Si pas sur home → retour home
   const active=document.querySelector(".screen.active");
   if(active&&active.id!=="home"){showScreen("home");renderAll();return;}
-  // Sur home → ne rien faire (pas quitter)
-}, false);
-
-// Empêcher le geste de retour navigateur
-window.addEventListener("popstate", function(e){
-  history.pushState(null, "", window.location.href);
-});
-history.pushState(null, "", window.location.href);
+}
+document.addEventListener("backbutton",function(e){e.preventDefault();handleBack();},false);
+(function(){
+  function initCapacitorBack(){
+    try{if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){window.Capacitor.Plugins.App.addListener("backButton",function(){handleBack();});}}catch(e){}
+  }
+  if(document.readyState==="complete"){initCapacitorBack();}else{window.addEventListener("load",initCapacitorBack);}
+})();
+window.addEventListener("popstate",function(){history.pushState(null,"",window.location.href);});
+history.pushState(null,"",window.location.href);
 
 // ══ SPLASH ══
 // Cacher le splash après délai — garanti même en cas d'erreur
@@ -1059,7 +1043,7 @@ function saveCharacter(){
     backstory:document.getElementById("char-backstory").value.trim(),
     traits:[...selectedTraits],
     voice:document.getElementById("char-voice").value.trim(),
-    firstMsg:document.getElementById("char-firstmsg").value.trim(),
+    firstMsg:document.getElementById("char-firstmsg").value.replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim(),
     examples:document.getElementById("char-examples").value.trim(),
     updatedAt:Date.now()
   };
@@ -1119,7 +1103,7 @@ function saveWorld(){
     desc:document.getElementById("world-desc").value.trim(),
     tags:document.getElementById("world-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
     lore:document.getElementById("world-lore").value.trim(),
-    firstmsg:document.getElementById("world-firstmsg").value.trim(),
+    firstmsg:document.getElementById("world-firstmsg").value.replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim(),
     examples:document.getElementById("world-examples").value.trim(),
     playerChar:document.getElementById("world-player-char").value.trim(),
     updatedAt:Date.now()
@@ -1197,13 +1181,13 @@ Player gender: ${genderNote}
 
 ━━━ CRITICAL RULES ━━━
 ALWAYS address the player as "tu" (second person) in narration — NEVER "vous", NEVER their name in narration. Writing "vous" for the player is a critical error.
-CRITICAL POV RULE — read carefully:
-- Narrator speaks TO the player → always "tu/toi/ton/ta/tes" ✅
-- A character speaks DIRECTLY TO the player (face to face) → "tu/toi" ✅
-- A character speaks TO SOMEONE ELSE *about* the player (the player is absent from that exchange, or referred to in 3rd person) → ALWAYS use "il/elle/lui/son/sa/ses", NEVER "tu/toi".
-Example of the ERROR to avoid: Arnav says to his driver "Je veux savoir qui tu es" — WRONG, the driver is not the player.
-Correct: Arnav says to his driver "Je veux savoir qui elle est et ce qu'elle fait ici." ✅
-${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player (${userName}) is a DISTINCT person from ALL characters listed. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
+CRITICAL POV RULE:
+- Narrator speaks TO the player → "tu/toi/ton/ta/tes" ALWAYS.
+- A character speaks DIRECTLY TO the player (face to face) → "tu/toi" OK.
+- A character speaks TO SOMEONE ELSE *about* the player → ALWAYS "il/elle/lui/son/sa/ses", NEVER "tu/toi".
+Example ERROR: Arnav says to his driver "Je veux savoir qui tu es" — WRONG.
+Correct: "Je veux savoir qui elle est et ce qu'elle fait ici." ✅
+${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
 ${isRpg?`NEVER use the universe name "${char.name}" as a speaker. Always use the actual character's real name.`:`NEVER write in first person as ${char.name}. Always: "${char.name} dit :", "${char.name} sourit".`}
 NEVER repeat the same sentence or action from the previous response.
 NEVER write {{user}}, {{char}}, or any {{placeholder}}.
@@ -1578,7 +1562,7 @@ function setBusy(v){busy=v;document.getElementById("send-btn").disabled=v;}
 function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");}
 function esc2(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
-function md(t){return"<p>"+t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n\n+/g,"</p><p>").replace(/\n/g,"<br>")+"</p>";}
+function md(t){return"<p>"+t.replace(/\r\n/g,"\n").replace(/\r/g,"\n").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n\n+/g,"</p><p>").replace(/\n/g,"<br>")+"</p>";}
 function partialMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
 
 // ══ EXPORT / IMPORT ══
@@ -1855,9 +1839,9 @@ function confirmImport(){
 function showScreen(id){document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
 function goHome(){showScreen("home");renderAll();S=null;}
 function fileToDataURL(file){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});}
-async function onCharPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);onCharPhoto(url);}
-async function onWorldPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);onWorldPhoto(url);}
-async function onProfilePhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);onProfilePhoto(url);}
+async function onCharPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);input.value="";onCharPhoto(url);}
+async function onWorldPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);input.value="";onWorldPhoto(url);}
+async function onProfilePhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);input.value="";onProfilePhoto(url);}
 
 function openSB(){renderSBSessions();updateSBProfile();document.getElementById("sidebar").classList.add("open");}
 function closeSB(){document.getElementById("sidebar").classList.remove("open");}
@@ -1884,7 +1868,18 @@ function editCurrentChar(){
 
 // ══ KEYBOARD ══
 const ta=document.getElementById("msg-input");
-if(window.visualViewport){window.visualViewport.addEventListener("resize",()=>{const inputArea=document.querySelector(".input-area");if(inputArea){const offset=window.innerHeight-window.visualViewport.height;inputArea.style.transform=offset>50?`translateY(-${offset}px)`:"";};});}
+if(window.visualViewport){
+  function onVVResize(){
+    var vv=window.visualViewport;
+    var offsetFromBottom=window.innerHeight-vv.height-vv.offsetTop;
+    var inputArea=document.querySelector(".input-area");
+    var msgs=document.getElementById("messages");
+    if(inputArea){inputArea.style.marginBottom=offsetFromBottom>0?offsetFromBottom+"px":"0px";}
+    if(msgs){msgs.style.paddingBottom=offsetFromBottom>0?(offsetFromBottom+80)+"px":"80px";}
+  }
+  window.visualViewport.addEventListener("resize",onVVResize);
+  window.visualViewport.addEventListener("scroll",onVVResize);
+}
 ta.addEventListener("focus",()=>{setTimeout(()=>{ta.scrollIntoView({behavior:"smooth",block:"nearest"});},350);});
 ta.addEventListener("input",()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,122)+"px";});
 ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
