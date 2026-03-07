@@ -3,7 +3,8 @@
   "appName": "InkMind",
   "webDir": "www",
   "android": {
-    "backgroundColor": "#0a0908"
+    "backgroundColor": "#0a0908",
+    "allowMixedContent": true
   },
   "plugins": {
     "SplashScreen": {
