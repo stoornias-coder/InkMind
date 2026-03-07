@@ -693,46 +693,49 @@ let renameTargetId=null;
 
 try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}
 
-// ══ PASTE FIX — clipboard API pour Android WebView ══
-document.addEventListener("paste", function(e){
+// ══ PASTE FIX — Capacitor Clipboard + fallback natif ══
+async function pasteTextInto(target){
+  if(!target||target.tagName!=="TEXTAREA"&&target.tagName!=="INPUT")return;
+  let text="";
+  // 1. Plugin Capacitor Clipboard (APK)
+  try{
+    if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Clipboard){
+      const r=await window.Capacitor.Plugins.Clipboard.read();
+      text=r.value||"";
+    }
+  }catch(e){}
+  // 2. API Web moderne
+  if(!text){
+    try{text=await navigator.clipboard.readText();}catch(e){}
+  }
+  if(!text)return;
+  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  const s=target.selectionStart??target.value.length;
+  const en=target.selectionEnd??target.value.length;
+  target.value=target.value.slice(0,s)+text+target.value.slice(en);
+  target.selectionStart=target.selectionEnd=s+text.length;
+  target.dispatchEvent(new Event("input",{bubbles:true}));
+}
+
+// Intercepter paste natif si clipboardData dispo (navigateur desktop/Chrome)
+document.addEventListener("paste",function(e){
   const target=e.target;
-  if(!target||target.tagName!=="TEXTAREA")return;
+  if(!target||(target.tagName!=="TEXTAREA"&&target.tagName!=="INPUT"))return;
   let text="";
   if(e.clipboardData){text=e.clipboardData.getData("text/plain")||e.clipboardData.getData("text");}
   else if(window.clipboardData){text=window.clipboardData.getData("Text");}
-  // Si clipboardData est vide (Android WebView), on laisse le paste natif se faire
-  if(!text){
-    // Fallback : tenter navigator.clipboard
-    if(navigator.clipboard&&navigator.clipboard.readText){
-      e.preventDefault();
-      navigator.clipboard.readText().then(function(t){
-        if(!t)return;
-        const s=target.selectionStart,en=target.selectionEnd;
-        target.value=target.value.slice(0,s)+t+target.value.slice(en);
-        target.selectionStart=target.selectionEnd=s+t.length;
-        target.dispatchEvent(new Event("input",{bubbles:true}));
-      }).catch(function(){});
-    }
-    // sinon on ne fait rien : le paste natif du navigateur prend le relais
-    return;
-  }
+  if(!text)return; // laisser le paste natif Android se faire
   e.preventDefault();
+  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
   const s=target.selectionStart,en=target.selectionEnd;
   target.value=target.value.slice(0,s)+text+target.value.slice(en);
   target.selectionStart=target.selectionEnd=s+text.length;
   target.dispatchEvent(new Event("input",{bubbles:true}));
 },true);
 
-// Bouton coller pour Android — fallback si paste ne marche pas
+// Bouton coller pour Android
 function pasteToFocused(){
-  navigator.clipboard.readText().then(text=>{
-    const t=document.activeElement;
-    if(!t||t.tagName!=="TEXTAREA")return;
-    const s=t.selectionStart,e=t.selectionEnd;
-    t.value=t.value.slice(0,s)+text+t.value.slice(e);
-    t.selectionStart=t.selectionEnd=s+text.length;
-    t.dispatchEvent(new Event("input",{bubbles:true}));
-  }).catch(()=>{});
+  pasteTextInto(document.activeElement);
 }
 
 // ══ BOUTON COLLER FLOTTANT ══
@@ -1587,7 +1590,7 @@ function setBusy(v){busy=v;document.getElementById("send-btn").disabled=v;}
 function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");}
 function esc2(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
-function md(t){return"<p>"+t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n\n+/g,"</p><p>").replace(/\n/g,"<br>")+"</p>";}
+function md(t){return"<p>"+t.replace(/\r\n/g,"\n").replace(/\r/g,"\n").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n\n+/g,"</p><p>").replace(/\n/g,"<br>")+"</p>";}
 function partialMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
 
 // ══ EXPORT / IMPORT ══
@@ -1904,3 +1907,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
