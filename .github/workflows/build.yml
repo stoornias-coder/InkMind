@@ -42,7 +42,7 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
-          # Edge-to-edge et désactiver geste retour système
+          sed -i 's/<activity/<activity android:enableOnBackInvokedCallback="false"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
           sed -i 's/android:theme="@style\/AppTheme"/android:theme="@style\/AppTheme" android:windowSoftInputMode="adjustResize"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
       - name: Copy splash screens
         run: |
