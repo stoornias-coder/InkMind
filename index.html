@@ -418,14 +418,14 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     </div>
     <div class="page-body">
       <div class="field">
-        <label>Photo <span class="fhint">(URL)</span></label>
+        <label>Photo</label>
         <div class="photo-row">
-          <div class="photo-circle" id="profile-circle">?</div>
+          <div class="photo-circle" id="profile-circle" onclick="document.getElementById('profile-photo-file').click()" style="cursor:pointer;">?</div>
           <div class="photo-col">
             <input type="file" id="profile-photo-file" accept="image/*" style="display:none" onchange="onProfilePhotoFile(this)">
-            <input class="fi" type="text" id="profile-photo-url" placeholder="https://... ou choisis un fichier →" oninput="onProfilePhoto(this.value)">
-            <button class="tgl-btn" style="flex-shrink:0;padding:.4rem .7rem;font-size:.7rem;" onclick="document.getElementById('profile-photo-file').click()">📁</button>
-            <span class="fhint">Clic droit → "Copier l'adresse de l'image"</span>
+
+
+            <span class="fhint">Appuie sur ta photo pour choisir une image</span>
           </div>
         </div>
       </div>
@@ -519,13 +519,12 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     </div>
     <div class="page-body">
       <div class="field">
-        <label>Photo (URL)</label>
+        <label>Photo</label>
         <div class="photo-row">
           <div class="photo-circle" id="char-photo-circle" onclick="document.getElementById('char-photo-file').click()" style="cursor:pointer;" title="Clique pour choisir une image">✦</div>
           <input type="file" id="char-photo-file" accept="image/*" style="display:none" onchange="onCharPhotoFile(this)">
           <div class="photo-col">
-            <input class="fi" type="text" id="char-photo-url" placeholder="https://... ou clique sur l'image ↑" oninput="onCharPhoto(this.value)">
-            <span class="fhint">Clic droit → "Copier l'adresse"</span>
+            <span class="fhint">Appuie sur le cercle pour choisir une image</span>
           </div>
         </div>
       </div>
@@ -558,13 +557,12 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     </div>
     <div class="page-body">
       <div class="field">
-        <label>Image (URL)</label>
+        <label>Image de couverture</label>
         <div class="photo-row">
           <div class="photo-sq" id="world-photo-sq" onclick="document.getElementById('world-photo-file').click()" style="cursor:pointer;">✦</div>
           <input type="file" id="world-photo-file" accept="image/*" style="display:none" onchange="onWorldPhotoFile(this)">
           <div class="photo-col">
-            <input class="fi" type="text" id="world-photo-url" placeholder="https://... ou clique sur l'image ↑" oninput="onWorldPhoto(this.value)">
-            <span class="fhint">Image de couverture de l'univers</span>
+            <span class="fhint">Appuie sur le carré pour choisir une image</span>
           </div>
         </div>
       </div>
@@ -713,6 +711,26 @@ try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}
   div.addEventListener("click",()=>div.style.display="none");
 })();
 
+// ══ BACK BUTTON HANDLER (Capacitor/Android) ══
+document.addEventListener("backbutton", function(e){
+  e.preventDefault();
+  // Si sidebar ouverte → fermer
+  if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
+  // Si modal ouverte → fermer
+  const modals=document.querySelectorAll(".modal-overlay");
+  for(const m of modals){if(m.style.display!=="none"){m.style.display="none";return;}}
+  // Si pas sur home → retour home
+  const active=document.querySelector(".screen.active");
+  if(active&&active.id!=="home"){showScreen("home");renderAll();return;}
+  // Sur home → ne rien faire (pas quitter)
+}, false);
+
+// Empêcher le geste de retour navigateur
+window.addEventListener("popstate", function(e){
+  history.pushState(null, "", window.location.href);
+});
+history.pushState(null, "", window.location.href);
+
 // ══ SPLASH ══
 // Cacher le splash après délai — garanti même en cas d'erreur
 function hideSplash(){try{const s=document.getElementById("splash");if(s)s.classList.add("hide");}catch{}}
@@ -744,7 +762,7 @@ function loadProfilePage(){
   const p=loadProfile();
   document.getElementById("profile-firstname").value=p.firstname||"";
   document.getElementById("profile-lastname").value=p.lastname||"";
-  document.getElementById("profile-photo-url").value=p.photo||"";
+  // profile photo url field removed
   profilePhoto=p.photo||null;
   selectedGender=p.gender||null;
   if(p.gender)selectGender(p.gender);
@@ -984,7 +1002,7 @@ function openCharCreator(charId){
       document.getElementById("char-voice").value=char.voice||"";
       document.getElementById("char-firstmsg").value=char.firstMsg||"";
       document.getElementById("char-examples").value=char.examples||"";
-      if(char.photo){charPhoto=char.photo;document.getElementById("char-photo-url").value=char.photo;document.getElementById("char-photo-circle").innerHTML=`<img src="${char.photo}" alt="photo">`;}
+      if(char.photo){charPhoto=char.photo;document.getElementById("char-photo-circle").innerHTML=`<img src="${char.photo}" alt="photo">`;}
       setTraits(char.traits);
     }
   }else{document.getElementById("char-creator-title").textContent="Nouveau Personnage";}
@@ -1053,7 +1071,7 @@ function openWorldCreator(worldId){
       document.getElementById("world-firstmsg").value=world.firstmsg||"";
       document.getElementById("world-examples").value=world.examples||"";
       document.getElementById("world-player-char").value=world.playerChar||"";
-      if(world.photo){worldPhoto=world.photo;document.getElementById("world-photo-url").value=world.photo;document.getElementById("world-photo-sq").innerHTML=`<img src="${world.photo}" alt="photo">`;}
+      if(world.photo){worldPhoto=world.photo;document.getElementById("world-photo-sq").innerHTML=`<img src="${world.photo}" alt="photo">`;}
     }
   }else{document.getElementById("world-creator-title").textContent="Nouvel Univers";}
   document.getElementById("world-save-btn").textContent=worldId?"Enregistrer les modifications →":"Enregistrer l'univers →";
@@ -1806,9 +1824,9 @@ function confirmImport(){
 function showScreen(id){document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
 function goHome(){showScreen("home");renderAll();S=null;}
 function fileToDataURL(file){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});}
-async function onCharPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);document.getElementById("char-photo-url").value=url;onCharPhoto(url);}
-async function onWorldPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);document.getElementById("world-photo-url").value=url;onWorldPhoto(url);}
-async function onProfilePhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);document.getElementById("profile-photo-url").value=url;onProfilePhoto(url);}
+async function onCharPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);onCharPhoto(url);}
+async function onWorldPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);onWorldPhoto(url);}
+async function onProfilePhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);onProfilePhoto(url);}
 
 function openSB(){renderSBSessions();updateSBProfile();document.getElementById("sidebar").classList.add("open");}
 function closeSB(){document.getElementById("sidebar").classList.remove("open");}
@@ -1846,4 +1864,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
