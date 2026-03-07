@@ -211,7 +211,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 .api-status.bad{color:var(--red);}
 
 /* ══ CHAT ══ */
-#chat{background:var(--bg);height:100%;display:flex;flex-direction:column;}
+#chat{background:var(--bg);}
 .chat-topbar{display:flex;align-items:center;justify-content:space-between;padding:.62rem .9rem;border-bottom:1px solid var(--border);flex-shrink:0;}
 .chat-left{display:flex;align-items:center;gap:.52rem;min-width:0;}
 .sb-open{background:none;border:none;color:var(--text-dim);font-size:1.08rem;cursor:pointer;flex-shrink:0;}
@@ -378,12 +378,10 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       </div>
       <div class="world-action-btns">
         <button class="action-btn" onclick="startWorldChat('free')">
-          <div class="action-btn-icon">✦</div>
           <div class="action-btn-label">Chat libre</div>
           <div class="action-btn-sub">Le bot joue tous les persos</div>
         </button>
         <button class="action-btn" onclick="showWorldCharPicker()">
-          <div class="action-btn-icon">👤</div>
           <div class="action-btn-label">Choisir un perso</div>
           <div class="action-btn-sub">Chat avec un personnage</div>
         </button>
@@ -1871,16 +1869,13 @@ const ta=document.getElementById("msg-input");
 if(window.visualViewport){
   function onVVResize(){
     var vv=window.visualViewport;
-    var chat=document.getElementById("chat");
     var msgs=document.getElementById("messages");
-    // Hauteur disponible réelle = hauteur du viewport visuel
-    if(chat){
-      chat.style.height=vv.height+"px";
-      chat.style.maxHeight=vv.height+"px";
-    }
-    // Scroll automatique vers le bas quand le clavier s'ouvre
-    if(msgs&&vv.height<window.innerHeight*0.75){
-      setTimeout(()=>{msgs.scrollTop=msgs.scrollHeight;},100);
+    var inputArea=document.querySelector(".input-area");
+    var kbHeight=Math.max(0,window.innerHeight-vv.height-vv.offsetTop);
+    if(inputArea){inputArea.style.transform=kbHeight>0?"translateY(-"+kbHeight+"px)":"";}
+    if(msgs){
+      msgs.style.paddingBottom=kbHeight>0?(kbHeight+8)+"px":".35rem";
+      if(kbHeight>0)setTimeout(()=>{msgs.scrollTop=msgs.scrollHeight;},80);
     }
   }
   window.visualViewport.addEventListener("resize",onVVResize);
@@ -1901,4 +1896,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
