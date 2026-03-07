@@ -1,12 +1,8 @@
 {
-  "name": "inkmind",
-  "version": "1.0.0",
-  "description": "InkMind - Roleplay App",
-  "dependencies": {
-    "@capacitor/android": "^7.0.0",
-    "@capacitor/core": "^7.0.0"
-  },
-  "devDependencies": {
-    "@capacitor/cli": "^7.0.0"
+  "appId": "com.inkmind.app",
+  "appName": "InkMind",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#0a0908"
   }
 }
