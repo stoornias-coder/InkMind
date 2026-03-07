@@ -693,23 +693,48 @@ let renameTargetId=null;
 
 try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}
 
-// ══ PASTE FIX — sauts de ligne Android WebView ══
+// ══ PASTE FIX — clipboard API pour Android WebView ══
 document.addEventListener("paste", function(e){
-  const target = e.target;
-  if(!target || (target.tagName !== "TEXTAREA" && target.tagName !== "INPUT")) return;
-  if(target.tagName === "INPUT") return; // inputs simples ok
+  const target=e.target;
+  if(!target||target.tagName!=="TEXTAREA")return;
   e.preventDefault();
-  const text = (e.clipboardData || window.clipboardData).getData("text");
-  if(!text) return;
-  // Insérer le texte à la position du curseur
-  const start = target.selectionStart;
-  const end = target.selectionEnd;
-  const before = target.value.substring(0, start);
-  const after = target.value.substring(end);
-  target.value = before + text + after;
-  target.selectionStart = target.selectionEnd = start + text.length;
-  target.dispatchEvent(new Event("input", {bubbles:true}));
-}, true);
+  let text="";
+  if(e.clipboardData){text=e.clipboardData.getData("text/plain")||e.clipboardData.getData("text");}
+  else if(window.clipboardData){text=window.clipboardData.getData("Text");}
+  if(!text)return;
+  const s=target.selectionStart,en=target.selectionEnd;
+  target.value=target.value.slice(0,s)+text+target.value.slice(en);
+  target.selectionStart=target.selectionEnd=s+text.length;
+  target.dispatchEvent(new Event("input",{bubbles:true}));
+},true);
+
+// Bouton coller pour Android — fallback si paste ne marche pas
+function pasteToFocused(){
+  navigator.clipboard.readText().then(text=>{
+    const t=document.activeElement;
+    if(!t||t.tagName!=="TEXTAREA")return;
+    const s=t.selectionStart,e=t.selectionEnd;
+    t.value=t.value.slice(0,s)+text+t.value.slice(e);
+    t.selectionStart=t.selectionEnd=s+text.length;
+    t.dispatchEvent(new Event("input",{bubbles:true}));
+  }).catch(()=>{});
+}
+
+// ══ BOUTON COLLER FLOTTANT ══
+(function(){
+  const btn=document.createElement("button");
+  btn.id="paste-btn";
+  btn.textContent="📋 Coller";
+  btn.style.cssText="display:none;position:fixed;bottom:80px;right:12px;background:var(--bg3);border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold);font-size:.7rem;font-family:'Jost',sans-serif;padding:.35rem .8rem;z-index:500;cursor:pointer;";
+  btn.onclick=pasteToFocused;
+  document.body.appendChild(btn);
+  document.addEventListener("focusin",e=>{
+    if(e.target.tagName==="TEXTAREA"){btn.style.display="block";}
+  });
+  document.addEventListener("focusout",e=>{
+    if(e.target.tagName==="TEXTAREA"){setTimeout(()=>{btn.style.display="none";},300);}
+  });
+})();
 
 // ══ BACK BUTTON HANDLER (Capacitor/Android) ══
 document.addEventListener("backbutton", function(e){
