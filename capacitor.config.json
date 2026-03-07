@@ -1,7 +1,7 @@
 {
   "appId": "com.inkmind.app",
   "appName": "InkMind",
-  "webDir": ".",
+  "webDir": "www",
   "android": {
     "backgroundColor": "#0a0908"
   },
@@ -9,7 +9,6 @@
     "SplashScreen": {
       "launchShowDuration": 0,
       "backgroundColor": "#0a0908",
-      "androidSplashResourceName": "splash",
       "showSpinner": false
     }
   }
