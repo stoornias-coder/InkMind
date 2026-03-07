@@ -45,10 +45,13 @@ jobs:
 
       - name: Copy splash screens
         run: |
+          mkdir -p android/app/src/main/res/drawable
+          cp assets/splash/drawable-port-xxhdpi.png android/app/src/main/res/drawable/splash.png
           for density in ldpi mdpi hdpi xhdpi xxhdpi xxxhdpi; do
             mkdir -p android/app/src/main/res/drawable-port-${density}
             cp assets/splash/drawable-port-${density}.png android/app/src/main/res/drawable-port-${density}/splash.png
           done
+          rm -f android/app/src/main/res/drawable/ic_launcher_background.xml
 
       - name: Copy app icons
         run: |
