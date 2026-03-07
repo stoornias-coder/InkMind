@@ -378,12 +378,12 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       </div>
       <div class="world-action-btns">
         <button class="action-btn" onclick="startWorldChat('free')">
-          <div class="action-btn-icon"></div>
+          <div class="action-btn-icon">✦</div>
           <div class="action-btn-label">Chat libre</div>
           <div class="action-btn-sub">Le bot joue tous les persos</div>
         </button>
         <button class="action-btn" onclick="showWorldCharPicker()">
-          <div class="action-btn-icon"></div>
+          <div class="action-btn-icon">👤</div>
           <div class="action-btn-label">Choisir un perso</div>
           <div class="action-btn-sub">Chat avec un personnage</div>
         </button>
@@ -720,10 +720,25 @@ function pasteToFocused(){
   }).catch(()=>{});
 }
 
-
+// ══ BOUTON COLLER FLOTTANT ══
+(function(){
+  const btn=document.createElement("button");
+  btn.id="paste-btn";
+  btn.textContent="📋 Coller";
+  btn.style.cssText="display:none;position:fixed;bottom:80px;right:12px;background:var(--bg3);border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold);font-size:.7rem;font-family:'Jost',sans-serif;padding:.35rem .8rem;z-index:500;cursor:pointer;";
+  btn.onclick=pasteToFocused;
+  document.body.appendChild(btn);
+  document.addEventListener("focusin",e=>{
+    if(e.target.tagName==="TEXTAREA"){btn.style.display="block";}
+  });
+  document.addEventListener("focusout",e=>{
+    if(e.target.tagName==="TEXTAREA"){setTimeout(()=>{btn.style.display="none";},300);}
+  });
+})();
 
 // ══ BACK BUTTON HANDLER (Capacitor/Android) ══
-function handleBack(){
+document.addEventListener("backbutton", function(e){
+  e.preventDefault();
   // Si sidebar ouverte → fermer
   if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
   // Si modal ouverte → fermer
@@ -732,28 +747,14 @@ function handleBack(){
   // Si pas sur home → retour home
   const active=document.querySelector(".screen.active");
   if(active&&active.id!=="home"){showScreen("home");renderAll();return;}
-  // Sur home → ne rien faire (jamais quitter)
-}
+  // Sur home → ne rien faire (pas quitter)
+}, false);
 
-// Bouton retour hardware (Capacitor)
-document.addEventListener("backbutton",function(e){e.preventDefault();handleBack();},false);
-
-// Plugin App Capacitor — intercepte aussi le geste de glissement retour
-(function(){
-  function initCapacitorBack(){
-    try{
-      if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){
-        window.Capacitor.Plugins.App.addListener("backButton",function(){handleBack();});
-      }
-    }catch(e){}
-  }
-  if(document.readyState==="complete"){initCapacitorBack();}
-  else{window.addEventListener("load",initCapacitorBack);}
-})();
-
-// Empêcher le geste de retour navigateur (PWA / Chrome)
-window.addEventListener("popstate",function(e){history.pushState(null,"",window.location.href);});
-history.pushState(null,"",window.location.href);
+// Empêcher le geste de retour navigateur
+window.addEventListener("popstate", function(e){
+  history.pushState(null, "", window.location.href);
+});
+history.pushState(null, "", window.location.href);
 
 // ══ SPLASH ══
 // Cacher le splash après délai — garanti même en cas d'erreur
@@ -1195,7 +1196,13 @@ Language: ${lang}
 Player gender: ${genderNote}
 
 ━━━ CRITICAL RULES ━━━
-ALWAYS address the player as "tu" (second person) — NEVER "vous", NEVER their name in narration. Writing "vous" for the player is a critical error.
+ALWAYS address the player as "tu" (second person) in narration — NEVER "vous", NEVER their name in narration. Writing "vous" for the player is a critical error.
+CRITICAL POV RULE — read carefully:
+- Narrator speaks TO the player → always "tu/toi/ton/ta/tes" ✅
+- A character speaks DIRECTLY TO the player (face to face) → "tu/toi" ✅
+- A character speaks TO SOMEONE ELSE *about* the player (the player is absent from that exchange, or referred to in 3rd person) → ALWAYS use "il/elle/lui/son/sa/ses", NEVER "tu/toi".
+Example of the ERROR to avoid: Arnav says to his driver "Je veux savoir qui tu es" — WRONG, the driver is not the player.
+Correct: Arnav says to his driver "Je veux savoir qui elle est et ce qu'elle fait ici." ✅
 ${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player (${userName}) is a DISTINCT person from ALL characters listed. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
 ${isRpg?`NEVER use the universe name "${char.name}" as a speaker. Always use the actual character's real name.`:`NEVER write in first person as ${char.name}. Always: "${char.name} dit :", "${char.name} sourit".`}
 NEVER repeat the same sentence or action from the previous response.
