@@ -42,6 +42,8 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+          # Désactiver le geste retour Android
+          sed -i 's/<activity/<activity android:enableOnBackInvokedCallback="false"/' android/app/src/main/AndroidManifest.xml
 
       - name: Copy splash screens
         run: |
