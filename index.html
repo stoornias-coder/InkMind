@@ -697,11 +697,26 @@ try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}
 document.addEventListener("paste", function(e){
   const target=e.target;
   if(!target||target.tagName!=="TEXTAREA")return;
-  e.preventDefault();
   let text="";
   if(e.clipboardData){text=e.clipboardData.getData("text/plain")||e.clipboardData.getData("text");}
   else if(window.clipboardData){text=window.clipboardData.getData("Text");}
-  if(!text)return;
+  // Si clipboardData est vide (Android WebView), on laisse le paste natif se faire
+  if(!text){
+    // Fallback : tenter navigator.clipboard
+    if(navigator.clipboard&&navigator.clipboard.readText){
+      e.preventDefault();
+      navigator.clipboard.readText().then(function(t){
+        if(!t)return;
+        const s=target.selectionStart,en=target.selectionEnd;
+        target.value=target.value.slice(0,s)+t+target.value.slice(en);
+        target.selectionStart=target.selectionEnd=s+t.length;
+        target.dispatchEvent(new Event("input",{bubbles:true}));
+      }).catch(function(){});
+    }
+    // sinon on ne fait rien : le paste natif du navigateur prend le relais
+    return;
+  }
+  e.preventDefault();
   const s=target.selectionStart,en=target.selectionEnd;
   target.value=target.value.slice(0,s)+text+target.value.slice(en);
   target.selectionStart=target.selectionEnd=s+text.length;
