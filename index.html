@@ -378,12 +378,12 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       </div>
       <div class="world-action-btns">
         <button class="action-btn" onclick="startWorldChat('free')">
-          <div class="action-btn-icon">✦</div>
+          <div class="action-btn-icon"></div>
           <div class="action-btn-label">Chat libre</div>
           <div class="action-btn-sub">Le bot joue tous les persos</div>
         </button>
         <button class="action-btn" onclick="showWorldCharPicker()">
-          <div class="action-btn-icon">👤</div>
+          <div class="action-btn-icon"></div>
           <div class="action-btn-label">Choisir un perso</div>
           <div class="action-btn-sub">Chat avec un personnage</div>
         </button>
@@ -693,70 +693,37 @@ let renameTargetId=null;
 
 try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}
 
-// ══ PASTE FIX — Capacitor Clipboard + fallback natif ══
-async function pasteTextInto(target){
-  if(!target||target.tagName!=="TEXTAREA"&&target.tagName!=="INPUT")return;
-  let text="";
-  // 1. Plugin Capacitor Clipboard (APK)
-  try{
-    if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Clipboard){
-      const r=await window.Capacitor.Plugins.Clipboard.read();
-      text=r.value||"";
-    }
-  }catch(e){}
-  // 2. API Web moderne
-  if(!text){
-    try{text=await navigator.clipboard.readText();}catch(e){}
-  }
-  if(!text)return;
-  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
-  const s=target.selectionStart??target.value.length;
-  const en=target.selectionEnd??target.value.length;
-  target.value=target.value.slice(0,s)+text+target.value.slice(en);
-  target.selectionStart=target.selectionEnd=s+text.length;
-  target.dispatchEvent(new Event("input",{bubbles:true}));
-}
-
-// Intercepter paste natif si clipboardData dispo (navigateur desktop/Chrome)
-document.addEventListener("paste",function(e){
+// ══ PASTE FIX — clipboard API pour Android WebView ══
+document.addEventListener("paste", function(e){
   const target=e.target;
-  if(!target||(target.tagName!=="TEXTAREA"&&target.tagName!=="INPUT"))return;
+  if(!target||target.tagName!=="TEXTAREA")return;
+  e.preventDefault();
   let text="";
   if(e.clipboardData){text=e.clipboardData.getData("text/plain")||e.clipboardData.getData("text");}
   else if(window.clipboardData){text=window.clipboardData.getData("Text");}
-  if(!text)return; // laisser le paste natif Android se faire
-  e.preventDefault();
-  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  if(!text)return;
   const s=target.selectionStart,en=target.selectionEnd;
   target.value=target.value.slice(0,s)+text+target.value.slice(en);
   target.selectionStart=target.selectionEnd=s+text.length;
   target.dispatchEvent(new Event("input",{bubbles:true}));
 },true);
 
-// Bouton coller pour Android
+// Bouton coller pour Android — fallback si paste ne marche pas
 function pasteToFocused(){
-  pasteTextInto(document.activeElement);
+  navigator.clipboard.readText().then(text=>{
+    const t=document.activeElement;
+    if(!t||t.tagName!=="TEXTAREA")return;
+    const s=t.selectionStart,e=t.selectionEnd;
+    t.value=t.value.slice(0,s)+text+t.value.slice(e);
+    t.selectionStart=t.selectionEnd=s+text.length;
+    t.dispatchEvent(new Event("input",{bubbles:true}));
+  }).catch(()=>{});
 }
 
-// ══ BOUTON COLLER FLOTTANT ══
-(function(){
-  const btn=document.createElement("button");
-  btn.id="paste-btn";
-  btn.textContent="📋 Coller";
-  btn.style.cssText="display:none;position:fixed;bottom:80px;right:12px;background:var(--bg3);border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold);font-size:.7rem;font-family:'Jost',sans-serif;padding:.35rem .8rem;z-index:500;cursor:pointer;";
-  btn.onclick=pasteToFocused;
-  document.body.appendChild(btn);
-  document.addEventListener("focusin",e=>{
-    if(e.target.tagName==="TEXTAREA"){btn.style.display="block";}
-  });
-  document.addEventListener("focusout",e=>{
-    if(e.target.tagName==="TEXTAREA"){setTimeout(()=>{btn.style.display="none";},300);}
-  });
-})();
+
 
 // ══ BACK BUTTON HANDLER (Capacitor/Android) ══
-document.addEventListener("backbutton", function(e){
-  e.preventDefault();
+function handleBack(){
   // Si sidebar ouverte → fermer
   if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
   // Si modal ouverte → fermer
@@ -765,14 +732,28 @@ document.addEventListener("backbutton", function(e){
   // Si pas sur home → retour home
   const active=document.querySelector(".screen.active");
   if(active&&active.id!=="home"){showScreen("home");renderAll();return;}
-  // Sur home → ne rien faire (pas quitter)
-}, false);
+  // Sur home → ne rien faire (jamais quitter)
+}
 
-// Empêcher le geste de retour navigateur
-window.addEventListener("popstate", function(e){
-  history.pushState(null, "", window.location.href);
-});
-history.pushState(null, "", window.location.href);
+// Bouton retour hardware (Capacitor)
+document.addEventListener("backbutton",function(e){e.preventDefault();handleBack();},false);
+
+// Plugin App Capacitor — intercepte aussi le geste de glissement retour
+(function(){
+  function initCapacitorBack(){
+    try{
+      if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){
+        window.Capacitor.Plugins.App.addListener("backButton",function(){handleBack();});
+      }
+    }catch(e){}
+  }
+  if(document.readyState==="complete"){initCapacitorBack();}
+  else{window.addEventListener("load",initCapacitorBack);}
+})();
+
+// Empêcher le geste de retour navigateur (PWA / Chrome)
+window.addEventListener("popstate",function(e){history.pushState(null,"",window.location.href);});
+history.pushState(null,"",window.location.href);
 
 // ══ SPLASH ══
 // Cacher le splash après délai — garanti même en cas d'erreur
@@ -1590,7 +1571,7 @@ function setBusy(v){busy=v;document.getElementById("send-btn").disabled=v;}
 function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");}
 function esc2(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
-function md(t){return"<p>"+t.replace(/\r\n/g,"\n").replace(/\r/g,"\n").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n\n+/g,"</p><p>").replace(/\n/g,"<br>")+"</p>";}
+function md(t){return"<p>"+t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n\n+/g,"</p><p>").replace(/\n/g,"<br>")+"</p>";}
 function partialMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
 
 // ══ EXPORT / IMPORT ══
@@ -1907,4 +1888,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
