@@ -28,7 +28,7 @@
   --user-bubble:#e8e4db;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;overflow:hidden;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;overflow:hidden;overscroll-behavior:none;touch-action:pan-y;}
 #app{display:flex;height:100vh;height:100dvh;position:relative;overflow:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);box-sizing:border-box;}
 
 /* ══ SPLASH ══ */
@@ -46,7 +46,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;opacity:0;transition:opacity .3s;}
 #sidebar.open~.sb-overlay{display:block;opacity:1;}
 
-.sb-top{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem .75rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-top{display:flex;align-items:center;justify-content:space-between;padding:calc(.9rem + env(safe-area-inset-top)) 1rem .75rem;border-bottom:1px solid var(--border);flex-shrink:0;}
 .sb-profile{display:flex;align-items:center;gap:.55rem;cursor:pointer;}
 .sb-av{width:30px;height:30px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:.85rem;color:var(--gold-dim);}
 .sb-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
@@ -145,6 +145,1681 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 .hdr-btn{background:none;border:none;color:var(--text-dim);font-size:.95rem;cursor:pointer;padding:.15rem;}
 .hdr-btn:active{color:var(--gold);}
 .page-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:300;color:var(--gold);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.page-body{padding:.9rem 1rem 2rem;display:flex;flex-direction:column;gap:.85rem;max-width:500px;width:100%;margin:0 auto;}
+
+.world-banner{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:.9rem 1rem;display:flex;gap:.85rem;align-items:flex-start;}
+.world-banner-img{width:64px;height:64px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--gold-dim);}
+.world-banner-img img{width:100%;height:100%;object-fit:cover;}
+.world-banner-info{flex:1;min-width:0;}
+.world-banner-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--gold);margin-bottom:.2rem;}
+.world-banner-desc{font-size:.7rem;color:var(--text-mid);line-height:1.55;}
+
+.world-action-btns{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
+.action-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:.65rem .8rem;cursor:pointer;text-align:left;transition:all .18s;display:flex;flex-direction:column;gap:.18rem;}
+.action-btn:active{border-color:var(--gold-dim);background:var(--bg3);}
+.action-btn-icon{font-size:1rem;}
+.action-btn-label{font-family:'Cormorant Garamond',serif;font-size:.88rem;color:var(--gold);}
+.action-btn-sub{font-size:.58rem;color:var(--text-dim);}
+
+.world-section-hdr{display:flex;align-items:center;justify-content:space-between;}
+.world-section-title{font-size:.5rem;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);}
+
+/* ══ SHARED PAGE LAYOUT ══ */
+#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;}
+
+.field{display:flex;flex-direction:column;gap:.25rem;}
+.field label,.field-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);}
+.fhint{font-size:.57rem;color:var(--text-dim);}
+input.fi,textarea.fi{background:var(--bg2);border:1px solid var(--border3);border-radius:6px;color:var(--text);font-family:'Jost',sans-serif;font-weight:300;font-size:.83rem;padding:.55rem .78rem;outline:none;transition:border-color .2s;width:100%;}
+input.fi:focus,textarea.fi:focus{border-color:var(--gold-dim);}
+textarea.fi{resize:none;line-height:1.6;}
+input::placeholder,textarea::placeholder{color:var(--text-dim);}
+.save-btn{background:var(--bg3);border:1px solid var(--border3);border-radius:6px;color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:.96rem;font-weight:300;padding:.78rem;cursor:pointer;letter-spacing:.07em;transition:all .2s;margin-top:.05rem;width:100%;text-align:center;}
+.save-btn:active{background:var(--bg4);}
+.photo-row{display:flex;align-items:flex-start;gap:.85rem;}
+.photo-circle{width:64px;height:64px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.55rem;color:var(--text-dim);}
+.photo-circle img{width:100%;height:100%;object-fit:cover;}
+.photo-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:.25rem;}
+.photo-sq{width:64px;height:64px;border-radius:8px;background:var(--bg3);border:2px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--text-dim);}
+.photo-sq img{width:100%;height:100%;object-fit:cover;}
+
+/* Toggle buttons */
+.toggle-group{display:flex;gap:.35rem;flex-wrap:wrap;}
+.tgl-btn{background:transparent;border:1px solid var(--border2);border-radius:5px;color:var(--text-mid);font-family:'Jost',sans-serif;font-size:.75rem;padding:.4rem .75rem;cursor:pointer;transition:all .18s;}
+.tgl-btn.on{border-color:var(--gold-dim);color:var(--gold);background:var(--bg3);}
+
+/* Traits */
+.traits-wrap{display:flex;flex-wrap:wrap;gap:.28rem;}
+.chip{background:var(--bg);border:1px solid var(--border2);border-radius:20px;color:var(--text-dim);font-size:.68rem;padding:.2rem .62rem;cursor:pointer;transition:all .15s;}
+.chip.on{background:var(--bg4);border-color:var(--gold-dim);color:var(--gold);}
+
+/* API settings */
+.api-field{display:flex;flex-direction:column;gap:.28rem;}
+.api-row{display:flex;align-items:center;gap:.38rem;}
+.api-input{flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:'Jost',sans-serif;font-weight:300;font-size:.82rem;padding:.55rem .8rem;outline:none;transition:border-color .2s;width:100%;letter-spacing:.04em;}
+.api-input:focus{border-color:var(--gold-dim);}
+.api-input[type="password"]{letter-spacing:.14em;}
+.api-reveal{background:none;border:1px solid var(--border2);border-radius:4px;color:var(--text-dim);font-size:.7rem;padding:.38rem .52rem;cursor:pointer;flex-shrink:0;}
+.api-reveal:active{border-color:var(--gold-dim);color:var(--gold);}
+.api-status{font-size:.6rem;color:var(--text-dim);}
+.api-status.ok{color:#4a9;}
+.api-status.bad{color:var(--red);}
+
+/* ══ CHAT ══ */
+#chat{background:var(--bg);}
+.chat-topbar{display:flex;align-items:center;justify-content:space-between;padding:.62rem .9rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.chat-left{display:flex;align-items:center;gap:.52rem;min-width:0;}
+.sb-open{background:none;border:none;color:var(--text-dim);font-size:1.08rem;cursor:pointer;flex-shrink:0;}
+.chat-av{width:27px;height:27px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:.78rem;color:var(--gold-dim);}
+.chat-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.chat-av.sq{border-radius:4px;}
+.chat-info{min-width:0;}
+.chat-name{font-family:'Cormorant Garamond',serif;font-size:.93rem;font-weight:300;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chat-sub{font-size:.52rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;}
+.chat-right{display:flex;gap:.22rem;flex-shrink:0;}
+.icon-btn{background:none;border:1px solid var(--border2);border-radius:4px;color:var(--text-dim);font-size:.62rem;padding:.22rem .44rem;cursor:pointer;}
+.icon-btn:active{border-color:var(--gold-dim);color:var(--gold);}
+
+.messages{flex:1;overflow-y:auto;padding:.8rem .85rem .35rem;display:flex;flex-direction:column;gap:.7rem;scroll-behavior:smooth;}
+.messages::-webkit-scrollbar{width:2px;}
+.messages::-webkit-scrollbar-thumb{background:var(--border2);}
+.msg{animation:fadeUp .2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+/* User */
+.msg.user{align-self:flex-end;max-width:82%;display:flex;flex-direction:row;align-items:flex-end;gap:.45rem;}
+.user-av{width:24px;height:24px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:.68rem;color:var(--gold-dim);}
+.user-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.user-body{display:flex;flex-direction:column;align-items:flex-end;gap:.13rem;}
+.msg.user .bubble{background:var(--user-bubble);border:1px solid var(--border2);border-radius:13px 13px 3px 13px;color:var(--text-mid);font-size:.81rem;padding:.44rem .78rem;line-height:1.62;}
+.msg-actions{display:flex;gap:.25rem;opacity:0;transition:opacity .15s;}
+.msg.user:hover .msg-actions{opacity:1;}
+.msg-act-btn{background:none;border:none;color:var(--text-dim);font-size:.64rem;cursor:pointer;padding:.08rem .16rem;}
+.msg-act-btn:active{color:var(--gold);}
+.msg.user.editing .bubble{display:none;}
+.edit-box{background:var(--bg2);border:1px solid var(--gold-dim);border-radius:8px;color:var(--text);font-family:'Jost',sans-serif;font-size:.81rem;padding:.46rem .7rem;outline:none;resize:none;line-height:1.6;width:220px;}
+.edit-btns{display:flex;gap:.25rem;margin-top:.13rem;}
+.edit-confirm{background:var(--bg3);border:1px solid var(--gold-dim);border-radius:4px;color:var(--gold);font-family:'Jost',sans-serif;font-size:.68rem;padding:.26rem .62rem;cursor:pointer;}
+.edit-cancel{background:none;border:1px solid var(--border2);border-radius:4px;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:.68rem;padding:.26rem .62rem;cursor:pointer;}
+
+/* Bot */
+.msg.bot{align-self:flex-start;max-width:88%;display:flex;gap:.45rem;align-items:flex-start;}
+.bot-av{width:27px;height:27px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:.78rem;color:var(--gold-dim);}
+.bot-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.bot-content{display:flex;flex-direction:column;gap:.18rem;}
+.msg.bot .bubble{background:var(--bg2);border:1px solid var(--border2);border-radius:3px 13px 13px 13px;font-size:.83rem;padding:.55rem .85rem;line-height:1.68;color:var(--text);}
+.msg.bot .bubble p{margin-bottom:.4rem;}
+.msg.bot .bubble p:last-child{margin-bottom:0;}
+.msg.bot .bubble em{color:var(--text-mid);font-style:italic;}
+.msg.bot .bubble strong{color:var(--gold-pale);font-weight:400;}
+.bot-msg-actions{display:flex;gap:.18rem;opacity:0;transition:opacity .15s;}
+.msg.bot:hover .bot-msg-actions{opacity:1;}
+.bot-act-btn{background:none;border:none;color:var(--text-dim);font-size:.64rem;cursor:pointer;padding:.08rem .18rem;border-radius:3px;}
+.bot-act-btn:active{color:var(--gold);}
+
+/* Stream cursor */
+.stream-cursor{display:inline-block;width:2px;height:.85em;background:var(--gold-dim);margin-left:1px;vertical-align:middle;animation:blink .9s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* Input area */
+.input-area{display:flex;align-items:flex-end;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+#msg-input{flex:1;background:transparent;border:none;color:var(--text);font-family:'Jost',sans-serif;font-weight:300;font-size:.86rem;line-height:1.5;padding:.75rem .8rem;resize:none;outline:none;min-height:48px;max-height:120px;overflow-y:auto;}
+#msg-input::placeholder{color:var(--text-dim);}
+#send-btn{background:none;border:none;color:var(--gold-dim);font-size:1.1rem;padding:.75rem .9rem;cursor:pointer;flex-shrink:0;transition:color .2s;}
+#send-btn:not(:disabled):active{color:var(--gold);}
+#send-btn:disabled{opacity:.35;}
+
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;display:none;align-items:center;justify-content:center;padding:1.1rem;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:1.1rem;width:100%;max-width:420px;display:flex;flex-direction:column;gap:.75rem;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);}
+.modal-btns{display:flex;gap:.4rem;}
+.btn-ok{flex:1;background:var(--bg3);border:1px solid var(--gold-dim);border-radius:5px;color:var(--gold);font-family:'Jost',sans-serif;font-size:.78rem;padding:.5rem;cursor:pointer;}
+.btn-cancel{flex:1;background:none;border:1px solid var(--border2);border-radius:5px;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:.78rem;padding:.5rem;cursor:pointer;}
+.modal-input{background:var(--bg);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:'Jost',sans-serif;font-size:.82rem;padding:.55rem .78rem;outline:none;width:100%;}
+.modal-input:focus{border-color:var(--gold-dim);}
+
+/* Status line */
+.status-line{align-self:center;font-size:.55rem;color:var(--text-dim);letter-spacing:.14em;text-transform:uppercase;animation:pulse 1.4s infinite;padding:.18rem 0;}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* Divider */
+.settings-divider{border:none;border-top:1px solid var(--border);margin:.1rem 0;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="sp-name">InkMind</div>
+  <div class="sp-sub">où les histoires prennent vie</div>
+  <div class="sp-line"></div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-top">
+    <div class="sb-profile" onclick="closeSB();showScreen('profile-page');loadProfilePage()">
+      <div class="sb-av" id="sb-mini-av">?</div>
+      <span class="sb-uname" id="sb-mini-name">Mon profil</span>
+    </div>
+    <button class="sb-x" onclick="closeSB()">✕</button>
+  </div>
+  <div class="sb-nav">
+    <button class="sb-nav-btn" onclick="closeSB();goHome()">⌂ &nbsp;Accueil</button>
+  </div>
+  <div class="sb-section-label">Conversations</div>
+  <div class="sb-list" id="sb-sessions"></div>
+  <div class="sb-footer">
+    <div class="sb-footer-row">
+      <button class="sb-mini" onclick="closeSB();exportAll()">⬇ Exporter</button>
+      <button class="sb-mini" onclick="closeSB();importAll()">⬆ Importer</button>
+    </div>
+    <div class="sb-settings-link" onclick="closeSB();showScreen('settings-page');loadSettingsPage()">
+      <span>⚙ Paramètres</span>
+      <span style="color:var(--text-dim);font-size:.7rem;">›</span>
+    </div>
+  </div>
+</div>
+<div class="sb-overlay" onclick="closeSB()"></div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- HOME -->
+  <div id="home" class="screen active">
+    <div class="home-topbar">
+      <button class="menu-btn" onclick="openSB()">☰</button>
+      <div class="home-brand">InkMind</div>
+      <div style="width:26px"></div>
+    </div>
+    <div class="home-tabs">
+      <button class="tab-btn active" onclick="switchTab('chars')" id="tab-chars">Personnages</button>
+      <button class="tab-btn" onclick="switchTab('worlds')" id="tab-worlds">Univers</button>
+    </div>
+    <div class="tab-content active" id="tab-chars-content">
+      <div class="section-hdr">
+        <span class="section-label">Mes personnages</span>
+        <button class="new-btn" onclick="openCharCreator(null)">+ Nouveau</button>
+      </div>
+      <div id="chars-list" class="cards-list"></div>
+    </div>
+    <div class="tab-content" id="tab-worlds-content">
+      <div class="section-hdr">
+        <span class="section-label">Mes univers</span>
+        <button class="new-btn" onclick="openWorldCreator(null)">+ Nouveau</button>
+      </div>
+      <div id="worlds-list" class="cards-list"></div>
+    </div>
+  </div>
+
+  <!-- WORLD DETAIL -->
+  <div id="world-detail" class="screen">
+    <div class="page-topbar">
+      <button class="hdr-btn" onclick="openSB()">☰</button>
+      <button class="hdr-btn" onclick="showScreen('home');renderAll()">←</button>
+      <span class="page-title" id="wd-title">—</span>
+      <button class="hdr-btn" onclick="openWorldCreator(currentWorldId)">✎</button>
+    </div>
+    <div class="page-body">
+      <div class="world-banner" id="wd-banner" onclick="resumeLastWorldChat()" style="cursor:pointer;" title="Reprendre le dernier chat">
+        <div class="world-banner-img" id="wd-img">✦</div>
+        <div class="world-banner-info">
+          <div class="world-banner-name" id="wd-name">—</div>
+          <div class="world-banner-desc" id="wd-desc">—</div>
+        </div>
+      </div>
+      <div class="world-action-btns">
+        <button class="action-btn" onclick="startWorldChat('free')">
+          <div class="action-btn-icon">✦</div>
+          <div class="action-btn-label">Chat libre</div>
+          <div class="action-btn-sub">Le bot joue tous les persos</div>
+        </button>
+        <button class="action-btn" onclick="showWorldCharPicker()">
+          <div class="action-btn-icon">👤</div>
+          <div class="action-btn-label">Choisir un perso</div>
+          <div class="action-btn-sub">Chat avec un personnage</div>
+        </button>
+      </div>
+      <div>
+        <div class="world-section-hdr">
+          <span class="world-section-title">Personnages de l'univers</span>
+          <div style="display:flex;gap:.35rem;align-items:center;">
+            <button class="new-btn" style="font-size:.62rem;padding:.25rem .6rem;border-color:var(--gold-dim);color:var(--gold);" onclick="generateCharsFromLore()">✦ Générer</button>
+            <div style="position:relative;display:inline-block;">
+              <button class="new-btn" style="font-size:.62rem;padding:.25rem .55rem;" onclick="toggleDropdown(event,'wd-add')">+ Ajouter</button>
+              <div class="dropdown" id="dd-wd-add" style="display:none;right:0;top:2rem;">
+                <button onclick="closeAllDropdowns();openCharCreatorForWorld()">✦ Nouveau personnage</button>
+                <button onclick="closeAllDropdowns();linkExistingChar()">🔗 Lier un existant</button>
+                <button onclick="closeAllDropdowns();importCharToWorld()">⬆ Importer un perso</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="wd-gen-status" style="display:none;text-align:center;padding:.85rem;font-size:.65rem;color:var(--gold-dim);letter-spacing:.1em;text-transform:uppercase;animation:pulse 1.4s infinite;">✦ Génération en cours...</div>
+        <div id="wd-chars-list" class="cards-list" style="margin-top:.5rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div id="profile-page" class="screen">
+    <div class="page-topbar">
+      <button class="hdr-btn" onclick="openSB()">☰</button>
+      <button class="hdr-btn" onclick="showScreen('home');renderAll()">←</button>
+      <span class="page-title">Mon Profil</span>
+    </div>
+    <div class="page-body">
+      <div class="field">
+        <label>Photo <span class="fhint">(URL)</span></label>
+        <div class="photo-row">
+          <div class="photo-circle" id="profile-circle">?</div>
+          <div class="photo-col">
+            <input type="file" id="profile-photo-file" accept="image/*" style="display:none" onchange="onProfilePhotoFile(this)">
+            <input class="fi" type="text" id="profile-photo-url" placeholder="https://... ou choisis un fichier →" oninput="onProfilePhoto(this.value)">
+            <button class="tgl-btn" style="flex-shrink:0;padding:.4rem .7rem;font-size:.7rem;" onclick="document.getElementById('profile-photo-file').click()">📁</button>
+            <span class="fhint">Clic droit → "Copier l'adresse de l'image"</span>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Prénom <span class="fhint">(devient {{user}})</span></label>
+        <input class="fi" type="text" id="profile-firstname" placeholder="ex. Alex, Luna...">
+      </div>
+      <div class="field">
+        <label>Nom de famille</label>
+        <input class="fi" type="text" id="profile-lastname" placeholder="ex. Moreau, Carter...">
+      </div>
+      <div class="field">
+        <label>Genre <span class="fhint">(pour les accords)</span></label>
+        <div class="toggle-group">
+          <button id="gender-f-btn" class="tgl-btn" onclick="selectGender('f')">♀ Féminin</button>
+          <button id="gender-m-btn" class="tgl-btn" onclick="selectGender('m')">♂ Masculin</button>
+          <button id="gender-n-btn" class="tgl-btn" onclick="selectGender('n')">◈ Neutre</button>
+        </div>
+      </div>
+      <button class="save-btn" id="save-profile-btn" onclick="saveProfile()">Enregistrer le profil →</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div id="settings-page" class="screen">
+    <div class="page-topbar">
+      <button class="hdr-btn" onclick="openSB()">☰</button>
+      <button class="hdr-btn" onclick="showScreen('home');renderAll()">←</button>
+      <span class="page-title">Paramètres</span>
+    </div>
+    <div class="page-body">
+      <div class="api-field">
+        <label class="field-label">Clé Groq <span class="fhint">(console.groq.com)</span></label>
+        <div class="api-row">
+          <input class="api-input" type="password" id="settings-groq-key" placeholder="gsk_..." autocomplete="off" spellcheck="false">
+          <button class="api-reveal" onclick="toggleReveal('settings-groq-key',this)">Afficher</button>
+        </div>
+        <div class="api-status" id="groq-status-line">Aucune clé</div>
+      </div>
+      <div class="api-field" style="margin-top:.6rem;">
+        <label class="field-label">Clé OpenRouter <span class="fhint">(openrouter.ai)</span></label>
+        <div class="api-row">
+          <input class="api-input" type="password" id="settings-or-key" placeholder="sk-or-..." autocomplete="off" spellcheck="false">
+          <button class="api-reveal" onclick="toggleReveal('settings-or-key',this)">Afficher</button>
+        </div>
+        <div class="api-status" id="or-status-line">Aucune clé</div>
+      </div>
+      <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Enregistrer les clés →</button>
+      <hr class="settings-divider">
+      <div class="field">
+        <label class="field-label">Modèle actif</label>
+        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.4rem;">En cas de limite (429), l'app bascule automatiquement sur le suivant.</div>
+        <div id="model-list" style="display:flex;flex-direction:column;gap:.28rem;"></div>
+        <div style="display:flex;gap:.35rem;margin-top:.5rem;align-items:center;">
+          <div id="active-model-indicator" style="font-size:.6rem;color:var(--gold-dim);letter-spacing:.08em;flex:1;"></div>
+        </div>
+      </div>
+      <hr class="settings-divider">
+      <div class="field">
+        <label class="field-label">Apparence</label>
+        <div class="toggle-group">
+          <button id="theme-light-btn" class="tgl-btn" onclick="setTheme(false)">☀ Clair</button>
+          <button id="theme-dark-btn" class="tgl-btn" onclick="setTheme(true)">◑ Sombre</button>
+        </div>
+      </div>
+      <hr class="settings-divider">
+      <div class="field">
+        <label class="field-label">Langue</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.38rem;" id="lang-btns">
+          <button class="tgl-btn" onclick="setLang('fr')">🇫🇷 Français</button>
+          <button class="tgl-btn" onclick="setLang('en')">🇬🇧 English</button>
+          <button class="tgl-btn" onclick="setLang('es')">🇪🇸 Español</button>
+          <button class="tgl-btn" onclick="setLang('pt')">🇧🇷 Português</button>
+        </div>
+      </div>
+
+      <hr class="settings-divider">
+      <div class="field">
+        <label class="field-label" style="color:var(--red);">Zone de danger</label>
+        <button class="save-btn" style="background:transparent;border-color:var(--red);color:var(--red);font-family:'Jost',sans-serif;font-size:.8rem;" onclick="clearAllHistory()">Supprimer toutes les conversations</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARACTER CREATOR -->
+  <div id="char-creator" class="screen">
+    <div class="page-topbar">
+      <button class="hdr-btn" onclick="openSB()">☰</button>
+      <button class="hdr-btn" onclick="creatorBack()">←</button>
+      <span class="page-title" id="char-creator-title">Nouveau Personnage</span>
+    </div>
+    <div class="page-body">
+      <div class="field">
+        <label>Photo (URL)</label>
+        <div class="photo-row">
+          <div class="photo-circle" id="char-photo-circle" onclick="document.getElementById('char-photo-file').click()" style="cursor:pointer;" title="Clique pour choisir une image">✦</div>
+          <input type="file" id="char-photo-file" accept="image/*" style="display:none" onchange="onCharPhotoFile(this)">
+          <div class="photo-col">
+            <input class="fi" type="text" id="char-photo-url" placeholder="https://... ou clique sur l'image ↑" oninput="onCharPhoto(this.value)">
+            <span class="fhint">Clic droit → "Copier l'adresse"</span>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>Nom *</label><input class="fi" type="text" id="char-name" placeholder="ex. Elena, Kane, Nyx..."></div>
+      <div class="field"><label>Description courte</label><input class="fi" type="text" id="char-desc" placeholder="ex. Un détective froid qui n'oublie jamais un visage..."></div>
+      <div class="field"><label>Tags <span class="fhint">(séparés par virgule)</span></label><input class="fi" type="text" id="char-tags" placeholder="romance, mystère, garde du corps..."></div>
+      <div class="field"><label>Histoire / Backstory</label><textarea class="fi" id="char-backstory" rows="4" placeholder="Qui sont-ils ? D'où viennent-ils ?"></textarea></div>
+      <div class="field"><label>Traits de personnalité</label><div class="traits-wrap" id="traits-grid"></div></div>
+      <div class="field"><label>Façon de parler</label><input class="fi" type="text" id="char-voice" placeholder="ex. Formel et froid, Chaleureux mais sarcastique..."></div>
+
+      <div class="field">
+        <label>✦ Premier message</label>
+        <textarea class="fi" id="char-firstmsg" rows="3" placeholder="ex. Tu as enfin daigné te montrer..."></textarea>
+      </div>
+      <div class="field">
+        <label>Messages exemples <span class="fhint">(optionnel)</span></label>
+        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;">Utilise <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{char}}</code> & <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{user}}</code></div>
+        <textarea class="fi" id="char-examples" rows="6" placeholder="{{char}}: ...&#10;{{user}}: ..."></textarea>
+      </div>
+      <button class="save-btn" id="char-save-btn" onclick="saveCharacter()">Enregistrer →</button>
+    </div>
+  </div>
+
+  <!-- WORLD CREATOR -->
+  <div id="world-creator" class="screen">
+    <div class="page-topbar">
+      <button class="hdr-btn" onclick="openSB()">☰</button>
+      <button class="hdr-btn" onclick="worldCreatorBack()">←</button>
+      <span class="page-title" id="world-creator-title">Nouvel Univers</span>
+    </div>
+    <div class="page-body">
+      <div class="field">
+        <label>Image (URL)</label>
+        <div class="photo-row">
+          <div class="photo-sq" id="world-photo-sq" onclick="document.getElementById('world-photo-file').click()" style="cursor:pointer;">✦</div>
+          <input type="file" id="world-photo-file" accept="image/*" style="display:none" onchange="onWorldPhotoFile(this)">
+          <div class="photo-col">
+            <input class="fi" type="text" id="world-photo-url" placeholder="https://... ou clique sur l'image ↑" oninput="onWorldPhoto(this.value)">
+            <span class="fhint">Image de couverture de l'univers</span>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>Nom de l'univers *</label><input class="fi" type="text" id="world-name" placeholder="ex. Boys Over Flowers, Mon monde inventé..."></div>
+      <div class="field"><label>Description courte</label><input class="fi" type="text" id="world-desc" placeholder="ex. Un lycée de luxe coréen dominé par le F4..."></div>
+      <div class="field"><label>Tags <span class="fhint">(séparés par virgule)</span></label><input class="fi" type="text" id="world-tags" placeholder="romance, lycée, k-drama..."></div>
+      <div class="field"><label>Lore & monde <span class="fhint">(décris l'univers en détail)</span></label><textarea class="fi" id="world-lore" rows="5" placeholder="Règles du monde, lieux importants, ambiance, époque..."></textarea></div>
+      <div class="field">
+        <label>✦ Message d'ouverture</label>
+        <textarea class="fi" id="world-firstmsg" rows="3" placeholder="La scène d'introduction quand on entre dans l'univers..."></textarea>
+      </div>
+      <div class="field">
+        <label>Messages exemples <span class="fhint">(optionnel)</span></label>
+        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;">Utilise <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{char}}</code> & <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{user}}</code></div>
+        <textarea class="fi" id="world-examples" rows="6" placeholder="{{char}}: ...&#10;{{user}}: ..."></textarea>
+      </div>
+      <div class="field">
+        <label>Personnage joueur <span class="fhint">(optionnel — le perso que TU incarnes)</span></label>
+        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;line-height:1.5;">Si tu joues un personnage de l'univers (ex : Geum Jan-di), indique son nom ici. Le bot saura que c'est toi.</div>
+        <input class="fi" type="text" id="world-player-char" placeholder="ex. Geum Jan-di, laisse vide si tu joues ton propre perso">
+      </div>
+      <button class="save-btn" id="world-save-btn" onclick="saveWorld()">Enregistrer l'univers →</button>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat" class="screen">
+    <div class="chat-topbar">
+      <div class="chat-left">
+        <button class="sb-open" onclick="openSB()">☰</button>
+        <div class="chat-av" id="chat-av">✦</div>
+        <div class="chat-info">
+          <div class="chat-name" id="chat-name">InkMind</div>
+          <div class="chat-sub" id="chat-sub"></div>
+        </div>
+      </div>
+      <div class="chat-right">
+        <button class="icon-btn" onclick="editCurrentChar()">✎</button>
+        <button class="icon-btn" onclick="newCurrentChat()">⬚</button>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <textarea id="msg-input" placeholder="Écris ici..." rows="1"></textarea>
+      <button id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="confirm-title">Confirmer</div>
+    <div id="confirm-msg" style="font-size:.78rem;color:var(--text-mid);line-height:1.6;"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('confirm-modal');if(window._confirmReject)window._confirmReject()">Annuler</button>
+      <button class="btn-ok" id="confirm-ok-btn" onclick="closeModal('confirm-modal');if(window._confirmResolve)window._confirmResolve()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME MODAL -->
+<div class="modal-overlay" id="rename-modal">
+  <div class="modal-box">
+    <div class="modal-title">Renommer la conversation</div>
+    <input class="modal-input" type="text" id="rename-input" placeholder="Nouveau nom...">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('rename-modal')">Annuler</button>
+      <button class="btn-ok" onclick="confirmRename()">Renommer</button>
+    </div>
+  </div>
+</div>
+
+<!-- WORLD CHAR PICKER MODAL -->
+<div class="modal-overlay" id="world-char-picker">
+  <div class="modal-box">
+    <div class="modal-title">Choisir un personnage</div>
+    <div id="world-char-picker-list" style="display:flex;flex-direction:column;gap:.35rem;max-height:280px;overflow-y:auto;"></div>
+    <button class="btn-cancel" onclick="closeModal('world-char-picker')">Annuler</button>
+  </div>
+</div>
+
+<script>
+// ══ CONSTANTS ══
+const MAX_TOKENS = 900;
+const MODELS = [
+  {id:"groq-llama4",  label:"Llama 4 Maverick",   model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions",    provider:"groq"},
+  {id:"groq-llama3",  label:"Llama 3.3 70B",       model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions",    provider:"groq"},
+  {id:"or-llama4",    label:"Llama 4 (OpenRouter)", model:"meta-llama/llama-4-maverick:free",              url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
+  {id:"or-llama3",    label:"Llama 3.3 (OpenRouter)",model:"meta-llama/llama-3.3-70b-instruct:free",       url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
+  {id:"or-mistral",   label:"Mistral Small",         model:"mistralai/mistral-small-3.1-24b-instruct:free", url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
+];
+const GROQ_KEY_STORE = "inkmind_groq_key";
+const OR_KEY_STORE   = "inkmind_or_key";
+const MODEL_KEY      = "inkmind_model";
+const SESS_KEY   = "inkmind_sess_v7";
+const CHARS_KEY  = "inkmind_chars_v7";
+const WORLDS_KEY = "inkmind_worlds_v1";
+const PROF_KEY   = "inkmind_profile";
+const LANG_KEY   = "inkmind_lang";
+
+const TRAITS_EN=["Mysterious","Warm","Cold","Sarcastic","Playful","Serious","Protective","Dangerous","Gentle","Obsessive","Witty","Brooding","Charismatic","Shy","Ruthless","Caring","Cunning","Loyal","Volatile","Stoic"];
+const TRAITS_TRANS={
+  fr:["Mystérieux","Chaleureux","Froid","Sarcastique","Joueur","Sérieux","Protecteur","Dangereux","Doux","Obsessionnel","Spirituel","Mélancolique","Charismatique","Timide","Impitoyable","Attentionné","Rusé","Loyal","Impulsif","Stoïque"],
+  en:TRAITS_EN,
+  es:["Misterioso","Cálido","Frío","Sarcástico","Juguetón","Serio","Protector","Peligroso","Dulce","Obsesivo","Ingenioso","Melancólico","Carismático","Tímido","Despiadado","Atento","Astuto","Leal","Volátil","Estoico"],
+  pt:["Misterioso","Caloroso","Frio","Sarcástico","Brincalhão","Sério","Protetor","Perigoso","Gentil","Obsessivo","Espirituoso","Melancólico","Carismático","Tímido","Implacável","Atencioso","Astuto","Leal","Volátil","Estóico"]
+};
+function traitToKey(label){const langs=Object.values(TRAITS_TRANS);for(let i=0;i<TRAITS_EN.length;i++){for(const arr of langs){if(arr[i]===label)return TRAITS_EN[i];}}return label;}
+function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const idx=TRAITS_EN.indexOf(key);return idx>=0?arr[idx]:key;}
+
+// ══ STATE ══
+let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
+let orKey=localStorage.getItem(OR_KEY_STORE)||"";
+let activeModelIdx=parseInt(localStorage.getItem(MODEL_KEY)||"0");
+// Compatibilité ancienne clé unique
+if(!groqKey&&!orKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;else if(old.startsWith("sk-or"))orKey=old;}
+let isDark=(localStorage.getItem("inkmind_theme")||"dark")==="dark";
+let currentLang=localStorage.getItem(LANG_KEY)||"fr";
+let busy=false,S=null;
+let editingCharId=null,editingWorldId=null,charCreatorFrom="home",worldCreatorFrom="home";
+let selectedTraits=new Set(),charPhoto=null,worldPhoto=null,profilePhoto=null;
+let openDropdown=null,apiRevealOn=false;
+let selectedGender=null,currentWorldId=null;
+let renameTargetId=null;
+
+document.body.classList.toggle("light",!isDark);
+
+// ══ SPLASH ══
+setTimeout(()=>{const s=document.getElementById("splash");if(s)s.classList.add("hide");},1600);
+
+// ══ PWA ══
+(function(){
+  const icon="data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='90' fill='%230a0908'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='260' fill='%23c9a96e'>I</text><text x='50%' y='80%' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='72' letter-spacing='18' fill='%237a6040'>NKMIND</text></svg>`);
+  const manifest={name:"InkMind",short_name:"InkMind",start_url:".",display:"standalone",background_color:"#0a0908",theme_color:"#0a0908",icons:[{src:icon,sizes:"512x512",type:"image/svg+xml"}]};
+  const blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
+  const link=document.createElement("link");link.rel="manifest";link.href=URL.createObjectURL(blob);
+  document.head.appendChild(link);
+})();
+
+// ══ PROFILE ══
+function loadProfile(){try{return JSON.parse(localStorage.getItem(PROF_KEY)||"{}");}catch{return{};}}
+function getUserName(){const p=loadProfile();return[p.firstname,p.lastname].filter(Boolean).join(" ")||"Toi";}
+function updateSBProfile(){
+  const p=loadProfile();
+  const name=[p.firstname,p.lastname].filter(Boolean).join(" ");
+  document.getElementById("sb-mini-name").textContent=name||"Mon profil";
+  const av=document.getElementById("sb-mini-av");
+  if(p.photo)av.innerHTML=`<img src="${p.photo}" alt="profile">`;
+  else av.innerHTML=p.firstname?p.firstname.charAt(0).toUpperCase():"?";
+}
+function getUserAvHTML(){const p=loadProfile();if(p.photo)return`<img src="${p.photo}" alt="moi">`;if(p.firstname)return p.firstname.charAt(0).toUpperCase();return"·";}
+function loadProfilePage(){
+  const p=loadProfile();
+  document.getElementById("profile-firstname").value=p.firstname||"";
+  document.getElementById("profile-lastname").value=p.lastname||"";
+  document.getElementById("profile-photo-url").value=p.photo||"";
+  profilePhoto=p.photo||null;
+  selectedGender=p.gender||null;
+  if(p.gender)selectGender(p.gender);
+  const c=document.getElementById("profile-circle");
+  c.innerHTML=p.photo?`<img src="${p.photo}" alt="profile">`:(p.firstname?p.firstname.charAt(0).toUpperCase():"?");
+}
+function onProfilePhoto(url){
+  if(!url.trim()){profilePhoto=null;document.getElementById("profile-circle").innerHTML="?";return;}
+  const img=new Image();img.onload=()=>{profilePhoto=url;document.getElementById("profile-circle").innerHTML=`<img src="${url}" alt="profile">`;};img.onerror=()=>{};img.src=url;
+}
+function saveProfile(){
+  const p={firstname:document.getElementById("profile-firstname").value.trim(),lastname:document.getElementById("profile-lastname").value.trim(),photo:profilePhoto,gender:selectedGender};
+  localStorage.setItem(PROF_KEY,JSON.stringify(p));
+  updateSBProfile();showScreen("home");renderAll();
+}
+function selectGender(g){
+  selectedGender=g;
+  ["f","m","n"].forEach(x=>{const b=document.getElementById("gender-"+x+"-btn");if(b){b.classList.toggle("on",g===x);}});
+}
+
+// ══ SETTINGS ══
+function loadSettingsPage(){
+  document.getElementById("settings-groq-key").value=groqKey;
+  document.getElementById("settings-or-key").value=orKey;
+  updateApiStatus();updateThemeBtn();updateLangBtns();renderModelList();
+}
+function toggleReveal(inputId,btn){
+  const inp=document.getElementById(inputId);
+  const show=inp.type==="password";
+  inp.type=show?"text":"password";
+  btn.textContent=show?"Masquer":"Afficher";
+}
+function saveApiKeys(){
+  groqKey=document.getElementById("settings-groq-key").value.trim();
+  orKey=document.getElementById("settings-or-key").value.trim();
+  if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
+  if(orKey)localStorage.setItem(OR_KEY_STORE,orKey);else localStorage.removeItem(OR_KEY_STORE);
+  updateApiStatus();
+  const btn=document.querySelector("[onclick='saveApiKeys()']");
+  if(btn){btn.textContent="Enregistré ✓";setTimeout(()=>btn.textContent="Enregistrer les clés →",1500);}
+}
+function updateApiStatus(){
+  const gl=document.getElementById("groq-status-line");
+  const ol=document.getElementById("or-status-line");
+  if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
+  if(ol)ol.innerHTML=orKey.length>8?`<span class="api-status ok">Clé enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
+}
+function renderModelList(){
+  const list=document.getElementById("model-list");if(!list)return;
+  list.innerHTML="";
+  MODELS.forEach((m,i)=>{
+    const hasKey=m.provider==="groq"?groqKey.length>8:orKey.length>8;
+    const btn=document.createElement("button");
+    btn.className="tgl-btn"+(i===activeModelIdx?" on":"");
+    btn.style.cssText="text-align:left;display:flex;align-items:center;gap:.5rem;width:100%;justify-content:space-between;";
+    btn.innerHTML=`<span>${m.label}</span><span style="font-size:.55rem;color:${hasKey?"var(--gold-dim)":"var(--red)"}">${hasKey?"✓ clé ok":"✗ clé manquante"}</span>`;
+    btn.onclick=()=>{activeModelIdx=i;localStorage.setItem(MODEL_KEY,i);renderModelList();updateActiveIndicator();};
+    list.appendChild(btn);
+  });
+  updateActiveIndicator();
+}
+function updateActiveIndicator(){
+  const el=document.getElementById("active-model-indicator");if(!el)return;
+  const m=MODELS[activeModelIdx];
+  el.textContent=m?"Actif : "+m.label:"";
+}
+function setTheme(dark){isDark=dark;document.body.classList.toggle("light",!isDark);localStorage.setItem("inkmind_theme",isDark?"dark":"light");updateThemeBtn();}
+function updateThemeBtn(){
+  const lb=document.getElementById("theme-light-btn"),db=document.getElementById("theme-dark-btn");
+  if(lb)lb.classList.toggle("on",!isDark);
+  if(db)db.classList.toggle("on",isDark);
+}
+function setLang(lang){currentLang=lang;localStorage.setItem(LANG_KEY,lang);updateLangBtns();}
+function updateLangBtns(){
+  document.querySelectorAll("#lang-btns button").forEach(btn=>{
+    const l=btn.getAttribute("onclick").match(/setLang\('(\w+)'\)/)?.[1];
+    btn.classList.toggle("on",l===currentLang);
+  });
+}
+
+// ══ TABS ══
+function switchTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
+  document.getElementById("tab-"+tab).classList.add("active");
+  document.getElementById("tab-"+tab+"-content").classList.add("active");
+}
+
+// ══ CHARS DATA ══
+function loadChars(){try{return JSON.parse(localStorage.getItem(CHARS_KEY)||"[]");}catch{return[];}}
+function saveChars(c){localStorage.setItem(CHARS_KEY,JSON.stringify(c));}
+
+function renderChars(){
+  closeAllDropdowns();
+  const chars=loadChars().filter(c=>!c.worldId),list=document.getElementById("chars-list");
+  if(!chars.length){list.innerHTML=`<div class="no-items"><p>Aucun personnage solo.</p><span>Appuie sur "+ Nouveau" pour en créer un.</span></div>`;return;}
+  list.innerHTML="";
+  chars.forEach(char=>{
+    const av=char.photo?`<img src="${char.photo}" alt="${char.name}">`:(char.name.charAt(0).toUpperCase());
+    const tags=(char.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc2(t)}</span>`).join("");
+    const row=document.createElement("div");row.className="card";row.dataset.charid=char.id;
+    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div>${tags?`<div class="card-tags">${tags}</div>`:""}</div><button class="card-more" onclick="toggleDropdown(event,'c_${char.id}')">···</button><div class="dropdown" id="dd-c_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();newChatWithChar('${char.id}')">Nouveau chat</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
+    row.querySelector(".card-info").addEventListener("click",()=>startChatWithChar(char.id));
+    row.querySelector(".card-img").addEventListener("click",()=>startChatWithChar(char.id));
+    list.appendChild(row);
+  });
+}
+
+// ══ WORLDS DATA ══
+function loadWorlds(){try{return JSON.parse(localStorage.getItem(WORLDS_KEY)||"[]");}catch{return[];}}
+function saveWorlds(w){localStorage.setItem(WORLDS_KEY,JSON.stringify(w));}
+
+function renderWorlds(){
+  closeAllDropdowns();
+  const worlds=loadWorlds(),list=document.getElementById("worlds-list");
+  if(!worlds.length){list.innerHTML=`<div class="no-items"><p>Aucun univers.</p><span>Crée ton premier univers !</span></div>`;return;}
+  list.innerHTML="";
+  worlds.forEach(world=>{
+    const chars=loadChars().filter(c=>(c.worldId===world.id));
+    const av=world.photo?`<img src="${world.photo}" alt="${world.name}">`:"✦";
+    const tags=(world.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc2(t)}</span>`).join("");
+    const charPips=chars.slice(0,5).map(c=>{
+      const pip=c.photo?`<img src="${c.photo}" alt="${c.name}">`:(c.name.charAt(0));
+      return`<div class="world-char-pip">${pip}</div>`;
+    }).join("")+(chars.length>5?`<div class="world-char-pip" style="font-size:.45rem;">+${chars.length-5}</div>`:"");
+    const row=document.createElement("div");row.className="card";
+    row.innerHTML=`<div class="card-img" style="border-radius:7px;">${av}</div><div class="card-info"><div class="card-name">${esc2(world.name)}</div><div class="card-desc">${esc2(world.desc||"")}</div>${charPips?`<div class="world-chars-preview">${charPips}</div>`:""}</div><button class="card-more" onclick="toggleDropdown(event,'w_${world.id}')">···</button><div class="dropdown" id="dd-w_${world.id}" style="display:none;"><button onclick="closeAllDropdowns();newWorldChat('${world.id}')">Nouveau chat</button><button onclick="closeAllDropdowns();openWorldCreator('${world.id}')">Modifier</button><button onclick="closeAllDropdowns();exportWorld('${world.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteWorld('${world.id}')">Supprimer</button></div>`;
+    row.querySelector(".card-info").addEventListener("click",()=>openWorldDetail(world.id));
+    row.querySelector(".card-img").addEventListener("click",()=>openWorldDetail(world.id));
+    list.appendChild(row);
+  });
+}
+
+function renderAll(){renderChars();renderWorlds();}
+
+// ══ WORLD DETAIL ══
+function resumeLastWorldChat(){
+  if(!currentWorldId)return;
+  const sessions=loadSessions();
+  // Uniquement les sessions "chat libre" de l'univers (charId === "world_xxx")
+  const worldSessions=sessions.filter(s=>s.charId===("world_"+currentWorldId));
+  const withMsg=worldSessions.filter(s=>(s.messages||[]).some(m=>m.role==="user"));
+  const pool=withMsg.length?withMsg:worldSessions;
+  const last=pool.sort((a,b)=>(b.savedAt||b.createdAt)-(a.savedAt||a.createdAt))[0];
+  if(last){resumeSession(last.id);}
+  else{startWorldChat("free");}
+}
+
+function openWorldDetail(worldId){
+  currentWorldId=worldId;
+  const world=loadWorlds().find(w=>w.id===worldId);if(!world)return;
+  document.getElementById("wd-title").textContent=world.name;
+  document.getElementById("wd-name").textContent=world.name;
+  document.getElementById("wd-desc").textContent=world.desc||"";
+  const img=document.getElementById("wd-img");
+  img.innerHTML=world.photo?`<img src="${world.photo}" alt="${world.name}">`:"✦";
+  renderWorldChars(worldId);
+  showScreen("world-detail");
+}
+function renderWorldChars(worldId){
+  const chars=loadChars().filter(c=>c.worldId===worldId);
+  const list=document.getElementById("wd-chars-list");
+  if(!chars.length){list.innerHTML=`<div class="no-items" style="padding:1rem;"><span>Aucun personnage dans cet univers.</span></div>`;return;}
+  list.innerHTML="";
+  chars.forEach(char=>{
+    const av=char.photo?`<img src="${char.photo}" alt="${char.name}">`:(char.name.charAt(0).toUpperCase());
+    const row=document.createElement("div");row.className="card";
+    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div><button class="card-more" onclick="toggleDropdown(event,'wc_${char.id}')">···</button><div class="dropdown" id="dd-wc_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();startChatWithChar('${char.id}')">Chat solo</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
+    row.querySelector(".card-info").addEventListener("click",()=>startChatWithChar(char.id));
+    row.querySelector(".card-img").addEventListener("click",()=>startChatWithChar(char.id));
+    list.appendChild(row);
+  });
+}
+function unlinkCharFromWorld(charId){
+  const chars=loadChars();const idx=chars.findIndex(c=>c.id===charId);
+  if(idx>=0){delete chars[idx].worldId;saveChars(chars);}
+  renderWorldChars(currentWorldId);
+}
+function showWorldCharPicker(){
+  const chars=loadChars().filter(c=>c.worldId===currentWorldId);
+  const list=document.getElementById("world-char-picker-list");
+  if(!chars.length){list.innerHTML=`<div style="font-size:.72rem;color:var(--text-dim);text-align:center;padding:.8rem;">Aucun personnage dans cet univers.</div>`;document.getElementById("world-char-picker").classList.add("open");return;}
+  list.innerHTML="";
+  chars.forEach(char=>{
+    const av=char.photo?`<img src="${char.photo}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:(char.name.charAt(0).toUpperCase());
+    const btn=document.createElement("div");btn.className="card";btn.style.cursor="pointer";
+    btn.innerHTML=`<div class="card-img round" style="width:36px;height:36px;font-size:.85rem;">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div>`;
+    btn.addEventListener("click",()=>{closeModal("world-char-picker");startChatWithChar(char.id);});
+    list.appendChild(btn);
+  });
+  document.getElementById("world-char-picker").classList.add("open");
+}
+function startWorldChat(mode){
+  if(!requireKey())return;
+  const world=loadWorlds().find(w=>w.id===currentWorldId);if(!world)return;
+  const chars=loadChars().filter(c=>c.worldId===currentWorldId);
+  // Build a "virtual char" representing the whole world
+  const virtualChar={
+    id:"world_"+world.id,
+    worldId:world.id,
+    name:world.name,
+    type:"rpg",
+    desc:world.desc||"",
+    tags:world.tags||[],
+    backstory:(world.lore||"")+(chars.length?"\n\nPersonnages:\n"+chars.map(c=>`- ${c.name}${c.desc?" : "+c.desc:""}${c.backstory?" — "+c.backstory:""}`).join("\n"):""),
+    voice:"",traits:[],
+    firstMsg:world.firstmsg||`Bienvenue dans l'univers de ${world.name}.`,
+    lang:world.lang||"",
+    photo:world.photo||null
+  };
+  S={id:"sess_"+Date.now(),title:world.name,charId:virtualChar.id,char:virtualChar,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
+  setupChatUI();clearMsgs();
+  const userName=getUserName();
+  const rawOpener=(virtualChar.firstMsg||`Bienvenue dans ${world.name}.`)
+    .replace(/\{\{user\}\}/gi,userName).replace(/\{\{User\}\}/gi,userName);
+  S.messages.push({role:"assistant",content:md(rawOpener),rawText:rawOpener,charId:virtualChar.id,sessionId:S.id});
+  S.hist.push(["assistant",rawOpener]);
+  addBot(md(rawOpener),virtualChar,false);
+  autosave();renderSBSessions();showScreen("chat");
+}
+
+// ══ CHAR CREATOR ══
+function openCharCreator(charId){
+  editingCharId=charId;charCreatorFrom="home";
+  selectedTraits=new Set();charPhoto=null;
+  ["char-photo-url","char-name","char-desc","char-tags","char-backstory","char-voice","char-firstmsg","char-examples"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  document.getElementById("char-photo-circle").innerHTML="✦";
+  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
+  if(charId){
+    const char=loadChars().find(c=>c.id===charId);
+    if(char){
+      document.getElementById("char-creator-title").textContent="Modifier le personnage";
+      document.getElementById("char-name").value=char.name||"";
+      document.getElementById("char-desc").value=char.desc||"";
+      document.getElementById("char-tags").value=(char.tags||[]).join(", ");
+      document.getElementById("char-backstory").value=char.backstory||"";
+      document.getElementById("char-voice").value=char.voice||"";
+      document.getElementById("char-firstmsg").value=char.firstMsg||"";
+      document.getElementById("char-examples").value=char.examples||"";
+      if(char.photo){charPhoto=char.photo;document.getElementById("char-photo-url").value=char.photo;document.getElementById("char-photo-circle").innerHTML=`<img src="${char.photo}" alt="photo">`;}
+      setTraits(char.traits);
+    }
+  }else{document.getElementById("char-creator-title").textContent="Nouveau Personnage";}
+  document.getElementById("char-save-btn").textContent=charId?"Enregistrer les modifications →":"Enregistrer →";
+  showScreen("char-creator");
+}
+function openCharCreatorForWorld(){
+  openCharCreator(null);
+  charCreatorFrom="world";
+}
+function creatorBack(){
+  if(charCreatorFrom==="world")openWorldDetail(currentWorldId);
+  else if(S?.char?.id===editingCharId)showScreen("chat");
+  else{showScreen("home");renderAll();}
+}
+function onCharPhoto(url){
+  if(!url.trim()){charPhoto=null;document.getElementById("char-photo-circle").innerHTML="✦";return;}
+  const img=new Image();img.onload=()=>{charPhoto=url;document.getElementById("char-photo-circle").innerHTML=`<img src="${url}" alt="photo">`;};img.onerror=()=>{};img.src=url;
+}
+function saveCharacter(){
+  const name=document.getElementById("char-name").value.trim();if(!name){alert("Donne un nom à ton personnage.");return;}
+  const chars=loadChars();
+  const worldId=charCreatorFrom==="world"?currentWorldId:undefined;
+  const char={
+    id:editingCharId||("char_"+Date.now()),
+    name,photo:charPhoto,
+    desc:document.getElementById("char-desc").value.trim(),
+    tags:document.getElementById("char-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
+    backstory:document.getElementById("char-backstory").value.trim(),
+    traits:[...selectedTraits],
+    voice:document.getElementById("char-voice").value.trim(),
+    firstMsg:document.getElementById("char-firstmsg").value.trim(),
+    examples:document.getElementById("char-examples").value.trim(),
+    updatedAt:Date.now()
+  };
+  if(worldId)char.worldId=worldId;
+  else if(editingCharId){const existing=chars.find(c=>c.id===editingCharId);if(existing?.worldId)char.worldId=existing.worldId;}
+  if(editingCharId){const idx=chars.findIndex(c=>c.id===editingCharId);if(idx>=0)chars[idx]={...chars[idx],...char};else chars.unshift(char);}else chars.unshift(char);
+  saveChars(chars);
+  if(S?.char?.id===editingCharId){S.char={...S.char,...char};setupChatUI();autosave();}
+  creatorBack();
+}
+async function deleteChar(id){
+  const c=loadChars().find(x=>x.id===id);
+  const ok=await askConfirm("Supprimer le personnage",`"${c?.name||"ce personnage"}" sera définitivement supprimé.`);
+  if(!ok)return;
+  saveChars(loadChars().filter(x=>x.id!==id));
+  renderAll();
+  if(currentWorldId)renderWorldChars(currentWorldId);
+}
+
+// ══ WORLD CREATOR ══
+function openWorldCreator(worldId){
+  editingWorldId=worldId;worldCreatorFrom="home";
+  worldPhoto=null;
+  ["world-photo-url","world-name","world-desc","world-tags","world-lore","world-firstmsg","world-examples","world-player-char"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  document.getElementById("world-photo-sq").innerHTML="✦";
+  if(worldId){
+    const world=loadWorlds().find(w=>w.id===worldId);
+    if(world){
+      document.getElementById("world-creator-title").textContent="Modifier l'univers";
+      document.getElementById("world-name").value=world.name||"";
+      document.getElementById("world-desc").value=world.desc||"";
+      document.getElementById("world-tags").value=(world.tags||[]).join(", ");
+      document.getElementById("world-lore").value=world.lore||"";
+      document.getElementById("world-firstmsg").value=world.firstmsg||"";
+      document.getElementById("world-examples").value=world.examples||"";
+      document.getElementById("world-player-char").value=world.playerChar||"";
+      if(world.photo){worldPhoto=world.photo;document.getElementById("world-photo-url").value=world.photo;document.getElementById("world-photo-sq").innerHTML=`<img src="${world.photo}" alt="photo">`;}
+    }
+  }else{document.getElementById("world-creator-title").textContent="Nouvel Univers";}
+  document.getElementById("world-save-btn").textContent=worldId?"Enregistrer les modifications →":"Enregistrer l'univers →";
+  showScreen("world-creator");
+}
+function worldCreatorBack(){
+  if(editingWorldId){openWorldDetail(editingWorldId);}
+  else{showScreen("home");renderAll();}
+}
+function onWorldPhoto(url){
+  if(!url.trim()){worldPhoto=null;document.getElementById("world-photo-sq").innerHTML="✦";return;}
+  const img=new Image();img.onload=()=>{worldPhoto=url;document.getElementById("world-photo-sq").innerHTML=`<img src="${url}" alt="photo">`;};img.onerror=()=>{};img.src=url;
+}
+function saveWorld(){
+  const name=document.getElementById("world-name").value.trim();if(!name){alert("Donne un nom à ton univers.");return;}
+  const worlds=loadWorlds();
+  const world={
+    id:editingWorldId||("world_"+Date.now()),
+    name,photo:worldPhoto,
+    desc:document.getElementById("world-desc").value.trim(),
+    tags:document.getElementById("world-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
+    lore:document.getElementById("world-lore").value.trim(),
+    firstmsg:document.getElementById("world-firstmsg").value.trim(),
+    examples:document.getElementById("world-examples").value.trim(),
+    playerChar:document.getElementById("world-player-char").value.trim(),
+    updatedAt:Date.now()
+  };
+  if(editingWorldId){const idx=worlds.findIndex(w=>w.id===editingWorldId);if(idx>=0)worlds[idx]={...worlds[idx],...world};else worlds.unshift(world);}else worlds.unshift(world);
+  saveWorlds(worlds);
+  worldCreatorBack();
+}
+async function deleteWorld(id){
+  const w=loadWorlds().find(x=>x.id===id);
+  const linkedCount=loadChars().filter(c=>c.worldId===id).length;
+  const extra=linkedCount?`${linkedCount} personnage(s) lié(s) seront aussi supprimés.`:"";
+  const ok=await askConfirm("Supprimer l'univers",`"${w?.name||"cet univers"}" sera définitivement supprimé. ${extra}`);
+  if(!ok)return;
+  saveChars(loadChars().filter(c=>c.worldId!==id));
+  saveWorlds(loadWorlds().filter(x=>x.id!==id));
+  showScreen("home");renderAll();
+}
+
+// ══ TRAITS ══
+function buildTraitsGrid(){
+  const g=document.getElementById("traits-grid");if(!g)return;g.innerHTML="";
+  const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;
+  arr.forEach((label,i)=>{
+    const key=TRAITS_EN[i];
+    const c=document.createElement("button");c.className="chip";c.textContent=label;c.dataset.key=key;
+    c.classList.toggle("on",selectedTraits.has(key));
+    c.onclick=()=>{if(selectedTraits.has(key)){selectedTraits.delete(key);c.classList.remove("on");}else{selectedTraits.add(key);c.classList.add("on");}};
+    g.appendChild(c);
+  });
+}
+function setTraits(arr){selectedTraits=new Set((arr||[]).map(k=>TRAITS_EN.includes(k)?k:traitToKey(k)));buildTraitsGrid();}
+
+// ══ DROPDOWNS ══
+function toggleDropdown(e,id){
+  e.stopPropagation();
+  const dd=document.getElementById("dd-"+id);
+  if(openDropdown&&openDropdown!==id){const prev=document.getElementById("dd-"+openDropdown);if(prev)prev.style.display="none";}
+  if(openDropdown===id){dd.style.display="none";openDropdown=null;}else{dd.style.display="block";openDropdown=id;}
+}
+function closeAllDropdowns(){if(openDropdown){const dd=document.getElementById("dd-"+openDropdown);if(dd)dd.style.display="none";openDropdown=null;}}
+document.addEventListener("click",e=>{if(openDropdown&&!e.target.closest(".dropdown")&&!e.target.closest(".card-more"))closeAllDropdowns();});
+
+// ══ SYSTEM PROMPT ══
+function buildSystemPrompt(char){
+  const prof=loadProfile(),userName=getUserName();
+  const traits=char.traits?.length?char.traits.join(", "):"";
+  const tags=char.tags?.length?char.tags.join(", "):"";
+  const lang="auto-detect from the user's first message";
+  let examples="";
+  if(char.examples?.trim()){
+    examples=char.examples
+      .replace(/\{\{char\}\}/gi,char.name).replace(/\{\{user\}\}/gi,userName)
+      .replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
+  }
+  const genderNote=prof.gender==="f"?"Le joueur est féminin — accorde tous les adjectifs/participes passés au féminin.":prof.gender==="m"?"Le joueur est masculin — accorde tous les adjectifs/participes passés au masculin.":"Genre du joueur non précisé — utilise une formulation neutre ou inclusive.";
+  const isRpg=char.type==="rpg"||char.worldId;
+  // Récupérer le personnage joueur si défini dans l'univers
+  let playerCharName="";
+  if(char.worldId){const world=loadWorlds().find(w=>w.id===char.worldId);if(world?.playerChar)playerCharName=world.playerChar;}
+  else if(char.id&&char.id.startsWith("world_")){const world=loadWorlds().find(w=>w.id===char.worldId||("world_"+w.id)===char.id);if(world?.playerChar)playerCharName=world.playerChar;}
+  return`You are the narrator of an immersive second-person interactive story. You write in second person: "tu" for the player, third person for all other characters.
+
+━━━ THE WORLD ━━━
+${isRpg?`Universe/RPG: ${char.name}
+This is a multi-character RPG universe. You play ALL named characters from the backstory.`:`Main character: ${char.name}`}
+Description: ${char.desc||""}
+Tags: ${tags}
+Backstory: ${char.backstory||"not specified"}
+${isRpg?`All characters have their own personality, voice and motivations as described in the backstory.`:`Personality of ${char.name}: ${traits||"not specified"}
+Speaking style of ${char.name}: ${char.voice||"natural, in character"}`}
+World/Setting: ${char.world||"flexible"}
+Language: ${lang}
+Player gender: ${genderNote}
+
+━━━ CRITICAL RULES ━━━
+ALWAYS address the player as "tu" (second person) — NEVER "vous", NEVER their name in narration. Writing "vous" for the player is a critical error.
+${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player (${userName}) is a DISTINCT person from ALL characters listed. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
+${isRpg?`NEVER use the universe name "${char.name}" as a speaker. Always use the actual character's real name.`:`NEVER write in first person as ${char.name}. Always: "${char.name} dit :", "${char.name} sourit".`}
+NEVER repeat the same sentence or action from the previous response.
+NEVER write {{user}}, {{char}}, or any {{placeholder}}.
+NEVER invent actions for the player. This means:
+- NEVER write "Tu regardes autour de toi", "Tu laisses le papier", "Tes yeux rencontrent..." unless the player wrote that action first.
+- NEVER describe what the player does, feels, sees, or decides — only what the world and characters do.
+- The player's turn ends with the player's last message. Your job: describe the world's REACTION only.
+${isRpg?`STRICT RULE: Only use characters whose names appear explicitly in the backstory above. Do NOT invent any new named character. Do NOT use your training knowledge to add characters from real franchises. If a character is not listed in the backstory → they do not exist in this story. Use generic roles only (a student, a guard, a stranger).${playerCharName?"":" NEVER write the player's words or actions — wait for the player to write them."}`:`NEVER introduce named characters not in the backstory. Use generic roles (a guard, a stranger).`}
+
+━━━ HOW TO NARRATE ━━━
+- Second person "tu": "Tu entres", "Tu vois", "Tu réponds".
+- All other characters: third person with real name.
+- Each response MUST advance the scene.
+- Follow the player's lead completely.
+
+━━━ ANTI-LOOP RULE ━━━
+Before writing, check: did I write this same sentence in my last response? If yes → skip it, write what happens NEXT.
+
+━━━ DIALOGUE FORMAT ━━━
+TOUTE réplique DOIT être entre guillemets. Utilise « » en français, " " en anglais.
+Nom du personnage : «dialogue»
+*(description narrative en italique)*
+JAMAIS de dialogue sans guillemets — règle absolue.
+${isRpg?`JAMAIS utiliser "${char.name}" comme locuteur. Si l'utilisateur mentionne le nom d'un personnage → ce personnage réagit en priorité.`:""}
+
+━━━ NARRATIVE QUALITY ━━━
+Show don't tell. Sensory details. Vary sentence length.
+Avoid: "soudain", "comme si", filler phrases.
+Short responses for short actions. Rich for key scenes.
+
+━━━ LANGUAGE ━━━
+${lang}. 100% in that language.
+${examples?`\n━━━ EXAMPLE EXCHANGES (style guide only) ━━━\n${examples}\n━━━ END EXAMPLES ━━━`:""}`;}
+
+// ══ CORR ══
+const CORR=`Tu es un correcteur silencieux de texte de roleplay. Retourne UNIQUEMENT le texte corrigé, sans commentaire, sans explication.
+RÈGLES :
+1. Mots anglais isolés parasites → remplace par l'équivalent français. Liste non-exhaustive : enough, seems, still, yet, though, however, suddenly, indeed, rather, quite, almost, just, even, so, then, now, while, though, despite, towards, around, among, through, within, beyond, behind, against, somehow, somewhere, nothing, everything, everyone, already, always, never, maybe, perhaps, truly, deeply, slowly, quickly, softly, finally, after, before, without, unless, whether, either, neither, both, only, very, really.
+2. Fautes d'orthographe, accords, accents manquants → corrige.
+3. Même mot répété 2+ fois dans un paragraphe → synonyme pour les suivants.
+4. "!" abusif ou répété → remplace par "." ou reformule.
+5. "vous" pour le joueur → remplace par "tu".
+6. "comme si"/"comme pour" → reformule directement.
+7. Action inventée pour le joueur → supprime la phrase.
+Ne change pas le sens ni la structure. Retourne le texte corrigé uniquement.`;
+
+// ══ API ══
+function showModelIndicator(modelLabel){
+  // Petit toast discret en bas du chat
+  let toast=document.getElementById("model-toast");
+  if(!toast){toast=document.createElement("div");toast.id="model-toast";toast.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:.25rem .75rem;font-size:.6rem;color:var(--gold-dim);z-index:100;pointer-events:none;transition:opacity .4s;";document.body.appendChild(toast);}
+  toast.textContent="✦ "+modelLabel;toast.style.opacity="1";
+  clearTimeout(toast._t);toast._t=setTimeout(()=>toast.style.opacity="0",2500);
+}
+
+async function tryFetch(url,key,body,stream){
+  return fetch(url,{method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify(body)});
+}
+
+async function orStream(messages,onChunk){
+  // Essayer le modèle actif, puis fallback sur les suivants si 429
+  const order=[activeModelIdx,...MODELS.map((_,i)=>i).filter(i=>i!==activeModelIdx)];
+  for(const idx of order){
+    const m=MODELS[idx];
+    const key=getKeyForProvider(m.provider);
+    if(!key)continue;
+    const r=await tryFetch(m.url,key,{model:m.model,max_tokens:MAX_TOKENS,stream:true,messages},true);
+    if(r.status===429){continue;}// Rate limit → essayer suivant
+    if(!r.ok){const e=await r.text();throw new Error(`API ${r.status}: ${e.slice(0,100)}`);}
+    if(idx!==activeModelIdx)showModelIndicator(m.label);
+    const reader=r.body.getReader(),dec=new TextDecoder();
+    let buf="",full="";
+    while(true){
+      const{done,value}=await reader.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split("\n");buf=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith("data:"))continue;
+        const d=line.slice(5).trim();if(d==="[DONE]")continue;
+        try{const j=JSON.parse(d);const t=j.choices?.[0]?.delta?.content||"";if(t){full+=t;onChunk(full);}}catch{}
+      }
+    }
+    return full;
+  }
+  throw new Error("Tous les modèles sont en limite. Attends quelques minutes.");
+}
+
+async function orCall(messages,maxTok=400){
+  const order=[activeModelIdx,...MODELS.map((_,i)=>i).filter(i=>i!==activeModelIdx)];
+  for(const idx of order){
+    const m=MODELS[idx];
+    const key=getKeyForProvider(m.provider);
+    if(!key)continue;
+    const r=await tryFetch(m.url,key,{model:m.model,max_tokens:maxTok,messages},false);
+    if(r.status===429){continue;}
+    if(!r.ok){const e=await r.text();throw new Error(`API ${r.status}: ${e.slice(0,100)}`);}
+    return(await r.json()).choices[0].message.content.trim();
+  }
+  throw new Error("Tous les modèles sont en limite.");
+}
+async function summarize(hist){if(!hist.length)return"";try{return await orCall([{role:"system",content:"Résume cette session de roleplay en 4-5 phrases. Inclus : événements clés, révélations, décisions, état émotionnel, tensions. Sois factuel et concis."},{role:"user",content:hist.map(([r,m])=>`${r}: ${m}`).join("\n")}],250);}catch{return"";}}
+async function correct(txt){
+  if(!txt.trim())return txt;
+  const bad=["Page web","WebPage","scalablytyped",".cmo"];
+  if(bad.some(b=>txt.includes(b)))return"...";
+  try{const r=await orCall([{role:"system",content:CORR},{role:"user",content:txt}],1400);if(bad.some(b=>r.includes(b)))return txt;return r.length>txt.length*0.4?r:txt;}catch{return txt;}
+}
+
+// ══ SESSIONS ══
+function loadSessions(){try{return JSON.parse(localStorage.getItem(SESS_KEY)||"[]");}catch{return[];}}
+function autosave(){
+  if(!S)return;
+  // Ne pas sauvegarder si aucun message utilisateur (chat vide)
+  const hasUserMsg=(S.messages||[]).some(m=>m.role==="user");
+  if(!hasUserMsg)return;
+  const sessions=loadSessions();
+  const idx=sessions.findIndex(s=>s.id===S.id);
+  const toSave={...S,savedAt:Date.now()};
+  if(idx>=0)sessions.splice(idx,1);
+  sessions.unshift(toSave);
+  try{localStorage.setItem(SESS_KEY,JSON.stringify(sessions));}catch{sessions.splice(20);try{localStorage.setItem(SESS_KEY,JSON.stringify(sessions));}catch{}}
+}
+function renderSBSessions(){
+  const sessions=loadSessions().sort((a,b)=>(b.savedAt||b.createdAt)-(a.savedAt||a.createdAt)),container=document.getElementById("sb-sessions");
+  if(!sessions.length){container.innerHTML=`<p class="sb-empty">Aucune conversation</p>`;return;}
+  container.innerHTML="";
+  sessions.forEach(sess=>{
+    const date=new Date(sess.savedAt||sess.createdAt).toLocaleDateString("fr",{month:"short",day:"numeric"});
+    const mc=sess.messages?Math.floor(sess.messages.length/2):0;
+    const char=sess.char;let av="✦";
+    if(char?.photo)av=`<img src="${char.photo}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    else if(char)av=char.name.charAt(0).toUpperCase();
+    const isCur=S&&S.id===sess.id;
+    const item=document.createElement("div");item.className="sb-item"+(isCur?" cur":"");
+    item.innerHTML=`<div class="sb-item-av">${av}</div><div class="sb-item-info"><div class="sb-item-name">${esc2(sess.title||"Chat")}</div><div class="sb-item-meta">${mc} msg · ${date}</div></div><div class="sb-item-acts"><button class="sb-ibtn" onclick="event.stopPropagation();openRename('${sess.id}')">✎</button><button class="sb-ibtn del" onclick="event.stopPropagation();deleteSession('${sess.id}')">✕</button></div>`;
+    item.querySelector(".sb-item-info").addEventListener("click",()=>resumeSession(sess.id));
+    item.querySelector(".sb-item-av").addEventListener("click",()=>resumeSession(sess.id));
+    container.appendChild(item);
+  });
+}
+async function deleteSession(sid){const sess=loadSessions().find(s=>s.id===sid);const ok=await askConfirm("Supprimer la conversation",`"${sess?.title||"cette conversation"}" sera définitivement supprimée.`);if(!ok)return;if(S?.id===sid){S=null;showScreen("home");renderAll();}localStorage.setItem(SESS_KEY,JSON.stringify(loadSessions().filter(s=>s.id!==sid)));renderSBSessions();}
+function clearAllHistory(){if(confirm("Supprimer toutes les conversations ?")){localStorage.removeItem(SESS_KEY);S=null;showScreen("home");renderAll();renderSBSessions();closeSB();}}
+function openRename(sid){renameTargetId=sid;const sess=loadSessions().find(s=>s.id===sid);document.getElementById("rename-input").value=sess?.title||"";document.getElementById("rename-modal").classList.add("open");}
+function closeModal(id){document.getElementById(id).classList.remove("open");}
+function askConfirm(title,msg,okLabel="Supprimer"){
+  return new Promise(resolve=>{
+    window._confirmResolve=()=>resolve(true);
+    window._confirmReject=()=>resolve(false);
+    document.getElementById("confirm-title").textContent=title;
+    document.getElementById("confirm-msg").textContent=msg||"";
+    document.getElementById("confirm-ok-btn").textContent=okLabel;
+    document.getElementById("confirm-ok-btn").style.borderColor="var(--red)";
+    document.getElementById("confirm-ok-btn").style.color="var(--red)";
+    document.getElementById("confirm-modal").classList.add("open");
+  });
+}
+function confirmRename(){const name=document.getElementById("rename-input").value.trim();if(!name){closeModal("rename-modal");return;}const sessions=loadSessions();const sess=sessions.find(s=>s.id===renameTargetId);if(sess){sess.title=name;localStorage.setItem(SESS_KEY,JSON.stringify(sessions));}if(S?.id===renameTargetId){S.title=name;document.getElementById("chat-name").textContent=name;}closeModal("rename-modal");renderSBSessions();}
+
+// ══ START / RESUME CHAT ══
+function requireKey(){
+  if(!groqKey&&!orKey){showScreen("settings-page");loadSettingsPage();return false;}
+  return true;
+}
+function getKeyForProvider(provider){return provider==="groq"?groqKey:orKey;}
+function startChatWithChar(charId){
+  if(!requireKey())return;
+  const char=loadChars().find(c=>c.id===charId);if(!char)return;
+  // Prendre la session avec le dernier MESSAGE envoyé (pas juste créée)
+  const sessions=loadSessions().filter(s=>s.charId===charId);
+  // Filtrer celles qui ont au moins un message user, trier par savedAt
+  const withMsg=sessions.filter(s=>(s.messages||[]).some(m=>m.role==="user"));
+  const pool=withMsg.length?withMsg:sessions;
+  const existing=pool.sort((a,b)=>(b.savedAt||b.createdAt)-(a.savedAt||a.createdAt))[0];
+  if(existing){
+    existing.char=char;S=existing;setupChatUI();clearMsgs();
+    (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
+    showScreen("chat");scrollBottom();renderSBSessions();return;
+  }
+  newChatWithChar(charId);
+}
+function newChatWithChar(charId){
+  if(!requireKey())return;
+  const char=loadChars().find(c=>c.id===charId);if(!char)return;
+  S={id:"sess_"+Date.now(),title:char.name,charId:char.id,char,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
+  setupChatUI();clearMsgs();
+  const userName=getUserName();
+  const rawOpener=(char.firstMsg?.trim()||`Bonjour. Je suis ${char.name}.`)
+    .replace(/\{\{char\}\}/gi,char.name).replace(/\{\{user\}\}/gi,userName).replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
+  S.messages.push({role:"assistant",content:md(rawOpener),rawText:rawOpener,charId:char.id,sessionId:S.id});
+  S.hist.push(["assistant",rawOpener]);
+  addBot(md(rawOpener),char,false);
+  autosave();renderSBSessions();showScreen("chat");
+}
+function resumeSession(sid){
+  const sess=loadSessions().find(s=>s.id===sid);if(!sess||!requireKey())return;
+  if(sess.charId){const lc=loadChars().find(c=>c.id===sess.charId);if(lc)sess.char=lc;}
+  if(sess.summary&&sess.char&&sess.messages?.length){const firstCharId=sess.messages.find(m=>m.charId)?.charId;if(firstCharId&&firstCharId!==sess.charId)sess.summary="";}
+  S=sess;setupChatUI();clearMsgs();
+  (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
+  showScreen("chat");scrollBottom();closeSB();
+}
+function setupChatUI(){
+  const char=S?.char;
+  const av=document.getElementById("chat-av");
+  if(char?.photo)av.innerHTML=`<img src="${char.photo}" alt="${char.name}">`;
+  else if(char)av.innerHTML=char.name.charAt(0).toUpperCase();
+  else av.innerHTML="✦";
+  av.className="chat-av"+(char?.worldId||char?.type==="rpg"?" sq":"");
+  document.getElementById("chat-name").textContent=S?.title||"InkMind";
+  document.getElementById("chat-sub").textContent=(char?.tags||[]).slice(0,2).join(" · ")||"";
+}
+
+// ══ SEND MESSAGE ══
+function rebuildHist(){
+  S.hist=[];const currentCharId=S.charId;
+  (S.messages||[]).forEach(m=>{
+    if(m.charId&&m.charId!==currentCharId)return;
+    if(m.role==="user")S.hist.push(["user",m.rawText||m.content]);
+    else if(m.role==="assistant"&&m.rawText)S.hist.push(["assistant",m.rawText]);
+  });
+}
+async function sendMessage(overrideText=null,fromIndex=null){
+  if(busy||!S)return;
+  const input=document.getElementById("msg-input");
+  const txt=overrideText!==null?overrideText:input.value.trim();
+  if(!txt)return;
+  if(overrideText===null){input.value="";input.style.height="auto";}
+  if(fromIndex!==null){
+    const msgsDom=document.getElementById("messages"),all=[...msgsDom.children];
+    for(let i=fromIndex;i<all.length;i++)all[i].remove();
+    S.messages=(S.messages||[]).slice(0,fromIndex);
+  }
+  rebuildHist();addUser(txt,true);setBusy(true);
+  try{
+    S.turn++;
+    if(S.hist.length>8){
+      setStatus("mémorisation...");
+      const toCompress=S.hist.slice(0,-4);
+      const newSummary=await summarize(toCompress);
+      if(S.summary&&newSummary){try{S.summary=await orCall([{role:"system",content:"Fusionne ces deux résumés de roleplay en 4-5 phrases max. Pas de répétition. Garde : faits, révélations, tensions, relations."},{role:"user",content:`Résumé A: ${S.summary}\n\nRésumé B: ${newSummary}`}],250);}catch{S.summary=newSummary||S.summary;}}
+      else{S.summary=newSummary||S.summary;}
+      S.hist=S.hist.slice(-4);
+    }
+    const sys=buildSystemPrompt(S.char);
+    const msgs=[{role:"system",content:sys}];
+    if(S.summary)msgs.push({role:"system",content:`Contexte (résumé) : ${S.summary}`});
+    S.hist.slice(-10).forEach(([r,c])=>msgs.push({role:r==="user"?"user":"assistant",content:c}));
+    msgs.push({role:"user",content:txt});
+    removeStatus();
+    const el=document.createElement("div");el.className="msg bot";
+    const char=S.char;let av="✦";
+    if(char?.photo)av=`<img src="${char.photo}" alt="${char.name}">`;else if(char)av=char.name.charAt(0).toUpperCase();
+    el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><p><span id="stream-text"></span><span class="stream-cursor"></span></p></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
+    document.getElementById("messages").appendChild(el);scrollBottom();
+    const streamTxt=document.getElementById("stream-text");
+    let rawFull="";
+    rawFull=await orStream(msgs,(full)=>{streamTxt.innerHTML=partialMd(full);scrollBottom();});
+    const cursor=el.querySelector(".stream-cursor");if(cursor)cursor.remove();
+    const bubble=document.getElementById("stream-bubble");
+    if(bubble){bubble.removeAttribute("id");bubble.innerHTML=md(rawFull);}
+    S.messages=S.messages||[];
+    const msgIdx=S.messages.length;
+    S.messages.push({role:"assistant",content:md(rawFull),rawText:rawFull,charId:S.charId,sessionId:S.id});
+    rebuildHist();autosave();renderSBSessions();
+    // Générer un titre unique après le 1er message user
+    if(S.turn===1&&S.title===S.char?.name||S.turn===1&&S.title===S.char?.worldId){
+      (async()=>{
+        try{
+          const titleRaw=await orCall([
+            {role:"system",content:"Tu génères un titre court et évocateur (4-7 mots max) pour une session de roleplay. Pas de guillemets, pas de ponctuation finale. Basé sur le premier échange. Réponds UNIQUEMENT avec le titre."},
+            {role:"user",content:`Personnage: ${S.char?.name}
+Premier message du joueur: ${txt}
+Première réponse: ${rawFull.slice(0,200)}`}
+          ],40);
+          const cleanTitle=titleRaw.replace(/["""'']/g,"").trim().slice(0,50);
+          if(cleanTitle&&cleanTitle.length>3){
+            S.title=cleanTitle;
+            document.getElementById("chat-name").textContent=cleanTitle;
+            autosave();renderSBSessions();
+          }
+        }catch{}
+      })();
+    }
+    // Silent correction pass
+    (async()=>{
+      try{
+        const corrected=await correct(rawFull);
+        if(corrected&&corrected!==rawFull&&corrected!=="..."){
+          const allBubbles=document.querySelectorAll(".msg.bot .bubble");
+          const lastBubble=allBubbles[allBubbles.length-1];
+          if(lastBubble)lastBubble.innerHTML=md(corrected);
+          if(S.messages[msgIdx])S.messages[msgIdx]={...S.messages[msgIdx],content:md(corrected),rawText:corrected};
+        }
+      }catch{}
+    })();
+  }catch(e){
+    removeStatus();addBot(`<em style="color:var(--red)">Erreur : ${esc(e.message)}</em>`,null);
+  }
+  setBusy(false);
+}
+async function regenerateLast(){
+  if(busy||!S||!S.messages||S.messages.length<2)return;
+  const allDom=[...document.getElementById("messages").children];
+  for(let i=allDom.length-1;i>=0;i--){if(allDom[i].classList.contains("bot")){allDom[i].remove();break;}}
+  for(let i=S.messages.length-1;i>=0;i--){if(S.messages[i].role==="assistant"){S.messages.splice(i,1);break;}}
+  let lastUserText="";
+  for(let i=S.messages.length-1;i>=0;i--){if(S.messages[i].role==="user"){lastUserText=S.messages[i].rawText||S.messages[i].content||"";S.messages.splice(i,1);break;}}
+  const allDom2=[...document.getElementById("messages").children];
+  for(let i=allDom2.length-1;i>=0;i--){if(allDom2[i].classList.contains("user")){allDom2[i].remove();break;}}
+  if(lastUserText)await sendMessage(lastUserText,null);
+}
+
+// ══ UI HELPERS ══
+function clearMsgs(){document.getElementById("messages").innerHTML="";}
+function getMsgIndex(){return document.getElementById("messages").children.length;}
+function addUser(txt,save=true,idx=null){
+  const msgIdx=idx!==null?idx:getMsgIndex();
+  const el=document.createElement("div");el.className="msg user";el.dataset.idx=msgIdx;
+  const userAv=getUserAvHTML();
+  el.innerHTML=`<div class="user-body"><div class="msg-actions"><button class="msg-act-btn" onclick="startEditMsg(this)">✎</button><button class="msg-act-btn" onclick="resendMsg(this)">↺</button></div><div class="bubble">${escMd(txt)}</div></div><div class="user-av">${userAv}</div>`;
+  document.getElementById("messages").appendChild(el);
+  if(save&&S){S.messages=S.messages||[];S.messages.push({role:"user",content:esc(txt),rawText:txt,charId:S.charId,sessionId:S.id});}
+  scrollBottom();
+}
+function addBot(html,char,save=true,idx=null){
+  const el=document.createElement("div");el.className="msg bot";
+  let av="✦";if(char?.photo)av=`<img src="${char.photo}" alt="${char.name}">`;else if(char)av=char.name.charAt(0).toUpperCase();
+  el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble">${html}</div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
+  document.getElementById("messages").appendChild(el);
+  if(save&&S){S.messages=S.messages||[];S.messages.push({role:"assistant",content:html});}
+  scrollBottom();
+}
+function startEditMsg(btn){
+  const msgEl=btn.closest(".msg.user");if(msgEl.classList.contains("editing"))return;
+  const bubble=msgEl.querySelector(".bubble");const rawTxt=bubble.textContent;
+  msgEl.classList.add("editing");
+  const box=document.createElement("textarea");box.className="edit-box";box.value=rawTxt;box.rows=2;
+  setTimeout(()=>{box.style.height="auto";box.style.height=Math.min(box.scrollHeight,160)+"px";},0);
+  box.addEventListener("input",()=>{box.style.height="auto";box.style.height=Math.min(box.scrollHeight,160)+"px";});
+  const btns=document.createElement("div");btns.className="edit-btns";
+  btns.innerHTML=`<button class="edit-confirm" onclick="confirmEdit(this)">Envoyer ↵</button><button class="edit-cancel" onclick="cancelEdit(this)">Annuler</button>`;
+  const body=msgEl.querySelector(".user-body");body.appendChild(box);body.appendChild(btns);box.focus();
+}
+function confirmEdit(btn){const msgEl=btn.closest(".msg.user");const box=msgEl.querySelector(".edit-box");const newTxt=box.value.trim();if(!newTxt){cancelEdit(btn);return;}const idx=parseInt(msgEl.dataset.idx)||0;cancelEdit(btn);sendMessage(newTxt,idx);}
+function cancelEdit(btn){const msgEl=btn.closest(".msg.user");msgEl.classList.remove("editing");const box=msgEl.querySelector(".edit-box");const btns=msgEl.querySelector(".edit-btns");if(box)box.remove();if(btns)btns.remove();}
+function resendMsg(btn){const msgEl=btn.closest(".msg.user");const rawTxt=msgEl.querySelector(".bubble").textContent;sendMessage(rawTxt,parseInt(msgEl.dataset.idx)||0);}
+function startEditBotMsg(btn){
+  const msgEl=btn.closest(".msg.bot");if(!msgEl||msgEl.classList.contains("editing"))return;
+  const bubble=msgEl.querySelector(".bubble");
+  const rawTxt=bubble.innerText||bubble.textContent;
+  msgEl.classList.add("editing");bubble.style.display="none";
+  const box=document.createElement("textarea");box.className="edit-box";box.value=rawTxt;box.rows=3;
+  box.style.cssText="width:100%;background:var(--bg2);border:1px solid var(--gold-dim);border-radius:8px;color:var(--text);font-family:'Jost',sans-serif;font-size:.81rem;padding:.46rem .7rem;outline:none;resize:none;line-height:1.6;margin-top:.3rem;";
+  setTimeout(()=>{box.style.height="auto";box.style.height=Math.min(box.scrollHeight,200)+"px";},0);
+  box.addEventListener("input",()=>{box.style.height="auto";box.style.height=Math.min(box.scrollHeight,200)+"px";});
+  const btns=document.createElement("div");btns.className="edit-btns";btns.style.marginTop=".3rem";
+  btns.innerHTML=`<button class="edit-confirm" onclick="confirmBotEdit(this)">Enregistrer ↵</button><button class="edit-cancel" onclick="cancelBotEdit(this)">Annuler</button>`;
+  const content=msgEl.querySelector(".bot-content");content.appendChild(box);content.appendChild(btns);box.focus();
+}
+function confirmBotEdit(btn){
+  const msgEl=btn.closest(".msg.bot");const box=msgEl.querySelector("textarea.edit-box");const newTxt=box.value.trim();if(!newTxt){cancelBotEdit(btn);return;}
+  cancelBotEdit(btn);
+  const bubble=msgEl.querySelector(".bubble");bubble.innerHTML=md(newTxt);bubble.style.display="";
+  if(S&&S.messages){const idx=parseInt(msgEl.dataset.idx);if(!isNaN(idx)&&S.messages[idx]){S.messages[idx].content=md(newTxt);S.messages[idx].rawText=newTxt;}else{for(let i=S.messages.length-1;i>=0;i--){if(S.messages[i].role==="assistant"){S.messages[i].content=md(newTxt);S.messages[i].rawText=newTxt;break;}}}}
+  autosave();
+}
+function cancelBotEdit(btn){const msgEl=btn.closest(".msg.bot");msgEl.classList.remove("editing");const box=msgEl.querySelector("textarea.edit-box");const btns=msgEl.querySelector(".edit-btns");const bubble=msgEl.querySelector(".bubble");if(bubble)bubble.style.display="";if(box)box.remove();if(btns)btns.remove();}
+function setStatus(txt){removeStatus();if(!txt)return;const el=document.createElement("div");el.className="status-line";el.id="st";el.textContent=txt;document.getElementById("messages").appendChild(el);scrollBottom();}
+function removeStatus(){const e=document.getElementById("st");if(e)e.remove();}
+function scrollBottom(){const m=document.getElementById("messages");m.scrollTop=m.scrollHeight;}
+function setBusy(v){busy=v;document.getElementById("send-btn").disabled=v;}
+function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");}
+function esc2(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function escMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
+function md(t){return"<p>"+t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n\n+/g,"</p><p>").replace(/\n/g,"<br>")+"</p>";}
+function partialMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
+
+// ══ EXPORT / IMPORT ══
+function _showModal(id,titleTxt,bodyHtml){
+  let m=document.getElementById(id);
+  if(m){m.style.display="flex";if(titleTxt)m.querySelector(".em-title").textContent=titleTxt;if(bodyHtml)m.querySelector(".em-body").innerHTML=bodyHtml;return m;}
+  m=document.createElement("div");m.id=id;
+  m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.1rem;";
+  m.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:1.1rem;width:100%;max-width:480px;display:flex;flex-direction:column;gap:.7rem;"><div class="em-title" style="font-family:'Cormorant Garamond',serif;color:var(--gold);font-size:1rem;">${titleTxt||""}</div><div class="em-body">${bodyHtml||""}</div></div>`;
+  document.body.appendChild(m);return m;
+}
+async function generateCharsFromLore(){
+  const world=loadWorlds().find(w=>w.id===currentWorldId);
+  if(!world){return;}
+  if(!requireKey())return;
+
+  const existingNames=loadChars().filter(c=>c.worldId===currentWorldId).map(c=>c.name.toLowerCase());
+
+  const prompt=`Tu es un assistant qui crée des fiches de personnages pour un jeu de roleplay.
+
+UNIVERS : ${world.name}
+Description : ${world.desc||""}
+Lore : ${world.lore||""}
+${world.examples?`Exemples de dialogues :
+${world.examples}`:""}
+
+MISSION : Analyse le lore et les exemples. Identifie TOUS les personnages nommés présents.
+${existingNames.length?`Personnages déjà créés (ne pas recréer) : ${existingNames.join(", ")}`:""}
+
+Pour chaque personnage identifié, génère une fiche complète.
+
+Réponds UNIQUEMENT en JSON valide, tableau d'objets, sans texte avant ou après, sans backticks :
+[
+  {
+    "name": "Nom exact du personnage",
+    "desc": "Description en 1 phrase (apparence, rôle)",
+    "backstory": "Backstory en 3-5 phrases (origines, motivations, histoire)",
+    "traits": ["trait1","trait2","trait3"],
+    "voice": "Sa façon de parler en 1 phrase"
+  }
+]
+
+Les traits DOIVENT être choisis parmi : Mysterious, Warm, Cold, Sarcastic, Playful, Serious, Protective, Dangerous, Gentle, Obsessive, Witty, Brooding, Charismatic, Shy, Ruthless, Caring, Cunning, Loyal, Volatile, Stoic`;
+
+  const statusEl=document.getElementById("wd-gen-status");
+  statusEl.style.display="block";
+
+  try{
+    const raw=await orCall([
+      {role:"system",content:"Tu génères uniquement du JSON valide, sans backticks, sans commentaire."},
+      {role:"user",content:prompt}
+    ],2000);
+
+    // Parse JSON (strip possible backticks)
+    let clean=raw.replace(/```json\n?/gi,"").replace(/```\n?/gi,"").trim();
+    // Find JSON array
+    const start=clean.indexOf("["),end=clean.lastIndexOf("]");
+    if(start>=0&&end>start)clean=clean.slice(start,end+1);
+    const chars=JSON.parse(clean);
+
+    if(!Array.isArray(chars)||!chars.length){alert("Aucun personnage détecté. Essaie d'enrichir le lore ou les exemples.");statusEl.style.display="none";return;}
+
+    const existing=loadChars();
+    let added=0;
+    chars.forEach(c=>{
+      if(!c.name)return;
+      if(existing.find(e=>e.name.toLowerCase()===c.name.toLowerCase()&&e.worldId===currentWorldId))return;
+      // Map traits to valid keys
+      const validTraits=["Mysterious","Warm","Cold","Sarcastic","Playful","Serious","Protective","Dangerous","Gentle","Obsessive","Witty","Brooding","Charismatic","Shy","Ruthless","Caring","Cunning","Loyal","Volatile","Stoic"];
+      const traits=(c.traits||[]).filter(t=>validTraits.includes(t));
+      existing.unshift({
+        id:"char_"+Date.now()+"_"+Math.random().toString(36).slice(2),
+        name:c.name,
+        desc:c.desc||"",
+        backstory:c.backstory||"",
+        traits,
+        voice:c.voice||"",
+        worldId:currentWorldId,
+        updatedAt:Date.now()
+      });
+      added++;
+    });
+    saveChars(existing);
+    statusEl.style.display="none";
+    renderWorldChars(currentWorldId);renderAll();
+    if(added>0)alert(`✦ ${added} personnage(s) généré(s) avec succès !`);
+    else alert("Tous les personnages détectés existent déjà.");
+  }catch(e){
+    statusEl.style.display="none";
+    alert("Erreur lors de la génération : "+e.message+"\n\nVérifie que ton lore et tes exemples sont bien remplis.");
+  }
+}
+
+function exportEverything(){
+  const chars=loadChars();
+  const worlds=loadWorlds();
+  const bundle={version:2,chars,worlds};
+  const json=JSON.stringify(bundle,null,2);
+  _showModal("export-modal","Export complet — personnages & univers",
+    `<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea>
+    <div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">${chars.length} personnage(s) · ${worlds.length} univers</div>
+    <div style="display:flex;gap:.5rem;margin-top:.4rem;">
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button>
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button>
+    </div>`);
+}
+function importEverything(){
+  _showModal("import-modal","Importer personnages & univers",
+    `<textarea id="import-all-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" placeholder="Colle ton JSON ici..."></textarea>
+    <div style="display:flex;gap:.5rem;margin-top:.4rem;">
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportEverything()">Importer</button>
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-modal').style.display='none'">Annuler</button>
+    </div>`);
+}
+function confirmImportEverything(){
+  const box=document.getElementById("import-all-box");if(!box)return;
+  try{
+    const data=JSON.parse(box.value.trim());
+    let chars=[],worlds=[];
+    if(data.version===2){chars=data.chars||[];worlds=data.worlds||[];}
+    else if(Array.isArray(data)){chars=data;}// ancien format
+    else if(data.name){worlds=[data];chars=data.chars||[];}// export univers seul
+    // Merge chars
+    const existingChars=loadChars();
+    let addedC=0;
+    chars.forEach(c=>{
+      if(!c?.name)return;
+      if(!existingChars.find(e=>e.id===c.id)){existingChars.unshift(c);addedC++;}
+    });
+    saveChars(existingChars);
+    // Merge worlds
+    const existingWorlds=loadWorlds();
+    let addedW=0;
+    worlds.forEach(w=>{
+      if(!w?.name)return;
+      if(!existingWorlds.find(e=>e.id===w.id)){existingWorlds.unshift(w);addedW++;}
+    });
+    saveWorlds(existingWorlds);
+    renderAll();
+    document.getElementById("import-modal").style.display="none";
+    alert(`Importé : ${addedC} personnage(s), ${addedW} univers !`);
+  }catch{alert("JSON invalide — vérifie la syntaxe.");}
+}
+
+function exportAll(){
+  const worlds=loadWorlds();
+  const chars=loadChars();
+  const bundle={worlds,chars,exportedAt:Date.now()};
+  const json=JSON.stringify(bundle,null,2);
+  _showModal("export-modal","Export complet",`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">${worlds.length} univers · ${chars.length} personnages</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button></div>`);
+}
+function importAll(){
+  _showModal("import-all-modal","Importer tout",`<textarea id="import-all-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:150px;font-family:monospace;" placeholder="Colle ton JSON ici..."></textarea><div style="font-size:.6rem;color:var(--text-dim);margin-top:.25rem;">Accepte : export complet, export univers, ou liste de personnages.</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportAll()">Importer</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-all-modal').style.display='none'">Annuler</button></div>`);
+}
+function confirmImportAll(){
+  const box=document.getElementById("import-all-box");if(!box)return;
+  try{
+    const data=JSON.parse(box.value.trim());
+    let addedW=0,addedC=0;
+    const existingWorlds=loadWorlds();
+    const existingChars=loadChars();
+    // Format export complet
+    if(data.worlds||data.chars){
+      (data.worlds||[]).forEach(w=>{
+        if(!w.id||!w.name)return;
+        if(existingWorlds.find(x=>x.id===w.id))return;
+        existingWorlds.unshift(w);addedW++;
+      });
+      (data.chars||[]).forEach(c=>{
+        if(!c.id||!c.name)return;
+        if(existingChars.find(x=>x.id===c.id))return;
+        existingChars.unshift(c);addedC++;
+      });
+    }
+    // Format export univers seul {world,chars}
+    else if(data.world){
+      if(!existingWorlds.find(x=>x.id===data.world.id)){existingWorlds.unshift(data.world);addedW++;}
+      (data.chars||[]).forEach(c=>{if(!existingChars.find(x=>x.id===c.id)){existingChars.unshift(c);addedC++;}});
+    }
+    // Format liste de personnages
+    else if(Array.isArray(data)){
+      data.forEach(c=>{if(c.name&&!existingChars.find(x=>x.id===c.id)){existingChars.unshift(c);addedC++;}});
+    }
+    saveWorlds(existingWorlds);saveChars(existingChars);renderAll();
+    document.getElementById("import-all-modal").style.display="none";
+    alert(`Importé : ${addedW} univers, ${addedC} personnages.`);
+  }catch{alert("JSON invalide.");}
+}
+
+function exportWorld(id){
+  const world=loadWorlds().find(w=>w.id===id);if(!world)return;
+  const chars=loadChars().filter(c=>c.worldId===id);
+  const bundle={world,chars};
+  const json=JSON.stringify(bundle,null,2);
+  _showModal("export-modal","Export univers — "+world.name,`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Contient l'univers + ses personnages</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button></div>`);
+}
+
+function exportChar(id){
+  const char=loadChars().find(c=>c.id===id);if(!char)return;
+  const json=JSON.stringify(char,null,2);
+  _showModal("export-modal","Export — "+char.name,`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Sélectionne tout → Copie → Colle dans un fichier .json</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button></div>`);
+}
+function exportAllChars(){
+  const chars=loadChars();if(!chars.length){alert("Aucun personnage à exporter.");return;}
+  const json=JSON.stringify(chars,null,2);
+  _showModal("export-modal","Export — tous les personnages",`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Sélectionne tout → Copie → Colle dans un fichier .json</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button></div>`);
+}
+function importCharsClick(){
+  _showModal("import-modal","Importer des personnages",`<textarea id="import-json-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" placeholder="Colle ton JSON ici..."></textarea><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImport()">Importer</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-modal').style.display='none'">Annuler</button></div>`);
+}
+function linkExistingChar(){
+  // Show all chars not already in this world
+  const all=loadChars().filter(c=>c.worldId!==currentWorldId);
+  if(!all.length){alert("Tous tes personnages sont déjà dans cet univers, ou tu n'en as pas encore.");return;}
+  _showModal("link-char-modal","Lier un personnage existant",
+    `<div style="display:flex;flex-direction:column;gap:.3rem;max-height:260px;overflow-y:auto;">
+    ${all.map(c=>{
+      const av=c.photo?`<img src="${c.photo}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:(c.name.charAt(0));
+      return`<div onclick="doLinkChar('${c.id}')" style="display:flex;align-items:center;gap:.55rem;padding:.45rem .55rem;border-radius:6px;cursor:pointer;border:1px solid var(--border2);transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:.8rem;color:var(--gold-dim);flex-shrink:0;">${av}</div>
+        <div><div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:var(--gold);">${c.name}</div><div style="font-size:.6rem;color:var(--text-dim);">${c.desc||""}</div></div>
+      </div>`;
+    }).join("")}
+    </div>
+    <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;margin-top:.4rem;" onclick="document.getElementById('link-char-modal').style.display='none'">Annuler</button>`
+  );
+}
+function doLinkChar(charId){
+  const chars=loadChars();const idx=chars.findIndex(c=>c.id===charId);
+  if(idx>=0){chars[idx].worldId=currentWorldId;saveChars(chars);}
+  document.getElementById("link-char-modal").style.display="none";
+  renderWorldChars(currentWorldId);renderAll();
+}
+function importCharToWorld(){
+  _showModal("import-world-char-modal","Importer un personnage dans l'univers",
+    `<textarea id="import-wchar-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:150px;font-family:monospace;" placeholder="Colle le JSON du personnage ici..."></textarea>
+    <div style="display:flex;gap:.5rem;margin-top:.4rem;">
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportToWorld()">Importer</button>
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-world-char-modal').style.display='none'">Annuler</button>
+    </div>`
+  );
+}
+function confirmImportToWorld(){
+  const box=document.getElementById("import-wchar-box");if(!box)return;
+  try{
+    let data=JSON.parse(box.value.trim());if(!Array.isArray(data))data=[data];
+    const valid=data.filter(c=>c&&c.name);if(!valid.length){alert("Aucun personnage valide.");return;}
+    const existing=loadChars();
+    valid.forEach(c=>{
+      if(existing.find(e=>e.id===c.id))c.id="char_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+      else c.id=c.id||"char_"+Date.now();
+      c.worldId=currentWorldId;
+      existing.unshift(c);
+    });
+    saveChars(existing);renderWorldChars(currentWorldId);renderAll();
+    document.getElementById("import-world-char-modal").style.display="none";
+    alert(valid.length+" personnage(s) importé(s) dans l'univers !");
+  }catch{alert("JSON invalide.");}
+}
+
+function confirmImport(){
+  const box=document.getElementById("import-json-box");if(!box)return;
+  try{
+    let data=JSON.parse(box.value.trim());if(!Array.isArray(data))data=[data];
+    const valid=data.filter(c=>c&&c.name);if(!valid.length){alert("Aucun personnage valide trouvé.");return;}
+    const existing=loadChars();
+    valid.forEach(c=>{if(existing.find(e=>e.id===c.id))c.id="char_"+Date.now()+"_"+Math.random().toString(36).slice(2);else c.id=c.id||"char_"+Date.now();existing.unshift(c);});
+    saveChars(existing);renderAll();document.getElementById("import-modal").style.display="none";
+    alert(valid.length+" personnage(s) importé(s) !");
+  }catch{alert("JSON invalide — vérifie la syntaxe.");}
+}
+
+// ══ NAV ══
+function showScreen(id){document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
+function goHome(){showScreen("home");renderAll();S=null;}
+function fileToDataURL(file){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});}
+async function onCharPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);document.getElementById("char-photo-url").value=url;onCharPhoto(url);}
+async function onWorldPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);document.getElementById("world-photo-url").value=url;onWorldPhoto(url);}
+async function onProfilePhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);document.getElementById("profile-photo-url").value=url;onProfilePhoto(url);}
+
+function openSB(){renderSBSessions();updateSBProfile();document.getElementById("sidebar").classList.add("open");}
+function closeSB(){document.getElementById("sidebar").classList.remove("open");}
+function newWorldChat(worldId){
+  // Ouvrir la page monde puis démarrer un chat libre
+  currentWorldId=worldId;
+  startWorldChat("free");
+}
+function newCurrentChat(){
+  if(!S?.char)return;
+  if(S.char.id.startsWith("world_")){
+    // Chat libre d'univers → nouveau chat libre
+    startWorldChat("free");
+  } else {
+    newChatWithChar(S.char.id);
+  }
+}
+function editCurrentChar(){
+  if(!S?.char)return;
+  // Si c'est un chat libre d'univers → ouvrir le créateur d'univers
+  if(S.char.worldId&&S.char.id.startsWith("world_")){openWorldCreator(S.char.worldId);return;}
+  openCharCreator(S.char.id);
+}
+
+// ══ KEYBOARD ══
+const ta=document.getElementById("msg-input");
+if(window.visualViewport){window.visualViewport.addEventListener("resize",()=>{const inputArea=document.querySelector(".input-area");if(inputArea){const offset=window.innerHeight-window.visualViewport.height;inputArea.style.transform=offset>50?`translateY(-${offset}px)`:"";};});}
+ta.addEventListener("focus",()=>{setTimeout(()=>{ta.scrollIntoView({behavior:"smooth",block:"nearest"});},350);});
+ta.addEventListener("input",()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,122)+"px";});
+ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
+document.querySelectorAll(".modal-overlay").forEach(m=>m.addEventListener("click",e=>{if(e.target===e.currentTarget)m.classList.remove("open");}));
+
+// ══ INIT ══
+buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBtn();updateLangBtns();
+</script>
+</body>
+</html>
 .page-body{padding:.9rem 1rem 2rem;display:flex;flex-direction:column;gap:.85rem;max-width:500px;width:100%;margin:0 auto;}
 
 .world-banner{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:.9rem 1rem;display:flex;gap:.85rem;align-items:flex-start;}
