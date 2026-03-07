@@ -693,6 +693,24 @@ let renameTargetId=null;
 
 try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}
 
+// ══ PASTE FIX — sauts de ligne Android WebView ══
+document.addEventListener("paste", function(e){
+  const target = e.target;
+  if(!target || (target.tagName !== "TEXTAREA" && target.tagName !== "INPUT")) return;
+  if(target.tagName === "INPUT") return; // inputs simples ok
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData("text");
+  if(!text) return;
+  // Insérer le texte à la position du curseur
+  const start = target.selectionStart;
+  const end = target.selectionEnd;
+  const before = target.value.substring(0, start);
+  const after = target.value.substring(end);
+  target.value = before + text + after;
+  target.selectionStart = target.selectionEnd = start + text.length;
+  target.dispatchEvent(new Event("input", {bubbles:true}));
+}, true);
+
 // ══ BACK BUTTON HANDLER (Capacitor/Android) ══
 document.addEventListener("backbutton", function(e){
   e.preventDefault();
