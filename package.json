@@ -1,16 +1,12 @@
 {
-  "appId": "com.inkmind.app",
-  "appName": "InkMind",
-  "webDir": "www",
-  "android": {
-    "backgroundColor": "#0a0908"
+  "name": "inkmind",
+  "version": "1.0.0",
+  "description": "InkMind - Roleplay App",
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
   },
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 2000,
-      "backgroundColor": "#0a0908",
-      "androidSplashResourceName": "splash",
-      "showSpinner": false
-    }
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
   }
 }
