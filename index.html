@@ -33,7 +33,7 @@
   --user-bubble:#e8e4db;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;overflow:hidden;overscroll-behavior:none;touch-action:pan-y;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;overflow:hidden;overscroll-behavior:none;}
 #app{display:flex;height:100vh;height:100dvh;position:relative;overflow:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);box-sizing:border-box;}
 
 /* ══ SPLASH ══ */
@@ -175,7 +175,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 .field{display:flex;flex-direction:column;gap:.25rem;}
 .field label,.field-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);}
 .fhint{font-size:.57rem;color:var(--text-dim);}
-input.fi,textarea.fi{background:var(--bg2);border:1px solid var(--border3);border-radius:6px;color:var(--text);font-family:'Jost',sans-serif;font-weight:300;font-size:.83rem;padding:.55rem .78rem;outline:none;transition:border-color .2s;width:100%;}
+input.fi,textarea.fi{background:var(--bg2);border:1px solid var(--border3);border-radius:6px;color:var(--text);font-family:'Jost',sans-serif;font-weight:300;font-size:.83rem;padding:.55rem .78rem;outline:none;transition:border-color .2s;width:100%;touch-action:auto;-webkit-user-select:text;user-select:text;}
 input.fi:focus,textarea.fi:focus{border-color:var(--gold-dim);}
 textarea.fi{resize:none;line-height:1.6;}
 input::placeholder,textarea::placeholder{color:var(--text-dim);}
@@ -692,24 +692,6 @@ let selectedGender=null,currentWorldId=null;
 let renameTargetId=null;
 
 try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}
-
-// ══ DEBUG PANEL ══
-(function(){
-  const div=document.createElement("div");
-  div.id="debug-panel";
-  div.style.cssText="display:none;position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow-y:auto;background:rgba(0,0,0,.92);color:#ff6b6b;font-size:.65rem;font-family:monospace;padding:.5rem;z-index:99999;border-top:1px solid #ff6b6b;";
-  document.body.appendChild(div);
-  window.addEventListener("error",e=>{
-    div.style.display="block";
-    div.innerHTML+=`<div>❌ ${e.message} <span style="color:#888">${e.filename?.split('/').pop()}:${e.lineno}</span></div>`;
-  });
-  window.addEventListener("unhandledrejection",e=>{
-    div.style.display="block";
-    div.innerHTML+=`<div>⚠️ ${e.reason}</div>`;
-  });
-  // Bouton fermer
-  div.addEventListener("click",()=>div.style.display="none");
-})();
 
 // ══ BACK BUTTON HANDLER (Capacitor/Android) ══
 document.addEventListener("backbutton", function(e){
