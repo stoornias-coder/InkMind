@@ -43,11 +43,6 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Install splash screen plugin
-        run: |
-          npm install @capacitor/splash-screen
-          npx cap sync android
-
       - name: Copy splash screens
         run: |
           for density in ldpi mdpi hdpi xhdpi xxhdpi xxxhdpi; do
