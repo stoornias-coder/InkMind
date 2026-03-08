@@ -1272,7 +1272,11 @@ CRITICAL POV RULE:
 - A character speaks TO SOMEONE ELSE *about* the player → ALWAYS "il/elle/lui/son/sa/ses", NEVER "tu/toi".
 Example ERROR: Arnav says to his driver "Je veux savoir qui tu es" — WRONG.
 Correct: "Je veux savoir qui elle est et ce qu'elle fait ici." ✅
-${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
+${playerCharName?`🚫 ABSOLUTE RULE — PLAYER CHARACTER: The player IS "${playerCharName}". You NEVER write for "${playerCharName}" under ANY circumstance.
+This means: ZERO dialogue lines for "${playerCharName}". ZERO actions for "${playerCharName}". ZERO thoughts, feelings or reactions attributed to "${playerCharName}".
+"${playerCharName}" only exists in the scene through what the PLAYER writes. Your job: write ONLY the reactions of OTHER characters and the world.
+If the player sends a message, treat it as "${playerCharName}" speaking/acting — then write what OTHERS do in response. STOP. Do not continue as "${playerCharName}".
+Violation example (FORBIDDEN): writing « ${playerCharName} s'arrête net » or « ${playerCharName} : "..." » — these are CRITICAL ERRORS.`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
 ${isRpg?`NEVER use the universe name "${char.name}" as a speaker. Always use the actual character's real name.`:`NEVER write in first person as ${char.name}. Always: "${char.name} dit :", "${char.name} sourit".`}
 NEVER repeat the same sentence or action from the previous response.
 NEVER write {{user}}, {{char}}, or any {{placeholder}}.
@@ -1519,7 +1523,6 @@ async function sendMessage(overrideText=null,fromIndex=null){
   try{
     S.turn++;
     if(S.hist.length>14){
-      setStatus("mémorisation...");
       const toCompress=S.hist.slice(0,-6);
       // Un seul appel : résumé + fusion en une seule instruction
       const prevSummary=S.summary?`\nRésumé précédent à intégrer : ${S.summary}`:"";
@@ -1537,33 +1540,47 @@ async function sendMessage(overrideText=null,fromIndex=null){
     S.hist.slice(-10).forEach(([r,c])=>msgs.push({role:r==="user"?"user":"assistant",content:c}));
     msgs.push({role:"user",content:txt});
     removeStatus();
-    const el=document.createElement("div");el.className="msg bot";
     const char=S.char;let av="✦";
     if(char?.photo)av=`<img src="${char.photo}" alt="${char.name}">`;else if(char)av=char.name.charAt(0).toUpperCase();
-    el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
-    document.getElementById("messages").appendChild(el);scrollBottom();
+    // Phase 1 : dots pendant que l'IA "réfléchit" (attend le 1er token)
+    const waitEl=document.createElement("div");waitEl.className="msg bot";
+    waitEl.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div></div>`;
+    document.getElementById("messages").appendChild(waitEl);scrollBottom();
     let rawFull="";
-    let _streamThrottle=null;
-    let _lastPartial="";
+    let firstChunk=true;
+    let _raf=null;
+    let _pendingText="";
     rawFull=await orStream(msgs,(partial)=>{
-      _lastPartial=partial;
-      if(!_streamThrottle){
-        _streamThrottle=setTimeout(()=>{
-          _streamThrottle=null;
+      // Phase 2 : dès le 1er token, on remplace les dots et on stream proprement
+      if(firstChunk){
+        firstChunk=false;
+        const bubble=document.getElementById("stream-bubble");
+        if(bubble){bubble.innerHTML="";}
+      }
+      _pendingText=partial;
+      if(!_raf){
+        _raf=requestAnimationFrame(()=>{
+          _raf=null;
           const bubble=document.getElementById("stream-bubble");
           if(bubble){
-            bubble.innerHTML=partialMd(_lastPartial);
-            // Scroll uniquement si déjà en bas (ne pas forcer si l'user scroll)
+            bubble.innerHTML=partialMd(_pendingText)+"<span class='stream-cursor'></span>";
             const m=document.getElementById("messages");
-            if(m&&(m.scrollHeight-m.scrollTop-m.clientHeight)<80){
-              m.scrollTop=m.scrollHeight;
-            }
+            if(m&&(m.scrollHeight-m.scrollTop-m.clientHeight)<120)m.scrollTop=m.scrollHeight;
           }
-        },80);
+        });
       }
     });
+    // Phase 3 : réponse complète — retirer le curseur, render final propre
     const bubble=document.getElementById("stream-bubble");
     if(bubble){bubble.removeAttribute("id");bubble.innerHTML=md(rawFull);}
+    // Ajouter les boutons d'action
+    const botContent=waitEl.querySelector(".bot-content");
+    if(botContent){
+      const acts=document.createElement("div");acts.className="bot-msg-actions";
+      acts.innerHTML=`<button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button>`;
+      botContent.appendChild(acts);
+    }
+    scrollBottom();
     S.messages=S.messages||[];
     const msgIdx=S.messages.length;
     S.messages.push({role:"assistant",content:md(rawFull),rawText:rawFull,charId:S.charId,sessionId:S.id});
@@ -1577,6 +1594,7 @@ async function sendMessage(overrideText=null,fromIndex=null){
           const lastBubble=allBubbles[allBubbles.length-1];
           if(lastBubble)lastBubble.innerHTML=md(corrected);
           if(S.messages[msgIdx])S.messages[msgIdx]={...S.messages[msgIdx],content:md(corrected),rawText:corrected};
+          rebuildHist();autosave();
         }
       }catch{}
     })();
