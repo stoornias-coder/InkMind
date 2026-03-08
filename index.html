@@ -608,7 +608,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       </div>
     </div>
     <div class="messages" id="messages"></div>
-    <button id="scroll-down" onclick="scrollBottom()" title="Bas">▼</button>
+    <button id="scroll-down" onmousedown="event.preventDefault()" onclick="scrollBottom()" title="Bas">▼</button>
     <div class="input-area">
       <textarea id="msg-input" placeholder="Écris ici..." rows="1"></textarea>
       <button id="send-btn" onclick="sendMessage()">➤</button>
@@ -727,12 +727,24 @@ document.addEventListener("paste",function(e){
 },true);
 
 // ══ BACK BUTTON HANDLER (Capacitor/Android — bouton ET gestes) ══
+let prevScreenId=null; // mémorise l'écran avant settings/profile
+function showScreen(id){
+  const prev=document.querySelector(".screen.active");
+  if(prev&&prev.id!==id) prevScreenId=prev.id;
+  document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
 function handleBack(){
   if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
-  const modals=document.querySelectorAll(".modal-overlay");
-  for(const m of modals){if(m.style.display!=="none"){m.style.display="none";return;}}
+  const modals=document.querySelectorAll(".modal-overlay.open");
+  if(modals.length){modals.forEach(m=>m.classList.remove("open"));return;}
   const active=document.querySelector(".screen.active");
-  if(active&&active.id!=="home"){showScreen("home");renderAll();return;}
+  if(!active||active.id==="home")return;
+  // Si on vient du chat (settings ou profile ouverts depuis sidebar), revenir au chat
+  if((active.id==="settings-page"||active.id==="profile-page")&&prevScreenId&&prevScreenId!=="home"){
+    showScreen(prevScreenId);return;
+  }
+  showScreen("home");renderAll();
 }
 document.addEventListener("backbutton",function(e){e.preventDefault();handleBack();},false);
 (function(){
@@ -813,6 +825,13 @@ function saveApiKeys(){
   orKey=document.getElementById("settings-or-key").value.trim();
   if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
   if(orKey)localStorage.setItem(OR_KEY_STORE,orKey);else localStorage.removeItem(OR_KEY_STORE);
+  // Auto-sélectionner le premier modèle dont la clé est disponible
+  const currentModel=MODELS[activeModelIdx];
+  const currentKeyOk=currentModel&&(currentModel.provider==="groq"?groqKey.length>8:orKey.length>8);
+  if(!currentKeyOk){
+    const firstValid=MODELS.findIndex(m=>m.provider==="groq"?groqKey.length>8:orKey.length>8);
+    if(firstValid>=0){activeModelIdx=firstValid;localStorage.setItem(MODEL_KEY,firstValid);}
+  }
   updateApiStatus();
   renderModelList();
   const btn=document.querySelector("[onclick='saveApiKeys()']");
@@ -1186,6 +1205,7 @@ Player gender: ${genderNote}
 
 ━━━ CRITICAL RULES ━━━
 ALWAYS address the player as "tu" (second person) in narration — NEVER "vous", NEVER their name in narration. Writing "vous" for the player is a critical error.
+CRITICAL: After prepositions (entre, avec, pour, sans, chez, sur, etc.) ALWAYS use "toi", NEVER "tu". Example: "entre toi et moi" ✅ — "entre tu et moi" ❌. "avec toi" ✅ — "avec tu" ❌.
 CRITICAL POV RULE:
 - Narrator speaks TO the player → "tu/toi/ton/ta/tes" ALWAYS.
 - A character speaks DIRECTLY TO the player (face to face) → "tu/toi" OK.
@@ -1237,6 +1257,7 @@ RÈGLES :
 5. "vous" pour le joueur → remplace par "tu".
 6. "comme si"/"comme pour" → reformule directement.
 7. Action inventée pour le joueur → supprime la phrase.
+8. "entre tu " ou "entre tu," ou "entre tu." → remplace TOUJOURS par "entre toi". "tu" ne s'utilise jamais après une préposition.
 Ne change pas le sens ni la structure. Retourne le texte corrigé uniquement.`;
 
 // ══ API ══
@@ -1855,7 +1876,6 @@ function confirmImport(){
 }
 
 // ══ NAV ══
-function showScreen(id){document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
 function goHome(){showScreen("home");renderAll();S=null;}
 function fileToDataURL(file){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});}
 async function onCharPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);input.value="";onCharPhoto(url);}
@@ -1972,4 +1992,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
