@@ -1250,6 +1250,7 @@ ${isRpg?`STRICT RULE: Only use characters whose names appear explicitly in the b
 
 ━━━ ANTI-LOOP RULE ━━━
 Before writing, check: did I write this same sentence in my last response? If yes → skip it, write what happens NEXT.
+STRICT NAME RULE: Never use a character's name more than ONCE per paragraph. After the first mention, use "il", "elle", or a gesture/action without naming. Example wrong: "Test sourit. Test dit. Test penche la tête." → Correct: "Test sourit. « Bonjour. » Il penche la tête."
 
 ━━━ DIALOGUE FORMAT ━━━
 TOUTE réplique DOIT être entre guillemets. Utilise « » en français, " " en anglais.
@@ -1278,6 +1279,7 @@ RÈGLES :
 6. "comme si"/"comme pour" → reformule directement.
 7. Action inventée pour le joueur → supprime la phrase.
 8. "entre tu " ou "entre tu," ou "entre tu." → remplace TOUJOURS par "entre toi". "tu" ne s'utilise jamais après une préposition.
+9. Nom propre répété 2+ fois dans le même paragraphe → remplace les occurrences suivantes par "il", "elle", ou supprime si le sujet est clair.
 Ne change pas le sens ni la structure. Retourne le texte corrigé uniquement.`;
 
 // ══ API ══
@@ -1512,25 +1514,6 @@ async function sendMessage(overrideText=null,fromIndex=null){
     const msgIdx=S.messages.length;
     S.messages.push({role:"assistant",content:md(rawFull),rawText:rawFull,charId:S.charId,sessionId:S.id});
     rebuildHist();autosave();renderSBSessions();
-    // Générer un titre unique après le 1er message user
-    if(S.turn===1&&S.title===S.char?.name||S.turn===1&&S.title===S.char?.worldId){
-      (async()=>{
-        try{
-          const titleRaw=await orCall([
-            {role:"system",content:"Tu génères un titre court et évocateur (4-7 mots max) pour une session de roleplay. Pas de guillemets, pas de ponctuation finale. Basé sur le premier échange. Réponds UNIQUEMENT avec le titre."},
-            {role:"user",content:`Personnage: ${S.char?.name}
-Premier message du joueur: ${txt}
-Première réponse: ${rawFull.slice(0,200)}`}
-          ],40);
-          const cleanTitle=titleRaw.replace(/["""'']/g,"").trim().slice(0,50);
-          if(cleanTitle&&cleanTitle.length>3){
-            S.title=cleanTitle;
-            document.getElementById("chat-name").textContent=cleanTitle;
-            autosave();renderSBSessions();
-          }
-        }catch{}
-      })();
-    }
     // Silent correction pass
     (async()=>{
       try{
