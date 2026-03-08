@@ -262,6 +262,13 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 .bot-act-btn{background:none;border:none;color:var(--text-dim);font-size:.64rem;cursor:pointer;padding:.08rem .18rem;border-radius:3px;}
 .bot-act-btn:active{color:var(--gold);}
 
+/* Typing dots */
+.typing-dots{display:inline-flex;gap:4px;align-items:center;padding:.1rem 0;}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--gold-dim);animation:tdot 1.2s infinite ease-in-out;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
 /* Stream cursor */
 .stream-cursor{display:inline-block;width:2px;height:.85em;background:var(--gold-dim);margin-left:1px;vertical-align:middle;animation:blink .9s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
@@ -764,6 +771,19 @@ function handleBack(){
     if(target==="home")renderAll();
     return;
   }
+  if(active.id==="char-creator"||active.id==="world-creator"){
+    creatorBack();
+    return;
+  }
+  if(active.id==="world-detail"){
+    showScreen("home");renderAll();
+    return;
+  }
+  if(active.id==="chat"){
+    // Depuis le chat, retour = accueil
+    showScreen("home");renderAll();
+    return;
+  }
   showScreen("home");renderAll();
 }
 document.addEventListener("backbutton",function(e){e.preventDefault();handleBack();},false);
@@ -1096,7 +1116,13 @@ function saveCharacter(){
   if(editingCharId){const idx=chars.findIndex(c=>c.id===editingCharId);if(idx>=0)chars[idx]={...chars[idx],...char};else chars.unshift(char);}else chars.unshift(char);
   saveChars(chars);
   if(S?.char?.id===editingCharId){S.char={...S.char,...char};setupChatUI();autosave();}
+  const isNew=!editingCharId;
+  const isWorld=!!worldId;
   creatorBack();
+  // Si nouveau personnage solo → démarrer le chat directement
+  if(isNew&&!isWorld&&requireKey()){
+    startChatWithChar(char.id);
+  }
 }
 async function deleteChar(id){
   const c=loadChars().find(x=>x.id===id);
@@ -1465,13 +1491,8 @@ async function sendMessage(overrideText=null,fromIndex=null){
   const input=document.getElementById("msg-input");
   const txt=overrideText!==null?overrideText:input.value.trim();
   if(!txt)return;
-  // Vider l'input SANS perdre le focus — requestAnimationFrame évite le blur Android
-  if(overrideText===null){
-    input.value="";
-    input.style.height="auto";
-    // Refocus immédiat pour que le clavier reste ouvert
-    requestAnimationFrame(()=>input.focus({preventScroll:true}));
-  }
+  // Vider l'input sans toucher au focus
+  if(overrideText===null){input.value="";input.style.height="auto";}
   if(fromIndex!==null){
     const msgsDom=document.getElementById("messages"),all=[...msgsDom.children];
     for(let i=fromIndex;i<all.length;i++)all[i].remove();
@@ -1502,12 +1523,10 @@ async function sendMessage(overrideText=null,fromIndex=null){
     const el=document.createElement("div");el.className="msg bot";
     const char=S.char;let av="✦";
     if(char?.photo)av=`<img src="${char.photo}" alt="${char.name}">`;else if(char)av=char.name.charAt(0).toUpperCase();
-    el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><p><span id="stream-text"></span><span class="stream-cursor"></span></p></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
+    el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
     document.getElementById("messages").appendChild(el);scrollBottom();
-    const streamTxt=document.getElementById("stream-text");
     let rawFull="";
-    rawFull=await orStream(msgs,(full)=>{streamTxt.innerHTML=partialMd(full);scrollBottom();});
-    const cursor=el.querySelector(".stream-cursor");if(cursor)cursor.remove();
+    rawFull=await orStream(msgs,()=>{});
     const bubble=document.getElementById("stream-bubble");
     if(bubble){bubble.removeAttribute("id");bubble.innerHTML=md(rawFull);}
     S.messages=S.messages||[];
@@ -1620,10 +1639,6 @@ document.getElementById("messages").addEventListener("scroll",updateScrollBtn,{p
 function setBusy(v){
   busy=v;
   document.getElementById("send-btn").disabled=v;
-  if(!v){
-    const inp=document.getElementById("msg-input");
-    if(inp) setTimeout(()=>inp.focus({preventScroll:true}),50);
-  }
 }
 let _inputWasFocused=false;
 document.getElementById("msg-input").addEventListener("focus",()=>{_inputWasFocused=true;});
