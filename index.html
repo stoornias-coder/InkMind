@@ -1876,12 +1876,24 @@ ta.addEventListener("focus",()=>{
 ta.addEventListener("input",()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,122)+"px";});
 ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
 
-// ══ GESTE RETOUR ANDROID ══
+// ══ GESTE RETOUR ANDROID (Capacitor) ══
+document.addEventListener("deviceready",()=>{
+  if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){
+    window.Capacitor.Plugins.App.addListener("backButton",()=>{
+      if(document.activeElement&&document.activeElement!==document.body){
+        document.activeElement.blur();return;
+      }
+      if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
+      const home=document.getElementById("home");
+      if(!home.classList.contains("active")){goHome();return;}
+      window.Capacitor.Plugins.App.exitApp();
+    });
+  }
+});
+// Fallback Escape pour navigateur desktop
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"||e.key==="GoBack"){
-    if(document.activeElement&&document.activeElement!==document.body){
-      document.activeElement.blur();return;
-    }
+  if(e.key==="Escape"){
+    if(document.activeElement&&document.activeElement!==document.body){document.activeElement.blur();return;}
     if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
     const home=document.getElementById("home");
     if(!home.classList.contains("active")){goHome();return;}
