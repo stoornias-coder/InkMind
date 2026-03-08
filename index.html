@@ -1527,23 +1527,26 @@ async function sendMessage(overrideText=null,fromIndex=null){
   rebuildHist();addUser(txt,true);setBusy(true);
   try{
     S.turn++;
-    if(S.hist.length>14){
+    if(S.hist.length>20){
       setStatus("mémorisation...");
       const toCompress=S.hist.slice(0,-6);
       // Un seul appel : résumé + fusion en une seule instruction
       const prevSummary=S.summary?`\nRésumé précédent à intégrer : ${S.summary}`:"";
       try{
         S.summary=await orCall([
-          {role:"system",content:`Résume cette session de roleplay en 4-5 phrases max.${prevSummary?"\nFusionne avec le résumé précédent sans répétition.":""} Garde : faits, révélations, tensions, relations. Sois factuel et concis.`},
-          {role:"user",content:(prevSummary||"")+"\n\nNouveau contenu :\n"+toCompress.map(([r,m])=>`${r}: ${m}`).join("\n")}
-        ],250);
+          {role:"system",content:`Tu résumes une session de roleplay interactif. Retourne UNIQUEMENT un résumé factuel structuré en 2 parties :
+IDENTITÉ : qui joue le joueur (son rôle, son nom si établi, sa relation avec les personnages).
+ÉVÉNEMENTS : ce qui s'est passé (rencontres, lieux, révélations, tensions, décisions importantes).
+${prevSummary?"Fusionne avec le résumé précédent sans répétition. ":""}Maximum 6 phrases. Sois précis et factuel — pas de suppositions.`},
+          {role:"user",content:(prevSummary||"")+"\n\nContenu à résumer :\n"+toCompress.map(([r,m])=>`${r}: ${m}`).join("\n")}
+        ],350);
       }catch{}
-      S.hist=S.hist.slice(-6);
+      S.hist=S.hist.slice(-10);
     }
     const sys=buildSystemPrompt(S.char);
     const msgs=[{role:"system",content:sys}];
-    if(S.summary)msgs.push({role:"system",content:`Contexte (résumé) : ${S.summary}`});
-    S.hist.slice(-10).forEach(([r,c])=>msgs.push({role:r==="user"?"user":"assistant",content:c}));
+    if(S.summary)msgs.push({role:"system",content:`MÉMOIRE DE LA SESSION (rappel crucial — ne jamais oublier ces faits) :\n${S.summary}\nCes informations sont établies et ne peuvent pas être contredites.`});
+    S.hist.slice(-14).forEach(([r,c])=>msgs.push({role:r==="user"?"user":"assistant",content:c}));
     msgs.push({role:"user",content:txt});
     removeStatus();
     const el=document.createElement("div");el.className="msg bot";
