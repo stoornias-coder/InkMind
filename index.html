@@ -475,14 +475,6 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         </div>
         <div class="api-status" id="groq-status-line">Aucune clé</div>
       </div>
-      <div class="api-field" style="margin-top:.6rem;">
-        <label class="field-label">Clé OpenRouter <span class="fhint">(openrouter.ai)</span></label>
-        <div class="api-row">
-          <input class="api-input" type="password" id="settings-or-key" placeholder="sk-or-..." autocomplete="off" spellcheck="false">
-          <button class="api-reveal" onclick="toggleReveal('settings-or-key',this)">Afficher</button>
-        </div>
-        <div class="api-status" id="or-status-line">Aucune clé</div>
-      </div>
       <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Enregistrer les clés →</button>
       <hr class="settings-divider">
       <div class="field">
@@ -660,17 +652,15 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 
 <script>
 // ══ CONSTANTS ══
-const MAX_TOKENS = 900;
 const MODELS = [
-  {id:"groq-llama4",   label:"Llama 4 Maverick",      model:"meta-llama/llama-4-maverick-17b-128e-instruct",  url:"https://api.groq.com/openai/v1/chat/completions",   provider:"groq"},
-  {id:"groq-llama3",   label:"Llama 3.3 70B",          model:"llama-3.3-70b-versatile",                        url:"https://api.groq.com/openai/v1/chat/completions",   provider:"groq"},
-  {id:"or-trinity",    label:"Trinity Large (OR)",     model:"arcee-ai/trinity-large-preview:free",            url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
-  {id:"or-mistral",    label:"Mistral Small (OR)",     model:"mistralai/mistral-small-3.1-24b-instruct:free",  url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
-  {id:"or-step",       label:"Step 3.5 Flash (OR)",    model:"stepfun/step-3.5-flash:free",                    url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
-  {id:"or-free",       label:"Auto Free (OR)",         model:"openrouter/free",                                url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"groq-llama4",   label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
+  {id:"groq-llama3",   label:"Llama 3.3 70B",           model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
+  {id:"groq-llama3-8", label:"Llama 3.1 8B (Rapide)",  model:"llama-3.1-8b-instant",                          url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:900},
+  {id:"groq-gemma2",   label:"Gemma 2 9B",              model:"gemma2-9b-it",                                  url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:900},
+  {id:"groq-mistral",  label:"Mistral Saba 24B",        model:"mistral-saba-24b",                              url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
+  {id:"groq-qwen",     label:"Qwen QwQ 32B",            model:"qwen-qwq-32b",                                  url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
 ];
 const GROQ_KEY_STORE = "inkmind_groq_key";
-const OR_KEY_STORE   = "inkmind_or_key";
 const MODEL_KEY      = "inkmind_model";
 const SESS_KEY   = "inkmind_sess_v7";
 const CHARS_KEY  = "inkmind_chars_v7";
@@ -690,10 +680,9 @@ function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const id
 
 // ══ STATE ══
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
-let orKey=localStorage.getItem(OR_KEY_STORE)||"";
 let activeModelIdx=parseInt(localStorage.getItem(MODEL_KEY)||"0");
 // Compatibilité ancienne clé unique
-if(!groqKey&&!orKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;else if(old.startsWith("sk-or"))orKey=old;}
+if(!groqKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;}
 let isDark=(localStorage.getItem("inkmind_theme")||"dark")==="dark";
 let currentLang=localStorage.getItem(LANG_KEY)||"fr";
 let busy=false,S=null;
@@ -866,7 +855,6 @@ function selectGender(g){
 // ══ SETTINGS ══
 function loadSettingsPage(){
   document.getElementById("settings-groq-key").value=groqKey;
-  document.getElementById("settings-or-key").value=orKey;
   updateApiStatus();updateThemeBtn();updateLangBtns();renderModelList();
 }
 function toggleReveal(inputId,btn){
@@ -877,14 +865,12 @@ function toggleReveal(inputId,btn){
 }
 function saveApiKeys(){
   groqKey=document.getElementById("settings-groq-key").value.trim();
-  orKey=document.getElementById("settings-or-key").value.trim();
   if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
-  if(orKey)localStorage.setItem(OR_KEY_STORE,orKey);else localStorage.removeItem(OR_KEY_STORE);
   // Auto-sélectionner le premier modèle dont la clé est disponible
   const currentModel=MODELS[activeModelIdx];
-  const currentKeyOk=currentModel&&(currentModel.provider==="groq"?groqKey.length>8:orKey.length>8);
+  const currentKeyOk=currentModel&&groqKey.length>8;
   if(!currentKeyOk){
-    const firstValid=MODELS.findIndex(m=>m.provider==="groq"?groqKey.length>8:orKey.length>8);
+    const firstValid=MODELS.findIndex(()=>groqKey.length>8);
     if(firstValid>=0){activeModelIdx=firstValid;localStorage.setItem(MODEL_KEY,firstValid);}
   }
   updateApiStatus();
@@ -894,15 +880,13 @@ function saveApiKeys(){
 }
 function updateApiStatus(){
   const gl=document.getElementById("groq-status-line");
-  const ol=document.getElementById("or-status-line");
   if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
-  if(ol)ol.innerHTML=orKey.length>8?`<span class="api-status ok">Clé enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
 }
 function renderModelList(){
   const list=document.getElementById("model-list");if(!list)return;
   list.innerHTML="";
   MODELS.forEach((m,i)=>{
-    const hasKey=m.provider==="groq"?groqKey.length>8:orKey.length>8;
+    const hasKey=groqKey.length>8;
     const btn=document.createElement("button");
     btn.className="tgl-btn"+(i===activeModelIdx?" on":"");
     btn.style.cssText="text-align:left;display:flex;align-items:center;gap:.5rem;width:100%;justify-content:space-between;";
@@ -1272,14 +1256,11 @@ CRITICAL POV RULE:
 - A character speaks TO SOMEONE ELSE *about* the player → ALWAYS "il/elle/lui/son/sa/ses", NEVER "tu/toi".
 Example ERROR: Arnav says to his driver "Je veux savoir qui tu es" — WRONG.
 Correct: "Je veux savoir qui elle est et ce qu'elle fait ici." ✅
-${playerCharName?`🚫 ABSOLUTE RULE — PLAYER CHARACTER: The player IS "${playerCharName}". You NEVER write for "${playerCharName}" under ANY circumstance.
-This means: ZERO dialogue lines for "${playerCharName}". ZERO actions for "${playerCharName}". ZERO thoughts, feelings or reactions attributed to "${playerCharName}".
-"${playerCharName}" only exists in the scene through what the PLAYER writes. Your job: write ONLY the reactions of OTHER characters and the world.
-If the player sends a message, treat it as "${playerCharName}" speaking/acting — then write what OTHERS do in response. STOP. Do not continue as "${playerCharName}".
-Violation example (FORBIDDEN): writing « ${playerCharName} s'arrête net » or « ${playerCharName} : "..." » — these are CRITICAL ERRORS.`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
+${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
 ${isRpg?`NEVER use the universe name "${char.name}" as a speaker. Always use the actual character's real name.`:`NEVER write in first person as ${char.name}. Always: "${char.name} dit :", "${char.name} sourit".`}
 NEVER repeat the same sentence or action from the previous response.
 NEVER write {{user}}, {{char}}, or any {{placeholder}}.
+NEVER use the English possessive apostrophe-s after a character name — it is a critical error in French text. Example: 'Nani's visage' is WRONG → write 'le visage de Nani'. 'Sara's regard' is WRONG → write 'le regard de Sara'. Always use French structure: 'le/la [noun] de [Name]'.
 NEVER invent actions for the player. This means:
 - NEVER write "Tu regardes autour de toi", "Tu laisses le papier", "Tes yeux rencontrent..." unless the player wrote that action first.
 - NEVER describe what the player does, feels, sees, or decides — only what the world and characters do.
@@ -1316,6 +1297,7 @@ ${examples?`\n━━━ EXAMPLE EXCHANGES (style guide only) ━━━\n${exampl
 const CORR=`Tu es un correcteur silencieux de texte de roleplay. Retourne UNIQUEMENT le texte corrigé, sans commentaire, sans explication.
 RÈGLES :
 1. Mots anglais isolés parasites → remplace par l'équivalent français. Liste non-exhaustive : enough, seems, still, yet, though, however, suddenly, indeed, rather, quite, almost, just, even, so, then, now, while, though, despite, towards, around, among, through, within, beyond, behind, against, somehow, somewhere, nothing, everything, everyone, already, always, never, maybe, perhaps, truly, deeply, slowly, quickly, softly, finally, after, before, without, unless, whether, either, neither, both, only, very, really.
+1b. Possessif anglais "'s" collé à un nom propre → TOUJOURS reformuler en français. Exemples : "Nani's visage" → "Le visage de Nani" ; "Sara's regard" → "Le regard de Sara" ; "Kai's voix" → "La voix de Kai". Cette construction est interdite en français.
 2. Fautes d'orthographe, accords, accents manquants → corrige.
 3. Même mot répété 2+ fois dans un paragraphe → synonyme pour les suivants.
 4. "!" abusif ou répété → remplace par "." ou reformule.
@@ -1349,7 +1331,7 @@ async function orStream(messages,onChunk){
     const m=MODELS[idx];
     const key=getKeyForProvider(m.provider);
     if(!key)continue;
-    const r=await tryFetch(m.url,key,{model:m.model,max_tokens:MAX_TOKENS,stream:true,messages},true);
+    const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,messages},true);
     if(r.status===429){continue;}// Rate limit → essayer suivant
     if(!r.ok){const e=await r.text();throw new Error(`API ${r.status}: ${e.slice(0,100)}`);}
     if(idx!==activeModelIdx)showModelIndicator(m.label,idx);
@@ -1443,10 +1425,10 @@ function confirmRename(){const name=document.getElementById("rename-input").valu
 
 // ══ START / RESUME CHAT ══
 function requireKey(){
-  if(!groqKey&&!orKey){goSettings();return false;}
+  if(!groqKey){goSettings();return false;}
   return true;
 }
-function getKeyForProvider(provider){return provider==="groq"?groqKey:orKey;}
+function getKeyForProvider(provider){return groqKey;}
 function startChatWithChar(charId){
   if(!requireKey())return;
   const char=loadChars().find(c=>c.id===charId);if(!char)return;
@@ -1523,6 +1505,7 @@ async function sendMessage(overrideText=null,fromIndex=null){
   try{
     S.turn++;
     if(S.hist.length>14){
+      setStatus("mémorisation...");
       const toCompress=S.hist.slice(0,-6);
       // Un seul appel : résumé + fusion en une seule instruction
       const prevSummary=S.summary?`\nRésumé précédent à intégrer : ${S.summary}`:"";
@@ -1540,47 +1523,33 @@ async function sendMessage(overrideText=null,fromIndex=null){
     S.hist.slice(-10).forEach(([r,c])=>msgs.push({role:r==="user"?"user":"assistant",content:c}));
     msgs.push({role:"user",content:txt});
     removeStatus();
+    const el=document.createElement("div");el.className="msg bot";
     const char=S.char;let av="✦";
     if(char?.photo)av=`<img src="${char.photo}" alt="${char.name}">`;else if(char)av=char.name.charAt(0).toUpperCase();
-    // Phase 1 : dots pendant que l'IA "réfléchit" (attend le 1er token)
-    const waitEl=document.createElement("div");waitEl.className="msg bot";
-    waitEl.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div></div>`;
-    document.getElementById("messages").appendChild(waitEl);scrollBottom();
+    el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
+    document.getElementById("messages").appendChild(el);scrollBottom();
     let rawFull="";
-    let firstChunk=true;
-    let _raf=null;
-    let _pendingText="";
+    let _streamThrottle=null;
+    let _lastPartial="";
     rawFull=await orStream(msgs,(partial)=>{
-      // Phase 2 : dès le 1er token, on remplace les dots et on stream proprement
-      if(firstChunk){
-        firstChunk=false;
-        const bubble=document.getElementById("stream-bubble");
-        if(bubble){bubble.innerHTML="";}
-      }
-      _pendingText=partial;
-      if(!_raf){
-        _raf=requestAnimationFrame(()=>{
-          _raf=null;
+      _lastPartial=partial;
+      if(!_streamThrottle){
+        _streamThrottle=setTimeout(()=>{
+          _streamThrottle=null;
           const bubble=document.getElementById("stream-bubble");
           if(bubble){
-            bubble.innerHTML=partialMd(_pendingText)+"<span class='stream-cursor'></span>";
+            bubble.innerHTML=partialMd(_lastPartial);
+            // Scroll uniquement si déjà en bas (ne pas forcer si l'user scroll)
             const m=document.getElementById("messages");
-            if(m&&(m.scrollHeight-m.scrollTop-m.clientHeight)<120)m.scrollTop=m.scrollHeight;
+            if(m&&(m.scrollHeight-m.scrollTop-m.clientHeight)<80){
+              m.scrollTop=m.scrollHeight;
+            }
           }
-        });
+        },80);
       }
     });
-    // Phase 3 : réponse complète — retirer le curseur, render final propre
     const bubble=document.getElementById("stream-bubble");
     if(bubble){bubble.removeAttribute("id");bubble.innerHTML=md(rawFull);}
-    // Ajouter les boutons d'action
-    const botContent=waitEl.querySelector(".bot-content");
-    if(botContent){
-      const acts=document.createElement("div");acts.className="bot-msg-actions";
-      acts.innerHTML=`<button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button>`;
-      botContent.appendChild(acts);
-    }
-    scrollBottom();
     S.messages=S.messages||[];
     const msgIdx=S.messages.length;
     S.messages.push({role:"assistant",content:md(rawFull),rawText:rawFull,charId:S.charId,sessionId:S.id});
@@ -1594,7 +1563,6 @@ async function sendMessage(overrideText=null,fromIndex=null){
           const lastBubble=allBubbles[allBubbles.length-1];
           if(lastBubble)lastBubble.innerHTML=md(corrected);
           if(S.messages[msgIdx])S.messages[msgIdx]={...S.messages[msgIdx],content:md(corrected),rawText:corrected};
-          rebuildHist();autosave();
         }
       }catch{}
     })();
@@ -1878,14 +1846,8 @@ function confirmImportAll(){
     }
     // Format export univers seul {world,chars}
     else if(data.world){
-      const wIdx=existingWorlds.findIndex(x=>x.id===data.world.id);
-      if(wIdx>=0){existingWorlds[wIdx]=data.world;}else{existingWorlds.unshift(data.world);}
-      addedW++;
-      (data.chars||[]).forEach(c=>{
-        const cIdx=existingChars.findIndex(x=>x.id===c.id);
-        if(cIdx>=0){existingChars[cIdx]=c;}else{existingChars.unshift(c);}
-        addedC++;
-      });
+      if(!existingWorlds.find(x=>x.id===data.world.id)){existingWorlds.unshift(data.world);addedW++;}
+      (data.chars||[]).forEach(c=>{if(!existingChars.find(x=>x.id===c.id)){existingChars.unshift(c);addedC++;}});
     }
     // Format liste de personnages
     else if(Array.isArray(data)){
