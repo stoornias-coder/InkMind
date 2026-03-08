@@ -1543,23 +1543,23 @@ async function sendMessage(overrideText=null,fromIndex=null){
     el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
     document.getElementById("messages").appendChild(el);scrollBottom();
     let rawFull="";
-    let streamStarted=false;
-    let _rafPending=false;
+    let _streamThrottle=null;
     let _lastPartial="";
     rawFull=await orStream(msgs,(partial)=>{
       _lastPartial=partial;
-      if(!streamStarted){
-        streamStarted=true;
-        const bubble=document.getElementById("stream-bubble");
-        if(bubble)bubble.innerHTML="";
-      }
-      if(!_rafPending){
-        _rafPending=true;
-        requestAnimationFrame(()=>{
-          _rafPending=false;
+      if(!_streamThrottle){
+        _streamThrottle=setTimeout(()=>{
+          _streamThrottle=null;
           const bubble=document.getElementById("stream-bubble");
-          if(bubble){bubble.innerHTML=partialMd(_lastPartial);scrollBottom();}
-        });
+          if(bubble){
+            bubble.innerHTML=partialMd(_lastPartial);
+            // Scroll uniquement si déjà en bas (ne pas forcer si l'user scroll)
+            const m=document.getElementById("messages");
+            if(m&&(m.scrollHeight-m.scrollTop-m.clientHeight)<80){
+              m.scrollTop=m.scrollHeight;
+            }
+          }
+        },80);
       }
     });
     const bubble=document.getElementById("stream-bubble");
@@ -1997,14 +1997,20 @@ function fixLayout(){
 }
 
 // visualViewport : la seule API fiable pour le clavier Android/iOS
+let _lastVPHeight=window.visualViewport?.height||window.innerHeight;
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize",()=>{
-    // Seulement sur l'écran chat, pas les formulaires/créateurs
     const chatActive=document.getElementById("chat")?.classList.contains("active");
     const app=document.getElementById("app");
+    const newH=window.visualViewport.height;
+    const delta=Math.abs(newH-_lastVPHeight);
+    _lastVPHeight=newH;
+    // Ignorer les micro-changements (barre de notif enregistrement = <80px)
+    // Seul le vrai clavier change de >100px
+    if(delta<100)return;
     if(app){
       if(chatActive){
-        app.style.height=window.visualViewport.height+"px";
+        app.style.height=newH+"px";
       } else {
         app.style.height="";
       }
