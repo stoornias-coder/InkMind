@@ -618,7 +618,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     <button id="scroll-down" onmousedown="event.preventDefault()" onclick="scrollBottom()" title="Bas">▼</button>
     <div class="input-area">
       <textarea id="msg-input" placeholder="Écris ici..." rows="1"></textarea>
-      <button id="send-btn" onclick="sendMessage()">➤</button>
+      <button id="send-btn" onmousedown="event.preventDefault()" onclick="sendMessage()">➤</button>
     </div>
   </div>
 
@@ -735,53 +735,35 @@ document.addEventListener("paste",function(e){
 },true);
 
 // ══ BACK BUTTON HANDLER (Capacitor/Android — bouton ET gestes) ══
-let prevScreenId=null;
+// ══ NAVIGATION STACK ══
+const _navStack=[];
 function showScreen(id){
-  const prev=document.querySelector(".screen.active");
   document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
-// Naviguer vers settings ou profile en mémorisant d'où on vient
-function goSettings(){
-  const active=document.querySelector(".screen.active");
-  if(active&&active.id!=="settings-page"&&active.id!=="profile-page"){
-    prevScreenId=active.id;
-  }
-  showScreen("settings-page");
-  loadSettingsPage();
+function navigateTo(id,onBack){
+  // onBack : fonction optionnelle à appeler au lieu du comportement par défaut
+  _navStack.push({id:document.querySelector(".screen.active")?.id||"home", onBack});
+  showScreen(id);
 }
-function goProfile(){
-  const active=document.querySelector(".screen.active");
-  if(active&&active.id!=="settings-page"&&active.id!=="profile-page"){
-    prevScreenId=active.id;
-  }
-  showScreen("profile-page");
-  loadProfilePage();
-}
+function goSettings(){navigateTo("settings-page",null);loadSettingsPage();}
+function goProfile(){navigateTo("profile-page",null);loadProfilePage();}
+
 function handleBack(){
   if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
   const modals=document.querySelectorAll(".modal-overlay.open");
   if(modals.length){modals.forEach(m=>m.classList.remove("open"));return;}
   const active=document.querySelector(".screen.active");
-  if(!active||active.id==="home")return;
-  if(active.id==="settings-page"||active.id==="profile-page"){
-    const target=prevScreenId||"home";
-    prevScreenId=null;
-    showScreen(target);
-    if(target==="home")renderAll();
+  if(!active||active.id==="home"){
+    try{if(window.Capacitor?.Plugins?.App)window.Capacitor.Plugins.App.exitApp();}catch{}
     return;
   }
-  if(active.id==="char-creator"||active.id==="world-creator"){
-    creatorBack();
-    return;
-  }
-  if(active.id==="world-detail"){
-    showScreen("home");renderAll();
-    return;
-  }
-  if(active.id==="chat"){
-    // Depuis le chat, retour = accueil
-    showScreen("home");renderAll();
+  // Dépiler
+  if(_navStack.length>0){
+    const prev=_navStack.pop();
+    if(prev.onBack){prev.onBack();return;}
+    showScreen(prev.id);
+    if(prev.id==="home")renderAll();
     return;
   }
   showScreen("home");renderAll();
@@ -993,7 +975,7 @@ function openWorldDetail(worldId){
   const img=document.getElementById("wd-img");
   img.innerHTML=world.photo?`<img src="${world.photo}" alt="${world.name}">`:"✦";
   renderWorldChars(worldId);
-  showScreen("world-detail");
+  navigateTo("world-detail",null);
 }
 function renderWorldChars(worldId){
   const chars=loadChars().filter(c=>c.worldId===worldId);
@@ -1080,7 +1062,7 @@ function openCharCreator(charId){
     }
   }else{document.getElementById("char-creator-title").textContent="Nouveau Personnage";}
   document.getElementById("char-save-btn").textContent=charId?"Enregistrer les modifications →":"Enregistrer →";
-  showScreen("char-creator");
+  navigateTo("char-creator",null);
 }
 function openCharCreatorForWorld(){
   openCharCreator(null);
@@ -1154,7 +1136,7 @@ function openWorldCreator(worldId){
     }
   }else{document.getElementById("world-creator-title").textContent="Nouvel Univers";}
   document.getElementById("world-save-btn").textContent=worldId?"Enregistrer les modifications →":"Enregistrer l'univers →";
-  showScreen("world-creator");
+  navigateTo("world-creator",null);
 }
 function worldCreatorBack(){
   if(editingWorldId){openWorldDetail(editingWorldId);}
@@ -1491,8 +1473,11 @@ async function sendMessage(overrideText=null,fromIndex=null){
   const input=document.getElementById("msg-input");
   const txt=overrideText!==null?overrideText:input.value.trim();
   if(!txt)return;
+  const hadFocus=(document.activeElement===input);
   // Vider l'input sans toucher au focus
   if(overrideText===null){input.value="";input.style.height="auto";}
+  // Maintenir le focus immédiatement si l'input était actif
+  if(hadFocus) input.focus({preventScroll:true});
   if(fromIndex!==null){
     const msgsDom=document.getElementById("messages"),all=[...msgsDom.children];
     for(let i=fromIndex;i<all.length;i++)all[i].remove();
@@ -2007,20 +1992,6 @@ ta.addEventListener("focus",()=>{
 ta.addEventListener("input",()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,122)+"px";});
 ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
 
-// ══ GESTE RETOUR ANDROID (Capacitor) ══
-document.addEventListener("deviceready",()=>{
-  if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){
-    window.Capacitor.Plugins.App.addListener("backButton",()=>{
-      if(document.activeElement&&document.activeElement!==document.body){
-        document.activeElement.blur();return;
-      }
-      if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
-      const home=document.getElementById("home");
-      if(!home.classList.contains("active")){goHome();return;}
-      window.Capacitor.Plugins.App.exitApp();
-    });
-  }
-});
 // Fallback Escape pour navigateur desktop
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
