@@ -1996,8 +1996,28 @@ function fixLayout(){
   }
 }
 
-// Le plugin @capacitor/keyboard avec resize:body gère le clavier nativement
-// Pas besoin de visualViewport manuel
+// visualViewport : la seule API fiable pour le clavier Android/iOS
+let _lastVPHeight=window.visualViewport?.height||window.innerHeight;
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize",()=>{
+    const chatActive=document.getElementById("chat")?.classList.contains("active");
+    const app=document.getElementById("app");
+    const newH=window.visualViewport.height;
+    const delta=Math.abs(newH-_lastVPHeight);
+    _lastVPHeight=newH;
+    // Ignorer les micro-changements (barre de notif enregistrement = <80px)
+    // Seul le vrai clavier change de >100px
+    if(delta<100)return;
+    if(app){
+      if(chatActive){
+        app.style.height=newH+"px";
+      } else {
+        app.style.height="";
+      }
+    }
+    if(chatActive) fixLayout();
+  });
+}
 
 // Quand l'app revient au premier plan (Capacitor)
 document.addEventListener("resume",fixLayout,false);
