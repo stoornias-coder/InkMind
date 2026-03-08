@@ -311,7 +311,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="sb-top">
-    <div class="sb-profile" onclick="closeSB();showScreen('profile-page');loadProfilePage()">
+    <div class="sb-profile" onclick="closeSB();goProfile()">
       <div class="sb-av" id="sb-mini-av">?</div>
       <span class="sb-uname" id="sb-mini-name">Mon profil</span>
     </div>
@@ -327,7 +327,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       <button class="sb-mini" onclick="closeSB();exportAll()">⬇ Exporter</button>
       <button class="sb-mini" onclick="closeSB();importAll()">⬆ Importer</button>
     </div>
-    <div class="sb-settings-link" onclick="closeSB();showScreen('settings-page');loadSettingsPage()">
+    <div class="sb-settings-link" onclick="closeSB();goSettings()">
       <span>⚙ Paramètres</span>
       <span style="color:var(--text-dim);font-size:.7rem;">›</span>
     </div>
@@ -731,14 +731,25 @@ document.addEventListener("paste",function(e){
 let prevScreenId=null;
 function showScreen(id){
   const prev=document.querySelector(".screen.active");
-  if(prev&&prev.id!==id){
-    // Mémoriser seulement si on quitte vers settings/profile (pour pouvoir revenir)
-    if(id==="settings-page"||id==="profile-page"){
-      prevScreenId=prev.id;
-    }
-  }
   document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+}
+// Naviguer vers settings ou profile en mémorisant d'où on vient
+function goSettings(){
+  const active=document.querySelector(".screen.active");
+  if(active&&active.id!=="settings-page"&&active.id!=="profile-page"){
+    prevScreenId=active.id;
+  }
+  showScreen("settings-page");
+  loadSettingsPage();
+}
+function goProfile(){
+  const active=document.querySelector(".screen.active");
+  if(active&&active.id!=="settings-page"&&active.id!=="profile-page"){
+    prevScreenId=active.id;
+  }
+  showScreen("profile-page");
+  loadProfilePage();
 }
 function handleBack(){
   if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
@@ -1383,7 +1394,7 @@ function confirmRename(){const name=document.getElementById("rename-input").valu
 
 // ══ START / RESUME CHAT ══
 function requireKey(){
-  if(!groqKey&&!orKey){showScreen("settings-page");loadSettingsPage();return false;}
+  if(!groqKey&&!orKey){goSettings();return false;}
   return true;
 }
 function getKeyForProvider(provider){return provider==="groq"?groqKey:orKey;}
