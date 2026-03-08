@@ -1241,8 +1241,9 @@ This is a multi-character RPG universe. You play ALL named characters from the b
 Description: ${char.desc||""}
 Tags: ${tags}
 Backstory: ${char.backstory||"not specified"}
-${isRpg?`All characters have their own personality, voice and motivations as described in the backstory.`:`Personality of ${char.name}: ${traits||"not specified"}
-Speaking style of ${char.name}: ${char.voice||"natural, in character"}`}
+${isRpg?`All characters have their own personality, voice and motivations as described in the backstory. CRITICAL: Each character MUST behave EXACTLY as described — do NOT soften, invent, or deviate from their canonical personality. A cold character stays cold. A proud character stays proud. Do NOT make them open up, confide, or act warmly unless the backstory says so.`:`Personality of ${char.name}: ${traits||"not specified"}
+Speaking style of ${char.name}: ${char.voice||"natural, in character"}
+CRITICAL: Stay 100% faithful to this personality at ALL times. Do NOT invent traits, do NOT soften the character, do NOT make them act out of character.`}
 World/Setting: ${char.world||"flexible"}
 Language: ${lang}
 Player gender: ${genderNote}
@@ -1258,7 +1259,9 @@ Example ERROR: Arnav says to his driver "Je veux savoir qui tu es" — WRONG.
 Correct: "Je veux savoir qui elle est et ce qu'elle fait ici." ✅
 ${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
 ${isRpg?`NEVER use the universe name "${char.name}" as a speaker. Always use the actual character's real name.`:`NEVER write in first person as ${char.name}. Always: "${char.name} dit :", "${char.name} sourit".`}
+CRITICAL: A character NEVER refers to themselves in the third person. If Arnav is speaking, he says "je" / "moi" — NEVER "lui" or "Arnav" to refer to himself.
 NEVER repeat the same sentence or action from the previous response.
+NEVER end your response with a question directed at the player. Do NOT ask "Et toi ?", "Que vas-tu faire ?", "Quelle est ta réponse ?" or any question. Let the scene breathe — the player will react when they choose. End on action, atmosphere, or silence.
 NEVER write {{user}}, {{char}}, or any {{placeholder}}.
 NEVER use the English possessive apostrophe-s after a character name — it is a critical error in French text. Example: 'Nani's visage' is WRONG → write 'le visage de Nani'. 'Sara's regard' is WRONG → write 'le regard de Sara'. Always use French structure: 'le/la [noun] de [Name]'.
 NEVER invent actions for the player. This means:
@@ -1558,6 +1561,8 @@ async function sendMessage(overrideText=null,fromIndex=null){
     });
     const bubble=document.getElementById("stream-bubble");
     if(bubble){bubble.removeAttribute("id");bubble.innerHTML=md(rawFull);}
+    // Force scroll to bottom after full message rendered
+    setTimeout(()=>scrollBottom(),50);
     S.messages=S.messages||[];
     const msgIdx=S.messages.length;
     S.messages.push({role:"assistant",content:md(rawFull),rawText:rawFull,charId:S.charId,sessionId:S.id});
