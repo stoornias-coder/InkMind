@@ -38,7 +38,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 #main{flex:1;display:flex;flex-direction:column;height:100%;min-width:0;position:relative;}
 .screen{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 .screen.active{display:flex;}
-#chat{background:var(--bg);}
+#chat{background:var(--bg);flex-direction:column;min-height:0;}
+#chat.active{display:flex;height:100%;}
 
 /* ══ SPLASH ══ */
 #splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;transition:opacity .6s ease,visibility .6s ease;}
@@ -1864,8 +1865,38 @@ function editCurrentChar(){
   openCharCreator(S.char.id);
 }
 
-// ══ KEYBOARD ══
+// ══ KEYBOARD & SCROLL ══
 const ta=document.getElementById("msg-input");
+
+function fixLayout(){
+  const msgs=document.getElementById("messages");
+  if(msgs){
+    // Force le recalcul du scroll
+    msgs.style.display="none";
+    msgs.offsetHeight; // reflow
+    msgs.style.display="flex";
+    setTimeout(()=>{msgs.scrollTop=msgs.scrollHeight;},50);
+  }
+}
+
+// Quand l'app revient au premier plan (Capacitor)
+document.addEventListener("resume",fixLayout,false);
+if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){
+  window.Capacitor.Plugins.App.addListener("appStateChange",(state)=>{
+    if(state.isActive){
+      setTimeout(()=>{
+        // Si le clavier est encore ouvert, forcer le blur puis refocus
+        const active=document.activeElement;
+        if(active&&active===ta){
+          ta.blur();
+          setTimeout(()=>{ta.focus();fixLayout();},100);
+        } else {
+          fixLayout();
+        }
+      },200);
+    }
+  });
+}
 
 // Scroll vers le bas quand le clavier s'ouvre
 ta.addEventListener("focus",()=>{
