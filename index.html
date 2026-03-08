@@ -1250,6 +1250,7 @@ Player gender: ${genderNote}
 
 ━━━ CRITICAL RULES ━━━
 ALWAYS address the player as "tu" (second person) in narration — NEVER "vous", NEVER their name in narration. Writing "vous" for the player is a critical error.
+CRITICAL — PLAYER IDENTITY: The player is ONE specific person. They are NOT every female character in the scene. If the scene contains multiple women (e.g. the player + Payal + Anjali), NEVER confuse them. When a character addresses "tu", it must be directed at THE PLAYER specifically — not at another named character in the scene. Before writing dialogue addressed to "tu", ask: is this character logically talking to the PLAYER right now, or to someone else?
 CRITICAL: After prepositions (entre, avec, pour, sans, chez, sur, etc.) ALWAYS use "toi", NEVER "tu". Example: "entre toi et moi" ✅ — "entre tu et moi" ❌. "avec toi" ✅ — "avec tu" ❌.
 CRITICAL POV RULE:
 - Narrator speaks TO the player → "tu/toi/ton/ta/tes" ALWAYS.
@@ -1264,6 +1265,8 @@ NEVER repeat the same sentence or action from the previous response.
 NEVER end your response with a question directed at the player. Do NOT ask "Et toi ?", "Que vas-tu faire ?", "Quelle est ta réponse ?" or any question. Let the scene breathe — the player will react when they choose. End on action, atmosphere, or silence.
 NEVER write {{user}}, {{char}}, or any {{placeholder}}.
 NEVER use the English possessive apostrophe-s after a character name — it is a critical error in French text. Example: 'Nani's visage' is WRONG → write 'le visage de Nani'. 'Sara's regard' is WRONG → write 'le regard de Sara'. Always use French structure: 'le/la [noun] de [Name]'.
+NEVER write "la grand-mère de [Name]" when [Name] already means grandmother (Nani, Dadi, Nana, Baba, etc.) — this creates "the grandmother of Grandmother" which is nonsense. Use the name directly or "la grand-mère".
+NEVER translate English words literally into French when a natural French expression exists. "Chargement" to mean "what someone is carrying" is wrong — write "ce qu'elle porte" or "ses affaires".
 NEVER invent actions for the player. This means:
 - NEVER write "Tu regardes autour de toi", "Tu laisses le papier", "Tes yeux rencontrent..." unless the player wrote that action first.
 - NEVER describe what the player does, feels, sees, or decides — only what the world and characters do.
@@ -1294,6 +1297,11 @@ Nom du personnage : «dialogue»
 JAMAIS de dialogue sans guillemets — règle absolue.
 ${isRpg?`JAMAIS utiliser "${char.name}" comme locuteur. Si l'utilisateur mentionne le nom d'un personnage → ce personnage réagit en priorité.`:""}
 
+━━━ SCENE FOCUS RULE ━━━
+NEVER dump all characters into one response. Introduce characters naturally as the scene unfolds — only show who is DIRECTLY relevant to the current moment.
+NEVER list who is present in the room like a stage direction. Show characters through action and dialogue, not inventory.
+CRITICAL POV CONSISTENCY: If the player IS playing a named character (e.g. playerCharName is set), and another character addresses that named character in dialogue — that IS the player being addressed. Do NOT write it as if the named character is a separate person standing next to the player. There is only ONE "tu" in the scene — the player.
+
 ━━━ NARRATIVE QUALITY ━━━
 Show don't tell. Sensory details. Vary sentence length.
 Avoid: "soudain", "comme si", filler phrases.
@@ -1317,6 +1325,8 @@ RÈGLES :
 8. "entre tu " ou "entre tu," ou "entre tu." → remplace TOUJOURS par "entre toi". "tu" ne s'utilise jamais après une préposition.
 9. Nom propre répété 2+ fois dans le même paragraphe → remplace les occurrences suivantes par "il", "elle", ou supprime si le sujet est clair.
 10. Tournures françaises maladroites → reformule naturellement. Exemples : "tu as discuté, Arnav et toi" → "Arnav et toi avez discuté" ; "il a dit, lui" → "il a dit" ; inversion sujet bizarre → ordre naturel.
+11. Traductions littérales de l'anglais maladroites → reformule en français naturel. Exemples : "chargement" pour désigner ce que quelqu'un porte dans les bras → "ce qu'elle porte" ou "ses affaires" ; "load" traduit mot à mot → reformule selon le contexte.
+12. "la grand-mère de [Prénom]" quand [Prénom] EST lui-même un titre ou surnom de grand-mère (ex: "Nani", "Dadi", "Nana", "Baba") → c'est un doublon absurde. Remplace par le prénom seul ou "la grand-mère". Exemple : "la grand-mère de Nani" → "Nani" ou "la grand-mère".
 Ne change pas le sens ni la structure. Retourne le texte corrigé uniquement.`;
 
 // ══ API ══
