@@ -657,7 +657,7 @@ const MAX_TOKENS = 900;
 const MODELS = [
   {id:"groq-llama4",  label:"Llama 4 Maverick",   model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions",    provider:"groq"},
   {id:"groq-llama3",  label:"Llama 3.3 70B",       model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions",    provider:"groq"},
-  {id:"or-llama4",    label:"Llama 4 (OpenRouter)", model:"meta-llama/llama-4-maverick:free",              url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
+  {id:"or-llama4",    label:"Llama 4 (OpenRouter)", model:"meta-llama/llama-4-maverick",                   url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
   {id:"or-llama3",    label:"Llama 3.3 (OpenRouter)",model:"meta-llama/llama-3.3-70b-instruct:free",       url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
   {id:"or-mistral",   label:"Mistral Small",         model:"mistralai/mistral-small-3.1-24b-instruct:free", url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
 ];
@@ -727,10 +727,10 @@ document.addEventListener("paste",function(e){
 },true);
 
 // ══ BACK BUTTON HANDLER (Capacitor/Android — bouton ET gestes) ══
-let prevScreenId=null; // mémorise l'écran avant settings/profile
+let prevScreenId=null;
 function showScreen(id){
   const prev=document.querySelector(".screen.active");
-  if(prev&&prev.id!==id) prevScreenId=prev.id;
+  if(prev&&prev.id!==id){prevScreenId=prev.id;}
   document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
@@ -740,9 +740,12 @@ function handleBack(){
   if(modals.length){modals.forEach(m=>m.classList.remove("open"));return;}
   const active=document.querySelector(".screen.active");
   if(!active||active.id==="home")return;
-  // Si on vient du chat (settings ou profile ouverts depuis sidebar), revenir au chat
-  if((active.id==="settings-page"||active.id==="profile-page")&&prevScreenId&&prevScreenId!=="home"){
-    showScreen(prevScreenId);return;
+  // Depuis settings ou profile : revenir à l'écran précédent (chat ou home)
+  if(active.id==="settings-page"||active.id==="profile-page"){
+    const target=(prevScreenId&&prevScreenId!=="settings-page"&&prevScreenId!=="profile-page")?prevScreenId:"home";
+    showScreen(target);
+    if(target==="home")renderAll();
+    return;
   }
   showScreen("home");renderAll();
 }
@@ -1598,7 +1601,18 @@ function updateScrollBtn(){
 }
 
 document.getElementById("messages").addEventListener("scroll",updateScrollBtn,{passive:true});
-function setBusy(v){busy=v;document.getElementById("send-btn").disabled=v;}
+function setBusy(v){
+  busy=v;
+  document.getElementById("send-btn").disabled=v;
+  // Maintenir le focus sur l'input pour que le clavier reste ouvert
+  if(!v){
+    const inp=document.getElementById("msg-input");
+    if(inp&&document.activeElement!==inp){
+      // Refocus silencieux sans scroll parasite
+      inp.focus({preventScroll:true});
+    }
+  }
+}
 function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");}
 function esc2(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
