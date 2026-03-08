@@ -743,12 +743,11 @@ function showScreen(id){
   document.getElementById(id).classList.add("active");
 }
 
-// Naviguer VERS un écran : empile l'écran actuel + pousse une entrée history
-// → iOS swipe et Android back voient une "page" de plus à dépiler
+// Chaque navigateTo pousse une entrée history
+// Android backButton → history.back() → popstate → handleBack()
 function navigateTo(id,restore){
   const currentId=document.querySelector(".screen.active")?.id||"home";
   _navStack.push({id:currentId,restore:restore||null});
-  // Pousser dans l'historique natif pour que le swipe iOS génère un popstate
   history.pushState({screen:id},"",window.location.href);
   showScreen(id);
 }
@@ -759,7 +758,7 @@ function handleBack(){
   if(modals.length){modals.forEach(m=>m.classList.remove("open"));return;}
   const active=document.querySelector(".screen.active");
   if(!active||active.id==="home"){
-    // Sur home : laisser iOS/Android gérer nativement (minimize ou exit)
+    try{if(window.Capacitor?.Plugins?.App)window.Capacitor.Plugins.App.minimizeApp();}catch{}
     return;
   }
   if(_navStack.length>0){
@@ -769,41 +768,41 @@ function handleBack(){
     else if(prev.id==="home")renderAll();
     return;
   }
-  // Fallback stack vide
   showScreen("home");renderAll();
 }
 
-// popstate = swipe iOS retour OU Android back
-// On intercepte TOUJOURS et on appelle handleBack()
-// On re-pousse une entrée pour que le prochain swipe fonctionne aussi
-window.addEventListener("popstate",function(e){
+// popstate = résultat de history.back() déclenché par le bridge Android
+window.addEventListener("popstate",function(){
   const active=document.querySelector(".screen.active");
   if(!active||active.id==="home"){
-    // On est sur home : laisser le système gérer (minimize)
+    try{if(window.Capacitor?.Plugins?.App)window.Capacitor.Plugins.App.minimizeApp();}catch{}
     return;
   }
-  // Bloquer la navigation native, gérer nous-mêmes
   handleBack();
-  // Re-pousser pour que le prochain geste fonctionne
+  // Re-pousser pour que le prochain back ait une entrée à consommer
   if(document.querySelector(".screen.active")?.id!=="home"){
     history.pushState({screen:"app"},"",window.location.href);
   }
 });
 
-// État initial : une entrée de base sur home
 history.replaceState({screen:"home"},"",window.location.href);
 
 function goSettings(){navigateTo("settings-page",null);loadSettingsPage();}
 function goProfile(){navigateTo("profile-page",null);loadProfilePage();}
 
-document.addEventListener("backbutton",function(e){e.preventDefault();handleBack();},false);
+// Bridge Android : backButton Capacitor → history.back() → popstate → handleBack()
 (function(){
   function initCapacitorBack(){
     try{
       if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){
-        window.Capacitor.Plugins.App.addListener("backButton",function(data){
-          // musthardwareBack = vrai si bouton physique Android
-          handleBack();
+        window.Capacitor.Plugins.App.addListener("backButton",function(){
+          const active=document.querySelector(".screen.active");
+          if(!active||active.id==="home"){
+            window.Capacitor.Plugins.App.minimizeApp();
+            return;
+          }
+          // history.back() déclenche popstate qui appelle handleBack()
+          history.back();
         });
       }
     }catch(e){}
