@@ -609,7 +609,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     <div class="messages" id="messages"></div>
     <button id="scroll-down" onmousedown="event.preventDefault()" onclick="scrollBottom()" title="Bas">▼</button>
     <div class="input-area">
-      <textarea id="msg-input" placeholder="Écris ici..." rows="1"></textarea>
+      <textarea id="msg-input" placeholder="Écris ici..." rows="1" inputmode="text" autocomplete="on" autocorrect="on" spellcheck="true"></textarea>
       <button id="send-btn" onmousedown="event.preventDefault()" onclick="sendMessage()">➤</button>
     </div>
   </div>
@@ -1273,6 +1273,13 @@ ${isRpg?`STRICT RULE: Only use characters whose names appear explicitly in the b
 - Each response MUST advance the scene.
 - Follow the player's lead completely.
 
+━━━ CONTINUITY RULE ━━━
+CRITICAL: Always respect what has already been established in the conversation history.
+- If the player met a character for the FIRST TIME in this session → that character does NOT already know the player, has NO prior knowledge of their relationship with others.
+- If the player has been PRETENDING not to know someone → all characters must treat them as strangers.
+- NEVER have a character reference a relationship, event, or conversation that has not happened IN THIS SESSION.
+- Before writing a character's reaction, check: "does this character logically know this based on what happened?" If not → they cannot reference it.
+
 ━━━ ANTI-LOOP RULE ━━━
 Before writing, check: did I write this same sentence in my last response? If yes → skip it, write what happens NEXT.
 STRICT NAME RULE: Never use a character's name more than ONCE per paragraph. After the first mention, use "il", "elle", or a gesture/action without naming. Example wrong: "Test sourit. Test dit. Test penche la tête." → Correct: "Test sourit. « Bonjour. » Il penche la tête."
@@ -1297,7 +1304,7 @@ ${examples?`\n━━━ EXAMPLE EXCHANGES (style guide only) ━━━\n${exampl
 const CORR=`Tu es un correcteur silencieux de texte de roleplay. Retourne UNIQUEMENT le texte corrigé, sans commentaire, sans explication.
 RÈGLES :
 1. Mots anglais isolés parasites → remplace par l'équivalent français. Liste non-exhaustive : enough, seems, still, yet, though, however, suddenly, indeed, rather, quite, almost, just, even, so, then, now, while, though, despite, towards, around, among, through, within, beyond, behind, against, somehow, somewhere, nothing, everything, everyone, already, always, never, maybe, perhaps, truly, deeply, slowly, quickly, softly, finally, after, before, without, unless, whether, either, neither, both, only, very, really.
-1b. Possessif anglais "'s" collé à un nom propre → TOUJOURS reformuler en français. Exemples : "Nani's visage" → "Le visage de Nani" ; "Sara's regard" → "Le regard de Sara" ; "Kai's voix" → "La voix de Kai". Cette construction est interdite en français.
+1b. Possessif anglais "'s" collé à un nom propre → TOUJOURS reformuler en français. Exemples : "Nani's visage" → "Son visage" ou "Le visage de Nani" ; "Sara's regard" → "Son regard" ; "Kai's voix" → "Sa voix". NE PAS écrire "de Arnav" deux fois dans la même phrase — utilise "son/sa/ses" à la place quand le sujet est déjà clair.
 2. Fautes d'orthographe, accords, accents manquants → corrige.
 3. Même mot répété 2+ fois dans un paragraphe → synonyme pour les suivants.
 4. "!" abusif ou répété → remplace par "." ou reformule.
@@ -1306,6 +1313,7 @@ RÈGLES :
 7. Action inventée pour le joueur → supprime la phrase.
 8. "entre tu " ou "entre tu," ou "entre tu." → remplace TOUJOURS par "entre toi". "tu" ne s'utilise jamais après une préposition.
 9. Nom propre répété 2+ fois dans le même paragraphe → remplace les occurrences suivantes par "il", "elle", ou supprime si le sujet est clair.
+10. Tournures françaises maladroites → reformule naturellement. Exemples : "tu as discuté, Arnav et toi" → "Arnav et toi avez discuté" ; "il a dit, lui" → "il a dit" ; inversion sujet bizarre → ordre naturel.
 Ne change pas le sens ni la structure. Retourne le texte corrigé uniquement.`;
 
 // ══ API ══
