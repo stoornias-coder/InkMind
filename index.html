@@ -224,7 +224,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 .icon-btn{background:none;border:1px solid var(--border2);border-radius:4px;color:var(--text-dim);font-size:.62rem;padding:.22rem .44rem;cursor:pointer;}
 .icon-btn:active{border-color:var(--gold-dim);color:var(--gold);}
 
-.messages{flex:1;overflow-y:auto;padding:.8rem .85rem .35rem;display:flex;flex-direction:column;gap:.7rem;scroll-behavior:smooth;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.messages{flex:1;overflow-y:auto;padding:.8rem .85rem .35rem;display:flex;flex-direction:column;gap:.7rem;scroll-behavior:smooth;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
 .messages::-webkit-scrollbar{width:2px;}
 .messages::-webkit-scrollbar-thumb{background:var(--border2);}
 .msg{animation:fadeUp .2s ease;}
@@ -807,6 +807,7 @@ function saveApiKeys(){
   if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
   if(orKey)localStorage.setItem(OR_KEY_STORE,orKey);else localStorage.removeItem(OR_KEY_STORE);
   updateApiStatus();
+  renderModelList();
   const btn=document.querySelector("[onclick='saveApiKeys()']");
   if(btn){btn.textContent="Enregistré ✓";setTimeout(()=>btn.textContent="Enregistrer les clés →",1500);}
 }
