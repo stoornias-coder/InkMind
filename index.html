@@ -376,7 +376,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
   <div id="world-detail" class="screen">
     <div class="page-topbar">
       <button class="hdr-btn" onclick="openSB()">☰</button>
-      <button class="hdr-btn" onclick="showScreen('home');renderAll()">←</button>
+      <button class="hdr-btn" onclick="handleBack()">←</button>
       <span class="page-title" id="wd-title">—</span>
       <button class="hdr-btn" onclick="openWorldCreator(currentWorldId)">✎</button>
     </div>
@@ -423,7 +423,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
   <div id="profile-page" class="screen">
     <div class="page-topbar">
       <button class="hdr-btn" onclick="openSB()">☰</button>
-      <button class="hdr-btn" onclick="showScreen('home');renderAll()">←</button>
+      <button class="hdr-btn" onclick="handleBack()">←</button>
       <span class="page-title">Mon Profil</span>
     </div>
     <div class="page-body">
@@ -463,7 +463,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
   <div id="settings-page" class="screen">
     <div class="page-topbar">
       <button class="hdr-btn" onclick="openSB()">☰</button>
-      <button class="hdr-btn" onclick="showScreen('home');renderAll()">←</button>
+      <button class="hdr-btn" onclick="handleBack()">←</button>
       <span class="page-title">Paramètres</span>
     </div>
     <div class="page-body">
@@ -823,7 +823,7 @@ function onProfilePhoto(url){
 function saveProfile(){
   const p={firstname:document.getElementById("profile-firstname").value.trim(),lastname:document.getElementById("profile-lastname").value.trim(),photo:profilePhoto,gender:selectedGender};
   localStorage.setItem(PROF_KEY,JSON.stringify(p));
-  updateSBProfile();showScreen("home");renderAll();
+  updateSBProfile();handleBack();renderAll();
 }
 function selectGender(g){
   selectedGender=g;
@@ -1172,7 +1172,8 @@ async function deleteWorld(id){
   if(!ok)return;
   saveChars(loadChars().filter(c=>c.worldId!==id));
   saveWorlds(loadWorlds().filter(x=>x.id!==id));
-  showScreen("home");renderAll();
+  // Vider la stack de navigation puis aller à l'accueil
+  _navStack.length=0;showScreen("home");renderAll();
 }
 
 // ══ TRAITS ══
@@ -1511,7 +1512,15 @@ async function sendMessage(overrideText=null,fromIndex=null){
     el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
     document.getElementById("messages").appendChild(el);scrollBottom();
     let rawFull="";
-    rawFull=await orStream(msgs,()=>{});
+    let streamStarted=false;
+    rawFull=await orStream(msgs,(partial)=>{
+      const bubble=document.getElementById("stream-bubble");
+      if(bubble){
+        if(!streamStarted){streamStarted=true;}
+        bubble.innerHTML=partialMd(partial);
+        scrollBottom();
+      }
+    });
     const bubble=document.getElementById("stream-bubble");
     if(bubble){bubble.removeAttribute("id");bubble.innerHTML=md(rawFull);}
     S.messages=S.messages||[];
@@ -2009,3 +2018,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
