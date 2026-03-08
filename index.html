@@ -655,11 +655,13 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 // ══ CONSTANTS ══
 const MAX_TOKENS = 900;
 const MODELS = [
-  {id:"groq-llama4",  label:"Llama 4 Maverick",   model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions",    provider:"groq"},
-  {id:"groq-llama3",  label:"Llama 3.3 70B",       model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions",    provider:"groq"},
-  {id:"or-llama4",    label:"Llama 4 (OpenRouter)", model:"meta-llama/llama-4-maverick",                   url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
-  {id:"or-llama3",    label:"Llama 3.3 (OpenRouter)",model:"meta-llama/llama-3.3-70b-instruct:free",       url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
-  {id:"or-mistral",   label:"Mistral Small",         model:"mistralai/mistral-small-3.1-24b-instruct:free", url:"https://openrouter.ai/api/v1/chat/completions",      provider:"or"},
+  {id:"groq-llama4",  label:"Llama 4 Maverick",        model:"meta-llama/llama-4-maverick-17b-128e-instruct",  url:"https://api.groq.com/openai/v1/chat/completions",   provider:"groq"},
+  {id:"groq-llama3",  label:"Llama 3.3 70B",            model:"llama-3.3-70b-versatile",                        url:"https://api.groq.com/openai/v1/chat/completions",   provider:"groq"},
+  {id:"or-maverick",  label:"Llama 4 Maverick (OR)",    model:"meta-llama/llama-4-maverick:free",               url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"or-scout",     label:"Llama 4 Scout (OR)",       model:"meta-llama/llama-4-scout:free",                  url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"or-llama3",    label:"Llama 3.3 70B (OR)",       model:"meta-llama/llama-3.3-70b-instruct:free",         url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"or-deepseek",  label:"DeepSeek V3 (OR)",         model:"deepseek/deepseek-chat-v3-0324:free",            url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"or-mistral",   label:"Mistral Small (OR)",       model:"mistralai/mistral-small-3.1-24b-instruct:free",  url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
 ];
 const GROQ_KEY_STORE = "inkmind_groq_key";
 const OR_KEY_STORE   = "inkmind_or_key";
@@ -730,7 +732,12 @@ document.addEventListener("paste",function(e){
 let prevScreenId=null;
 function showScreen(id){
   const prev=document.querySelector(".screen.active");
-  if(prev&&prev.id!==id){prevScreenId=prev.id;}
+  if(prev&&prev.id!==id){
+    // Mémoriser seulement si on quitte vers settings/profile (pour pouvoir revenir)
+    if(id==="settings-page"||id==="profile-page"){
+      prevScreenId=prev.id;
+    }
+  }
   document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
@@ -740,9 +747,9 @@ function handleBack(){
   if(modals.length){modals.forEach(m=>m.classList.remove("open"));return;}
   const active=document.querySelector(".screen.active");
   if(!active||active.id==="home")return;
-  // Depuis settings ou profile : revenir à l'écran précédent (chat ou home)
   if(active.id==="settings-page"||active.id==="profile-page"){
-    const target=(prevScreenId&&prevScreenId!=="settings-page"&&prevScreenId!=="profile-page")?prevScreenId:"home";
+    const target=prevScreenId||"home";
+    prevScreenId=null;
     showScreen(target);
     if(target==="home")renderAll();
     return;
@@ -1452,13 +1459,18 @@ async function sendMessage(overrideText=null,fromIndex=null){
   rebuildHist();addUser(txt,true);setBusy(true);
   try{
     S.turn++;
-    if(S.hist.length>8){
+    if(S.hist.length>14){
       setStatus("mémorisation...");
-      const toCompress=S.hist.slice(0,-4);
-      const newSummary=await summarize(toCompress);
-      if(S.summary&&newSummary){try{S.summary=await orCall([{role:"system",content:"Fusionne ces deux résumés de roleplay en 4-5 phrases max. Pas de répétition. Garde : faits, révélations, tensions, relations."},{role:"user",content:`Résumé A: ${S.summary}\n\nRésumé B: ${newSummary}`}],250);}catch{S.summary=newSummary||S.summary;}}
-      else{S.summary=newSummary||S.summary;}
-      S.hist=S.hist.slice(-4);
+      const toCompress=S.hist.slice(0,-6);
+      // Un seul appel : résumé + fusion en une seule instruction
+      const prevSummary=S.summary?`\nRésumé précédent à intégrer : ${S.summary}`:"";
+      try{
+        S.summary=await orCall([
+          {role:"system",content:`Résume cette session de roleplay en 4-5 phrases max.${prevSummary?"\nFusionne avec le résumé précédent sans répétition.":""} Garde : faits, révélations, tensions, relations. Sois factuel et concis.`},
+          {role:"user",content:(prevSummary||"")+"\n\nNouveau contenu :\n"+toCompress.map(([r,m])=>`${r}: ${m}`).join("\n")}
+        ],250);
+      }catch{}
+      S.hist=S.hist.slice(-6);
     }
     const sys=buildSystemPrompt(S.char);
     const msgs=[{role:"system",content:sys}];
@@ -1604,15 +1616,20 @@ document.getElementById("messages").addEventListener("scroll",updateScrollBtn,{p
 function setBusy(v){
   busy=v;
   document.getElementById("send-btn").disabled=v;
-  // Maintenir le focus sur l'input pour que le clavier reste ouvert
   if(!v){
+    // Refocus uniquement si l'input était actif avant la génération
     const inp=document.getElementById("msg-input");
-    if(inp&&document.activeElement!==inp){
-      // Refocus silencieux sans scroll parasite
+    if(inp&&_inputWasFocused){
       inp.focus({preventScroll:true});
     }
   }
 }
+let _inputWasFocused=false;
+document.getElementById("msg-input").addEventListener("focus",()=>{_inputWasFocused=true;});
+document.getElementById("msg-input").addEventListener("blur",()=>{
+  // Ne pas tracker le blur déclenché par sendMessage lui-même
+  setTimeout(()=>{if(!busy)_inputWasFocused=false;},100);
+});
 function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");}
 function esc2(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escMd(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*\*(.+?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");}
