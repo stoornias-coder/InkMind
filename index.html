@@ -38,7 +38,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 #main{flex:1;display:flex;flex-direction:column;min-height:0;min-width:0;position:relative;overflow:hidden;}
 .screen{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 .screen.active{display:flex;}
-#chat{background:var(--bg);flex-direction:column;min-height:0;overflow:hidden;}
+#chat{background:var(--bg);flex-direction:column;min-height:0;overflow:hidden;position:relative;}
 #chat.active{display:flex;flex:1;min-height:0;}
 
 /* ══ SPLASH ══ */
@@ -284,6 +284,11 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 .btn-cancel{flex:1;background:none;border:1px solid var(--border2);border-radius:5px;color:var(--text-dim);font-family:'Jost',sans-serif;font-size:.78rem;padding:.5rem;cursor:pointer;}
 .modal-input{background:var(--bg);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:'Jost',sans-serif;font-size:.82rem;padding:.55rem .78rem;outline:none;width:100%;}
 .modal-input:focus{border-color:var(--gold-dim);}
+
+/* Scroll to bottom btn */
+#scroll-down{position:absolute;bottom:4rem;right:.85rem;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--gold-dim);font-size:.9rem;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.4);transition:opacity .2s;}
+#scroll-down.visible{display:flex;}
+#scroll-down:active{color:var(--gold);border-color:var(--gold-dim);}
 
 /* Status line */
 .status-line{align-self:center;font-size:.55rem;color:var(--text-dim);letter-spacing:.14em;text-transform:uppercase;animation:pulse 1.4s infinite;padding:.18rem 0;}
@@ -603,6 +608,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       </div>
     </div>
     <div class="messages" id="messages"></div>
+    <button id="scroll-down" onclick="scrollBottom()" title="Bas">▼</button>
     <div class="input-area">
       <textarea id="msg-input" placeholder="Écris ici..." rows="1"></textarea>
       <button id="send-btn" onclick="sendMessage()">➤</button>
@@ -1556,7 +1562,21 @@ function confirmBotEdit(btn){
 function cancelBotEdit(btn){const msgEl=btn.closest(".msg.bot");msgEl.classList.remove("editing");const box=msgEl.querySelector("textarea.edit-box");const btns=msgEl.querySelector(".edit-btns");const bubble=msgEl.querySelector(".bubble");if(bubble)bubble.style.display="";if(box)box.remove();if(btns)btns.remove();}
 function setStatus(txt){removeStatus();if(!txt)return;const el=document.createElement("div");el.className="status-line";el.id="st";el.textContent=txt;document.getElementById("messages").appendChild(el);scrollBottom();}
 function removeStatus(){const e=document.getElementById("st");if(e)e.remove();}
-function scrollBottom(){const m=document.getElementById("messages");m.scrollTop=m.scrollHeight;}
+function scrollBottom(){
+  const m=document.getElementById("messages");
+  m.scrollTop=m.scrollHeight;
+}
+
+function updateScrollBtn(){
+  const m=document.getElementById("messages");
+  const btn=document.getElementById("scroll-down");
+  if(!m||!btn)return;
+  const distFromBottom=m.scrollHeight-m.scrollTop-m.clientHeight;
+  if(distFromBottom>120){btn.classList.add("visible");}
+  else{btn.classList.remove("visible");}
+}
+
+document.getElementById("messages").addEventListener("scroll",updateScrollBtn,{passive:true});
 function setBusy(v){busy=v;document.getElementById("send-btn").disabled=v;}
 function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");}
 function esc2(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -1878,11 +1898,17 @@ function fixLayout(){
 // visualViewport : la seule API fiable pour le clavier Android/iOS
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize",()=>{
+    // Seulement sur l'écran chat, pas les formulaires/créateurs
+    const chatActive=document.getElementById("chat")?.classList.contains("active");
     const app=document.getElementById("app");
     if(app){
-      app.style.height=window.visualViewport.height+"px";
+      if(chatActive){
+        app.style.height=window.visualViewport.height+"px";
+      } else {
+        app.style.height="";
+      }
     }
-    fixLayout();
+    if(chatActive) fixLayout();
   });
 }
 
