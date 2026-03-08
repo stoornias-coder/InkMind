@@ -655,13 +655,12 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 // ══ CONSTANTS ══
 const MAX_TOKENS = 900;
 const MODELS = [
-  {id:"groq-llama4",  label:"Llama 4 Maverick",        model:"meta-llama/llama-4-maverick-17b-128e-instruct",  url:"https://api.groq.com/openai/v1/chat/completions",   provider:"groq"},
-  {id:"groq-llama3",  label:"Llama 3.3 70B",            model:"llama-3.3-70b-versatile",                        url:"https://api.groq.com/openai/v1/chat/completions",   provider:"groq"},
-  {id:"or-maverick",  label:"Llama 4 Maverick (OR)",    model:"meta-llama/llama-4-maverick:free",               url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
-  {id:"or-scout",     label:"Llama 4 Scout (OR)",       model:"meta-llama/llama-4-scout:free",                  url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
-  {id:"or-llama3",    label:"Llama 3.3 70B (OR)",       model:"meta-llama/llama-3.3-70b-instruct:free",         url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
-  {id:"or-deepseek",  label:"DeepSeek V3 (OR)",         model:"deepseek/deepseek-chat-v3-0324:free",            url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
-  {id:"or-mistral",   label:"Mistral Small (OR)",       model:"mistralai/mistral-small-3.1-24b-instruct:free",  url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"groq-llama4",   label:"Llama 4 Maverick",      model:"meta-llama/llama-4-maverick-17b-128e-instruct",  url:"https://api.groq.com/openai/v1/chat/completions",   provider:"groq"},
+  {id:"groq-llama3",   label:"Llama 3.3 70B",          model:"llama-3.3-70b-versatile",                        url:"https://api.groq.com/openai/v1/chat/completions",   provider:"groq"},
+  {id:"or-trinity",    label:"Trinity Large (OR)",     model:"arcee-ai/trinity-large-preview:free",            url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"or-mistral",    label:"Mistral Small (OR)",     model:"mistralai/mistral-small-3.1-24b-instruct:free",  url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"or-step",       label:"Step 3.5 Flash (OR)",    model:"stepfun/step-3.5-flash:free",                    url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
+  {id:"or-free",       label:"Auto Free (OR)",         model:"openrouter/free",                                url:"https://openrouter.ai/api/v1/chat/completions",     provider:"or"},
 ];
 const GROQ_KEY_STORE = "inkmind_groq_key";
 const OR_KEY_STORE   = "inkmind_or_key";
@@ -1450,7 +1449,13 @@ async function sendMessage(overrideText=null,fromIndex=null){
   const input=document.getElementById("msg-input");
   const txt=overrideText!==null?overrideText:input.value.trim();
   if(!txt)return;
-  if(overrideText===null){input.value="";input.style.height="auto";}
+  // Vider l'input SANS perdre le focus — requestAnimationFrame évite le blur Android
+  if(overrideText===null){
+    input.value="";
+    input.style.height="auto";
+    // Refocus immédiat pour que le clavier reste ouvert
+    requestAnimationFrame(()=>input.focus({preventScroll:true}));
+  }
   if(fromIndex!==null){
     const msgsDom=document.getElementById("messages"),all=[...msgsDom.children];
     for(let i=fromIndex;i<all.length;i++)all[i].remove();
@@ -1617,17 +1622,13 @@ function setBusy(v){
   busy=v;
   document.getElementById("send-btn").disabled=v;
   if(!v){
-    // Refocus uniquement si l'input était actif avant la génération
     const inp=document.getElementById("msg-input");
-    if(inp&&_inputWasFocused){
-      inp.focus({preventScroll:true});
-    }
+    if(inp) setTimeout(()=>inp.focus({preventScroll:true}),50);
   }
 }
 let _inputWasFocused=false;
 document.getElementById("msg-input").addEventListener("focus",()=>{_inputWasFocused=true;});
 document.getElementById("msg-input").addEventListener("blur",()=>{
-  // Ne pas tracker le blur déclenché par sendMessage lui-même
   setTimeout(()=>{if(!busy)_inputWasFocused=false;},100);
 });
 function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");}
