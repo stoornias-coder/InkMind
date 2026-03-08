@@ -872,7 +872,7 @@ function renderModelList(){
     btn.className="tgl-btn"+(i===activeModelIdx?" on":"");
     btn.style.cssText="text-align:left;display:flex;align-items:center;gap:.5rem;width:100%;justify-content:space-between;";
     btn.innerHTML=`<span>${m.label}</span><span style="font-size:.55rem;color:${hasKey?"var(--gold-dim)":"var(--red)"}">${hasKey?"✓ clé ok":"✗ clé manquante"}</span>`;
-    btn.onclick=()=>{activeModelIdx=i;localStorage.setItem(MODEL_KEY,i);renderModelList();updateActiveIndicator();};
+    btn.onclick=()=>{activeModelIdx=i;_lastShownModelIdx=null;localStorage.setItem(MODEL_KEY,i);renderModelList();updateActiveIndicator();};
     list.appendChild(btn);
   });
   updateActiveIndicator();
@@ -1281,8 +1281,11 @@ RÈGLES :
 Ne change pas le sens ni la structure. Retourne le texte corrigé uniquement.`;
 
 // ══ API ══
-function showModelIndicator(modelLabel){
-  // Petit toast discret en bas du chat
+let _lastShownModelIdx=null;
+function showModelIndicator(modelLabel,idx){
+  // Montrer seulement si c'est un nouveau modèle de fallback (pas déjà affiché)
+  if(idx===_lastShownModelIdx)return;
+  _lastShownModelIdx=idx;
   let toast=document.getElementById("model-toast");
   if(!toast){toast=document.createElement("div");toast.id="model-toast";toast.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:.25rem .75rem;font-size:.6rem;color:var(--gold-dim);z-index:100;pointer-events:none;transition:opacity .4s;";document.body.appendChild(toast);}
   toast.textContent="✦ "+modelLabel;toast.style.opacity="1";
@@ -1303,7 +1306,7 @@ async function orStream(messages,onChunk){
     const r=await tryFetch(m.url,key,{model:m.model,max_tokens:MAX_TOKENS,stream:true,messages},true);
     if(r.status===429){continue;}// Rate limit → essayer suivant
     if(!r.ok){const e=await r.text();throw new Error(`API ${r.status}: ${e.slice(0,100)}`);}
-    if(idx!==activeModelIdx)showModelIndicator(m.label);
+    if(idx!==activeModelIdx)showModelIndicator(m.label,idx);
     const reader=r.body.getReader(),dec=new TextDecoder();
     let buf="",full="";
     while(true){
@@ -1616,7 +1619,9 @@ function setStatus(txt){removeStatus();if(!txt)return;const el=document.createEl
 function removeStatus(){const e=document.getElementById("st");if(e)e.remove();}
 function scrollBottom(){
   const m=document.getElementById("messages");
+  if(!m)return;
   m.scrollTop=m.scrollHeight;
+  updateScrollBtn();
 }
 
 function updateScrollBtn(){
