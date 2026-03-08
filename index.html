@@ -737,17 +737,18 @@ document.addEventListener("paste",function(e){
 // ══ BACK BUTTON HANDLER (Capacitor/Android — bouton ET gestes) ══
 // ══ NAVIGATION STACK ══
 const _navStack=[];
+
 function showScreen(id){
   document.querySelectorAll("#main .screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
-function navigateTo(id,onBack){
-  // onBack : fonction optionnelle à appeler au lieu du comportement par défaut
-  _navStack.push({id:document.querySelector(".screen.active")?.id||"home", onBack});
+
+// Naviguer VERS un écran en empilant l'écran actuel
+function navigateTo(id,restore){
+  const currentId=document.querySelector(".screen.active")?.id||"home";
+  _navStack.push({id:currentId,restore:restore||null});
   showScreen(id);
 }
-function goSettings(){navigateTo("settings-page",null);loadSettingsPage();}
-function goProfile(){navigateTo("profile-page",null);loadProfilePage();}
 
 function handleBack(){
   if(document.getElementById("sidebar").classList.contains("open")){closeSB();return;}
@@ -758,16 +759,19 @@ function handleBack(){
     try{if(window.Capacitor?.Plugins?.App)window.Capacitor.Plugins.App.exitApp();}catch{}
     return;
   }
-  // Dépiler
   if(_navStack.length>0){
     const prev=_navStack.pop();
-    if(prev.onBack){prev.onBack();return;}
     showScreen(prev.id);
-    if(prev.id==="home")renderAll();
+    if(prev.restore)prev.restore();
+    else if(prev.id==="home")renderAll();
     return;
   }
+  // Fallback si stack vide
   showScreen("home");renderAll();
 }
+
+function goSettings(){navigateTo("settings-page",null);loadSettingsPage();}
+function goProfile(){navigateTo("profile-page",null);loadProfilePage();}
 document.addEventListener("backbutton",function(e){e.preventDefault();handleBack();},false);
 (function(){
   function initCapacitorBack(){
@@ -1036,7 +1040,7 @@ function startWorldChat(mode){
   S.messages.push({role:"assistant",content:md(rawOpener),rawText:rawOpener,charId:virtualChar.id,sessionId:S.id});
   S.hist.push(["assistant",rawOpener]);
   addBot(md(rawOpener),virtualChar,false);
-  autosave();renderSBSessions();showScreen("chat");
+  autosave();renderSBSessions();navigateTo("chat",null);
 }
 
 // ══ CHAR CREATOR ══
@@ -1069,9 +1073,7 @@ function openCharCreatorForWorld(){
   charCreatorFrom="world";
 }
 function creatorBack(){
-  if(charCreatorFrom==="world")openWorldDetail(currentWorldId);
-  else if(S?.char?.id===editingCharId)showScreen("chat");
-  else{showScreen("home");renderAll();}
+  handleBack();
 }
 function onCharPhoto(url){
   if(!url.trim()){charPhoto=null;document.getElementById("char-photo-circle").innerHTML="✦";return;}
@@ -1140,7 +1142,7 @@ function openWorldCreator(worldId){
 }
 function worldCreatorBack(){
   if(editingWorldId){openWorldDetail(editingWorldId);}
-  else{showScreen("home");renderAll();}
+  else{handleBack();}
 }
 function onWorldPhoto(url){
   if(!url.trim()){worldPhoto=null;document.getElementById("world-photo-sq").innerHTML="✦";return;}
@@ -1424,7 +1426,7 @@ function startChatWithChar(charId){
   if(existing){
     existing.char=char;S=existing;setupChatUI();clearMsgs();
     (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
-    showScreen("chat");scrollBottom();renderSBSessions();return;
+    navigateTo("chat",null);scrollBottom();renderSBSessions();return;
   }
   newChatWithChar(charId);
 }
@@ -1439,7 +1441,7 @@ function newChatWithChar(charId){
   S.messages.push({role:"assistant",content:md(rawOpener),rawText:rawOpener,charId:char.id,sessionId:S.id});
   S.hist.push(["assistant",rawOpener]);
   addBot(md(rawOpener),char,false);
-  autosave();renderSBSessions();showScreen("chat");
+  autosave();renderSBSessions();navigateTo("chat",null);
 }
 function resumeSession(sid){
   const sess=loadSessions().find(s=>s.id===sid);if(!sess||!requireKey())return;
@@ -1447,7 +1449,7 @@ function resumeSession(sid){
   if(sess.summary&&sess.char&&sess.messages?.length){const firstCharId=sess.messages.find(m=>m.charId)?.charId;if(firstCharId&&firstCharId!==sess.charId)sess.summary="";}
   S=sess;setupChatUI();clearMsgs();
   (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
-  showScreen("chat");scrollBottom();closeSB();
+  navigateTo("chat",null);scrollBottom();closeSB();
 }
 function setupChatUI(){
   const char=S?.char;
@@ -1916,7 +1918,7 @@ function confirmImport(){
 }
 
 // ══ NAV ══
-function goHome(){showScreen("home");renderAll();S=null;}
+function goHome(){_navStack.length=0;showScreen("home");renderAll();S=null;}
 function fileToDataURL(file){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});}
 async function onCharPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);input.value="";onCharPhoto(url);}
 async function onWorldPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);input.value="";onWorldPhoto(url);}
