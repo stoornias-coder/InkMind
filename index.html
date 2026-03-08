@@ -656,7 +656,6 @@ const MODELS = [
   {id:"groq-llama4",   label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
   {id:"groq-llama3",   label:"Llama 3.3 70B",           model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
   {id:"groq-llama3-8", label:"Llama 3.1 8B (Rapide)",  model:"llama-3.1-8b-instant",                          url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:900},
-  {id:"groq-gemma2",   label:"Gemma 2 9B",              model:"gemma2-9b-it",                                  url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:900},
   {id:"groq-mistral",  label:"Mistral Saba 24B",        model:"mistral-saba-24b",                              url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
   {id:"groq-qwen",     label:"Qwen QwQ 32B",            model:"qwen-qwq-32b",                                  url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
 ];
@@ -1249,13 +1248,14 @@ Language: ${lang}
 Player gender: ${genderNote}
 
 ━━━ CRITICAL RULES ━━━
-ALWAYS address the player as "tu" (second person) in narration — NEVER "vous", NEVER their name in narration. Writing "vous" for the player is a critical error.
+ALWAYS address the player as "tu" (second person) — in narration AND in ALL character dialogue. Every single character (servants, strangers, family members, everyone) must use "tu/toi/ton/ta/tes" when speaking TO the player. NEVER "vous" under any circumstance. A character switching between "tu" and "vous" for the player is a critical error. This rule overrides any social formality the character might have.
 CRITICAL — PLAYER IDENTITY: The player is ONE specific person. They are NOT every female character in the scene. If the scene contains multiple women (e.g. the player + Payal + Anjali), NEVER confuse them. When a character addresses "tu", it must be directed at THE PLAYER specifically — not at another named character in the scene. Before writing dialogue addressed to "tu", ask: is this character logically talking to the PLAYER right now, or to someone else?
 CRITICAL: After prepositions (entre, avec, pour, sans, chez, sur, etc.) ALWAYS use "toi", NEVER "tu". Example: "entre toi et moi" ✅ — "entre tu et moi" ❌. "avec toi" ✅ — "avec tu" ❌.
 CRITICAL POV RULE:
 - Narrator speaks TO the player → "tu/toi/ton/ta/tes" ALWAYS.
-- A character speaks DIRECTLY TO the player (face to face) → "tu/toi" OK.
+- A character speaks DIRECTLY TO the player (face to face) → "tu/toi/ton/ta/tes" ALWAYS.
 - A character speaks TO SOMEONE ELSE *about* the player → ALWAYS "il/elle/lui/son/sa/ses", NEVER "tu/toi".
+- CRITICAL: "son/sa/ses" = belongs to a third person. "ton/ta/tes" = belongs to the player. Example: Nani says to Arnav about the player → "son chauffeur" is WRONG → "le chauffeur" or context makes clear it is Arnav's. But if Nani speaks TO the player → "ton chauffeur" ✅.
 Example ERROR: Arnav says to his driver "Je veux savoir qui tu es" — WRONG.
 Correct: "Je veux savoir qui elle est et ce qu'elle fait ici." ✅
 ${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
@@ -1285,9 +1285,11 @@ CRITICAL: Always respect what has already been established in the conversation h
 - If the player has been PRETENDING not to know someone → all characters must treat them as strangers.
 - NEVER have a character reference a relationship, event, or conversation that has not happened IN THIS SESSION.
 - Before writing a character's reaction, check: "does this character logically know this based on what happened?" If not → they cannot reference it.
+- A secondary character (friend, sister, cousin) does NOT know insider secrets about powerful families unless they have been explicitly established as knowing. They speak from their OWN experience only.
+- Characters speak like REAL PEOPLE — short, natural sentences. NOT like a narrator summarizing information. No speeches, no revelations out of nowhere.
 
 ━━━ ANTI-LOOP RULE ━━━
-Before writing, check: did I write this same sentence in my last response? If yes → skip it, write what happens NEXT.
+Before writing, check: did I write this same sentence or description in ANY of my previous responses in this session? If yes → NEVER write it again. Vary physical descriptions, actions, and reactions. A character cannot cross their arms + stare intensely more than once.
 STRICT NAME RULE: Never use a character's name more than ONCE per paragraph. After the first mention, use "il", "elle", or a gesture/action without naming. Example wrong: "Test sourit. Test dit. Test penche la tête." → Correct: "Test sourit. « Bonjour. » Il penche la tête."
 
 ━━━ DIALOGUE FORMAT ━━━
