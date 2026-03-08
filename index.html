@@ -779,7 +779,13 @@ document.addEventListener("backbutton",function(e){e.preventDefault();handleBack
   }
   if(document.readyState==="complete"){initCapacitorBack();}else{window.addEventListener("load",initCapacitorBack);}
 })();
-window.addEventListener("popstate",function(){history.pushState(null,"",window.location.href);});
+// Swipe iOS / geste retour → popstate → handleBack
+window.addEventListener("popstate",function(e){
+  e.preventDefault();
+  handleBack();
+  // Repousser l'état pour garder le geste disponible
+  history.pushState(null,"",window.location.href);
+});
 history.pushState(null,"",window.location.href);
 
 // ══ SPLASH ══
@@ -1515,12 +1521,22 @@ async function sendMessage(overrideText=null,fromIndex=null){
     document.getElementById("messages").appendChild(el);scrollBottom();
     let rawFull="";
     let streamStarted=false;
+    let _rafPending=false;
+    let _lastPartial="";
     rawFull=await orStream(msgs,(partial)=>{
-      const bubble=document.getElementById("stream-bubble");
-      if(bubble){
-        if(!streamStarted){streamStarted=true;}
-        bubble.innerHTML=partialMd(partial);
-        scrollBottom();
+      _lastPartial=partial;
+      if(!streamStarted){
+        streamStarted=true;
+        const bubble=document.getElementById("stream-bubble");
+        if(bubble)bubble.innerHTML="";
+      }
+      if(!_rafPending){
+        _rafPending=true;
+        requestAnimationFrame(()=>{
+          _rafPending=false;
+          const bubble=document.getElementById("stream-bubble");
+          if(bubble){bubble.innerHTML=partialMd(_lastPartial);scrollBottom();}
+        });
       }
     });
     const bubble=document.getElementById("stream-bubble");
@@ -2020,4 +2036,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
