@@ -1878,8 +1878,14 @@ function confirmImportAll(){
     }
     // Format export univers seul {world,chars}
     else if(data.world){
-      if(!existingWorlds.find(x=>x.id===data.world.id)){existingWorlds.unshift(data.world);addedW++;}
-      (data.chars||[]).forEach(c=>{if(!existingChars.find(x=>x.id===c.id)){existingChars.unshift(c);addedC++;}});
+      const wIdx=existingWorlds.findIndex(x=>x.id===data.world.id);
+      if(wIdx>=0){existingWorlds[wIdx]=data.world;}else{existingWorlds.unshift(data.world);}
+      addedW++;
+      (data.chars||[]).forEach(c=>{
+        const cIdx=existingChars.findIndex(x=>x.id===c.id);
+        if(cIdx>=0){existingChars[cIdx]=c;}else{existingChars.unshift(c);}
+        addedC++;
+      });
     }
     // Format liste de personnages
     else if(Array.isArray(data)){
