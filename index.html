@@ -170,7 +170,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 .world-section-title{font-size:.5rem;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);}
 
 /* ══ SHARED PAGE LAYOUT ══ */
-#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;}
+#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 
 .field{display:flex;flex-direction:column;gap:.25rem;}
 .field label,.field-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);}
@@ -1591,7 +1591,7 @@ function startWorldFocusChat(charId){
     const sys=buildSystemPrompt(focusChar);
     orCall([
       {role:"system",content:sys},
-      {role:"user",content:"[Début de session FOCUS. Tu joues UNIQUEMENT "+char.name+". Ignore complètement la scène d'ouverture de l'univers. Génère UNE courte phrase d'introduction naturelle de "+char.name+" s'adressant directement au joueur ('tu'). Max 2 phrases. Pas de narration, pas d'autres personnages, pas de description de décor. Juste "+char.name+" qui parle.]"}
+      {role:"user",content:"[FOCUS SESSION START. You play ONLY "+char.name+". CRITICAL: Do NOT use any universe opening scene. Do NOT describe any location, mansion, reception or event. Do NOT introduce other characters. Generate ONE short natural line from "+char.name+" speaking directly to the player. In character, faithful to their personality. Nothing else.]"}
     ],300).then(opener=>{
       removeStatus();
       if(!opener){opener="...";}
