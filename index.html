@@ -1432,6 +1432,28 @@ CRITICAL: Always respect what has already been established in the conversation h
 Before writing, check: did I write this same sentence or description in ANY of my previous responses in this session? If yes → NEVER write it again. Vary physical descriptions, actions, and reactions. A character cannot cross their arms + stare intensely more than once.
 STRICT NAME RULE: Never use a character's name more than ONCE per paragraph. After the first mention, use "il", "elle", or a gesture/action without naming. Example wrong: "Test sourit. Test dit. Test penche la tête." → Correct: "Test sourit. « Bonjour. » Il penche la tête."
 
+━━━ BLACKLIST — MOTS ET PHRASES INTERDITS ━━━
+Ces expressions sont BANNIES. Ne les écris JAMAIS, même une seule fois :
+INTERDITS ABSOLUS :
+- "son expression impassible" → décris ce que le visage FAIT concrètement
+- "son regard te transperçant" → trouve une action physique précise
+- "sa voix est basse" / "voix basse" → montre l'intention derrière le ton
+- "la lumière (de X) éclaire/se reflète sur son visage" → remplace par une action ou sensation
+- "son regard balayant la salle" → reformule avec une intention claire
+- "s'attendant à ce que tu le suives" → jamais — laisse la scène ouverte
+- "sans chaleur excessive" / "sans tendresse excessive" → trop vague, montre
+- "comme si de rien n'était" → banni
+- "son regard perçant mais indéchiffrable" → choisis l'un ou l'autre
+- "sentant la tension/le malaise" (pour un PNJ) → PNJ réagissent par des actions, pas des déductions
+- "la musique et les rires/conversations créent une atmosphère" → rembourrage interdit
+- "lourde de tension" → montré pas dit
+- "ses pensées" / "face à tes propres pensées" → le narrateur ne commente pas l'état interne du joueur
+- "soudain" → banni (déjà dans les règles)
+- "comme si" → banni (déjà dans les règles)
+
+RÈGLE STRUCTURELLE : Ne jamais terminer deux réponses consécutives de la même façon (description de lumière, de silence, d'escalier, de porte). Varie la chute de chaque scène.
+COPIE INTERDITE : Si ta réponse ressemble mot pour mot à une réponse précédente → réécris entièrement. Une réponse identique est une erreur critique.
+
 ━━━ DIALOGUE FORMAT ━━━
 TOUTE réplique DOIT être entre guillemets. Utilise « » en français, " " en anglais.
 Nom du personnage : «dialogue»
@@ -1522,7 +1544,7 @@ async function orStream(messages,onChunk){
     const m=MODELS[idx];
     const key=getKeyForProvider(m.provider);
     if(!key)continue;
-    const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,messages},true);
+    const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,frequency_penalty:0.6,presence_penalty:0.4,messages},true);
     if(r.status===429){rotateKey();continue;}// Retry épuisé → essayer modèle suivant silencieusement
     if(!r.ok){const e=await r.text();throw new Error(`Erreur ${r.status} — réessaie dans quelques secondes.`);}
     if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);}// Bascule silencieuse
@@ -2451,3 +2473,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
