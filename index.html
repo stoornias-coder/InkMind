@@ -898,9 +898,10 @@ function renderModelList(){
   MODELS.forEach((m,i)=>{
     const hasKey=groqKey.length>8;
     const btn=document.createElement("button");
-    btn.className="tgl-btn"+(i===activeModelIdx?" on":"");
+    const isActive=i===activeModelIdx;
+    btn.className="tgl-btn"+(isActive?" on":"");
     btn.style.cssText="text-align:left;display:flex;align-items:center;gap:.5rem;width:100%;justify-content:space-between;";
-    btn.innerHTML=`<span>${m.label}</span><span style="font-size:.55rem;color:${hasKey?"var(--gold-dim)":"var(--red)"}">${hasKey?"✓ clé ok":"✗ clé manquante"}</span>`;
+    btn.innerHTML=`<span>${isActive?"✦ ":""}${m.label}</span><span style="font-size:.55rem;color:${hasKey?"var(--gold-dim)":"var(--red)"}">${hasKey?"✓ clé ok":"✗ clé manquante"}</span>`;
     btn.onclick=()=>{activeModelIdx=i;_lastShownModelIdx=null;localStorage.setItem(MODEL_KEY,i);renderModelList();updateActiveIndicator();};
     list.appendChild(btn);
   });
@@ -1378,7 +1379,7 @@ function showModelIndicator(modelLabel,idx){
   _lastShownModelIdx=idx;
   let toast=document.getElementById("model-toast");
   if(!toast){toast=document.createElement("div");toast.id="model-toast";toast.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--gold-dim);border-radius:20px;padding:.35rem 1rem;font-size:.65rem;color:var(--gold);z-index:100;pointer-events:none;transition:opacity .4s;font-weight:400;letter-spacing:.05em;";document.body.appendChild(toast);}
-  toast.textContent="⚡ Basculement → "+modelLabel;toast.style.opacity="1";
+  toast.textContent="✦ Basculement → "+modelLabel;toast.style.opacity="1";
   clearTimeout(toast._t);toast._t=setTimeout(()=>toast.style.opacity="0",4000);
   // Also update active model index to reflect the actual model being used
   activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);
@@ -2233,4 +2234,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
