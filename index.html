@@ -171,6 +171,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 
 /* ══ SHARED PAGE LAYOUT ══ */
 #profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+/* FIX CLAVIER MOBILE : padding bas dynamique pour que les champs restent accessibles */
+#char-creator .page-body,#world-creator .page-body,#profile-page .page-body,#settings-page .page-body{
+  padding-bottom:40vh;
+}
 
 .field{display:flex;flex-direction:column;gap:.25rem;}
 .field label,.field-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);}
@@ -1297,7 +1301,8 @@ ${worldFirstMsg}
 ${isFocus?`━━━ FOCUS MODE — SOLO SESSION ━━━
 You are ${char._focusCharName||char.name}. ONLY ${char._focusCharName||char.name}. This is a private one-on-one conversation.
 ABSOLUTE RULES:
-- Write ONLY as ${char._focusCharName||char.name} in THIRD PERSON: "${char._focusCharName||char.name} sourit", "${char._focusCharName||char.name} répond". NEVER "je/me/moi".
+- Write ${char._focusCharName||char.name} in THIRD PERSON: "${char._focusCharName||char.name} sourit", "${char._focusCharName||char.name} dit". NEVER "je/me/moi" for the character.
+- The narrator addresses the PLAYER in second person "tu/toi/ton/ta/tes" — ALWAYS. When ${char._focusCharName||char.name} speaks TO the player, they use "tu/toi". When narrating what ${char._focusCharName||char.name} does IN RELATION to the player, use "te/toi/ton/ta/tes": "${char._focusCharName||char.name} te regarde", "${char._focusCharName||char.name} s'approche de toi". NEVER describe the player as a named third party ("il observe Khushi", "elle regarde Khushi") — the player is always "tu/toi".
 - NO other characters exist unless the player introduces them.
 - NO mansion, NO reception, NO other universe events — you have NO knowledge of the universe opening scene.
 - NEVER invent actions for the player.
@@ -1546,11 +1551,10 @@ function showWorldCharOptions(charId){
   document.getElementById("world-char-solo-btn").onclick=()=>{closeModal("world-char-focus-modal");startChatWithChar(charId);};
   modal.classList.add("open");
 }
-function startWorldFocusChat(charId){
-  if(!requireKey(()=>startWorldFocusChat(charId)))return;
+function startWorldFocusChat(charId,forceNew){
+  if(!requireKey(()=>startWorldFocusChat(charId,forceNew)))return;
   const char=loadChars().find(c=>c.id===charId);if(!char||!char.worldId)return startChatWithChar(charId);
   const world=loadWorlds().find(w=>w.id===char.worldId);if(!world)return startChatWithChar(charId);
-  // Create a focused char object: solo char but with world context injected
   const focusChar={
     ...char,
     _focusMode:true,
@@ -1561,17 +1565,20 @@ function startWorldFocusChat(charId){
     _worldBackstory:world.backstory||char.backstory||"",
     _focusCharName:char.name
   };
-  // Look for existing focus session
-  const sessions=loadSessions().filter(s=>s.charId===charId&&s._focusMode);
-  const withMsg=sessions.filter(s=>(s.messages||[]).some(m=>m.role==="user"));
-  const pool=withMsg.length?withMsg:sessions;
-  const existing=pool.sort((a,b)=>(b.savedAt||b.createdAt)-(a.savedAt||a.createdAt))[0];
-  if(existing){
-    existing.char=focusChar;existing._focusMode=true;S=existing;
-    setupChatUI();clearMsgs();
-    (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,focusChar,false,i);});
-    navigateTo("chat",null);scrollBottom();renderSBSessions();return;
+  // Chercher session existante sauf si forceNew
+  if(!forceNew){
+    const sessions=loadSessions().filter(s=>s.charId===charId&&s._focusMode);
+    const withMsg=sessions.filter(s=>(s.messages||[]).some(m=>m.role==="user"));
+    const pool=withMsg.length?withMsg:sessions;
+    const existing=pool.sort((a,b)=>(b.savedAt||b.createdAt)-(a.savedAt||a.createdAt))[0];
+    if(existing){
+      existing.char=focusChar;existing._focusMode=true;S=existing;
+      setupChatUI();clearMsgs();
+      (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,focusChar,false,i);});
+      navigateTo("chat",null);scrollBottom();renderSBSessions();return;
+    }
   }
+  // Nouvelle session
   S={id:"sess_"+Date.now(),title:char.name+" ✦",charId:char.id,char:focusChar,_focusMode:true,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
   setupChatUI();clearMsgs();
   const userName=getUserName();
@@ -1582,12 +1589,9 @@ function startWorldFocusChat(charId){
     S.messages.push({role:"assistant",content:md(opener),rawText:opener,charId:char.id,sessionId:S.id});
     S.hist.push(["assistant",opener]);
     addBot(md(opener),focusChar,false);
-    autosave();renderSBSessions();navigateTo("chat",null);
-  } else {
-    // Pas de firstMsg → chat vide, même comportement qu'un perso solo
-    navigateTo("chat",null);
-    autosave();renderSBSessions();
   }
+  // Pas de firstMsg → chat vide, l'utilisateur parle en premier
+  autosave();renderSBSessions();navigateTo("chat",null);
 }
 
 function startChatWithChar(charId){
@@ -2258,6 +2262,9 @@ function newCurrentChat(){
   if(S.char.id.startsWith("world_")){
     // Chat libre d'univers → nouveau chat libre
     startWorldChat("free");
+  } else if(S.char.worldId){
+    // Perso d'univers en focus → nouvelle session focus propre
+    startWorldFocusChat(S.char.id,true);
   } else {
     newChatWithChar(S.char.id);
   }
@@ -2284,21 +2291,29 @@ let _lastVPHeight=window.visualViewport?.height||window.innerHeight;
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize",()=>{
     const chatActive=document.getElementById("chat")?.classList.contains("active");
+    const creatorActive=["char-creator","world-creator","profile-page","settings-page"]
+      .some(id=>document.getElementById(id)?.classList.contains("active"));
     const app=document.getElementById("app");
     const newH=window.visualViewport.height;
     const delta=Math.abs(newH-_lastVPHeight);
     _lastVPHeight=newH;
-    // Ignorer les micro-changements (barre de notif enregistrement = <80px)
-    // Seul le vrai clavier change de >100px
     if(delta<100)return;
     if(app){
-      if(chatActive){
+      if(chatActive||creatorActive){
         app.style.height=newH+"px";
       } else {
         app.style.height="";
       }
     }
-    if(chatActive) fixLayout();
+    if(chatActive)fixLayout();
+    if(creatorActive){
+      setTimeout(()=>{
+        const focused=document.activeElement;
+        if(focused&&(focused.tagName==="INPUT"||focused.tagName==="TEXTAREA")){
+          focused.scrollIntoView({behavior:"smooth",block:"center"});
+        }
+      },150);
+    }
   });
 }
 
@@ -2348,4 +2363,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
