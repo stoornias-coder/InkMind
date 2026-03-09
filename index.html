@@ -150,7 +150,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 .hdr-btn{background:none;border:none;color:var(--text-dim);font-size:.95rem;cursor:pointer;padding:.15rem;}
 .hdr-btn:active{color:var(--gold);}
 .page-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:300;color:var(--gold);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.page-body{padding:.9rem 1rem 2rem;display:flex;flex-direction:column;gap:.85rem;max-width:500px;width:100%;margin:0 auto;}
+.page-body{padding:.9rem 1rem 1rem;display:flex;flex-direction:column;gap:.85rem;max-width:500px;width:100%;margin:0 auto;}
 
 .world-banner{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:.9rem 1rem;display:flex;gap:.85rem;align-items:flex-start;}
 .world-banner-img{width:64px;height:64px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--gold-dim);}
@@ -171,10 +171,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 
 /* ══ SHARED PAGE LAYOUT ══ */
 #profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
-/* FIX CLAVIER MOBILE : padding bas dynamique pour que les champs restent accessibles */
-#char-creator .page-body,#world-creator .page-body,#profile-page .page-body,#settings-page .page-body{
-  padding-bottom:40vh;
-}
+/* FIX CLAVIER MOBILE : espace supplémentaire en bas pour scroller jusqu'au dernier champ */
+#char-creator .page-body,#world-creator .page-body{padding-bottom:35vh;}
 
 .field{display:flex;flex-direction:column;gap:.25rem;}
 .field label,.field-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);}
@@ -1033,7 +1031,7 @@ function renderWorldChars(worldId){
   chars.forEach(char=>{
     const av=char.photo?`<img src="${char.photo}" alt="${char.name}">`:(char.name.charAt(0).toUpperCase());
     const row=document.createElement("div");row.className="card";
-    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div><button class="card-more" onclick="toggleDropdown(event,'wc_${char.id}')">···</button><div class="dropdown" id="dd-wc_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();startWorldFocusChat('${char.id}')">Chat solo</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
+    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div><button class="card-more" onclick="toggleDropdown(event,'wc_${char.id}')">···</button><div class="dropdown" id="dd-wc_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();startWorldFocusChat('${char.id}')">Nouveau chat</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
     row.querySelector(".card-info").addEventListener("click",()=>startWorldFocusChat(char.id));
     row.querySelector(".card-img").addEventListener("click",()=>startWorldFocusChat(char.id));
     list.appendChild(row);
@@ -1302,7 +1300,7 @@ ${isFocus?`━━━ FOCUS MODE — SOLO SESSION ━━━
 You are ${char._focusCharName||char.name}. ONLY ${char._focusCharName||char.name}. This is a private one-on-one conversation.
 ABSOLUTE RULES:
 - Write ${char._focusCharName||char.name} in THIRD PERSON: "${char._focusCharName||char.name} sourit", "${char._focusCharName||char.name} dit". NEVER "je/me/moi" for the character.
-- The narrator addresses the PLAYER in second person "tu/toi/ton/ta/tes" — ALWAYS. When ${char._focusCharName||char.name} speaks TO the player, they use "tu/toi". When narrating what ${char._focusCharName||char.name} does IN RELATION to the player, use "te/toi/ton/ta/tes": "${char._focusCharName||char.name} te regarde", "${char._focusCharName||char.name} s'approche de toi". NEVER describe the player as a named third party ("il observe Khushi", "elle regarde Khushi") — the player is always "tu/toi".
+- The player is ALWAYS "tu/toi/ton/ta/tes" — in narration AND in ${char._focusCharName||char.name}'s dialogue. NEVER use the player's name as a third party. "${char._focusCharName||char.name} te regarde" ✅ — "${char._focusCharName||char.name} regarde Khushi" ❌.
 - NO other characters exist unless the player introduces them.
 - NO mansion, NO reception, NO other universe events — you have NO knowledge of the universe opening scene.
 - NEVER invent actions for the player.
@@ -1565,7 +1563,6 @@ function startWorldFocusChat(charId,forceNew){
     _worldBackstory:world.backstory||char.backstory||"",
     _focusCharName:char.name
   };
-  // Chercher session existante sauf si forceNew
   if(!forceNew){
     const sessions=loadSessions().filter(s=>s.charId===charId&&s._focusMode);
     const withMsg=sessions.filter(s=>(s.messages||[]).some(m=>m.role==="user"));
@@ -1578,7 +1575,6 @@ function startWorldFocusChat(charId,forceNew){
       navigateTo("chat",null);scrollBottom();renderSBSessions();return;
     }
   }
-  // Nouvelle session
   S={id:"sess_"+Date.now(),title:char.name+" ✦",charId:char.id,char:focusChar,_focusMode:true,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
   setupChatUI();clearMsgs();
   const userName=getUserName();
@@ -1590,8 +1586,7 @@ function startWorldFocusChat(charId,forceNew){
     S.hist.push(["assistant",opener]);
     addBot(md(opener),focusChar,false);
   }
-  // Pas de firstMsg → chat vide, l'utilisateur parle en premier
-  autosave();renderSBSessions();navigateTo("chat",null);
+  autosave();renderSBSessions();if(forceNew){showScreen("chat");}else{navigateTo("chat",null);}
 }
 
 function startChatWithChar(charId){
@@ -2260,10 +2255,9 @@ function newWorldChat(worldId){
 function newCurrentChat(){
   if(!S?.char)return;
   if(S.char.id.startsWith("world_")){
-    // Chat libre d'univers → nouveau chat libre
     startWorldChat("free");
   } else if(S.char.worldId){
-    // Perso d'univers en focus → nouvelle session focus propre
+    // Perso d'univers : nouvelle session Focus sans ajouter dans la pile de navigation
     startWorldFocusChat(S.char.id,true);
   } else {
     newChatWithChar(S.char.id);
@@ -2299,18 +2293,15 @@ if(window.visualViewport){
     _lastVPHeight=newH;
     if(delta<100)return;
     if(app){
-      if(chatActive||creatorActive){
-        app.style.height=newH+"px";
-      } else {
-        app.style.height="";
-      }
+      if(chatActive||creatorActive){app.style.height=newH+"px";}
+      else{app.style.height="";}
     }
     if(chatActive)fixLayout();
     if(creatorActive){
       setTimeout(()=>{
-        const focused=document.activeElement;
-        if(focused&&(focused.tagName==="INPUT"||focused.tagName==="TEXTAREA")){
-          focused.scrollIntoView({behavior:"smooth",block:"center"});
+        const f=document.activeElement;
+        if(f&&(f.tagName==="INPUT"||f.tagName==="TEXTAREA")){
+          f.scrollIntoView({behavior:"smooth",block:"center"});
         }
       },150);
     }
