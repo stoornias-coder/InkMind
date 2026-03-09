@@ -1277,18 +1277,18 @@ function buildSystemPrompt(char){
   return`You are the narrator of an immersive second-person interactive story. You ALWAYS write in second person: "tu/te/toi/ton/ta/tes" for the player — NEVER "je/me/moi/mon/ma/mes". Using first person ("je", "dis-je", "je me redresse") for the player is a CRITICAL ERROR. The player is always "tu". Always.
 
 ━━━ THE WORLD ━━━
-${isRpg?`Universe/RPG: ${char.name}
-This is a multi-character RPG universe. You play ALL named characters from the backstory.`:`Main character: ${char.name}`}
+${isFocus?`Single character session: ${char._focusCharName||char.name}`:(isRpg?`Universe/RPG: ${char.name}
+This is a multi-character RPG universe. You play ALL named characters from the backstory.`:`Main character: ${char.name}`)}
 Description: ${char.desc||""}
 Tags: ${tags}
-${worldLore?`
+${(!isFocus&&worldLore)?`
 ━━━ LORE & WORLD RULES (PRIORITY SOURCE — follow this strictly) ━━━
 ${worldLore}
 ━━━ END LORE ━━━
 `:""}
 ━━━ CHARACTERS & BACKSTORY ━━━
 ${char.backstory||"not specified"}
-${worldFirstMsg?`
+${(!isFocus&&worldFirstMsg)?`
 ━━━ OPENING SCENE (this is how the story begins — respect this setup) ━━━
 ${worldFirstMsg}
 ━━━ END OPENING ━━━
