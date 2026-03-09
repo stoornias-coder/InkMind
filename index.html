@@ -1583,7 +1583,7 @@ function startWorldFocusChat(charId){
     const sys=buildSystemPrompt(focusChar);
     orCall([
       {role:"system",content:sys},
-      {role:"user",content:"[Début de session — génère une première phrase d'ouverture courte et naturelle en accord avec la personnalité de "+char.name+". Max 3 phrases. Ne pose pas de question.]"}
+      {role:"user",content:"[Début de session FOCUS. Tu joues UNIQUEMENT "+char.name+". Ignore complètement la scène d'ouverture de l'univers. Génère UNE courte phrase d'introduction naturelle de "+char.name+" s'adressant directement au joueur ('tu'). Max 2 phrases. Pas de narration, pas d'autres personnages, pas de description de décor. Juste "+char.name+" qui parle.]"}
     ],300).then(opener=>{
       removeStatus();
       if(!opener){opener="...";}
