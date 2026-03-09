@@ -657,7 +657,6 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 const MODELS = [
   {id:"groq-llama4",   label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
   {id:"groq-llama3",   label:"Llama 3.3 70B",           model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
-  {id:"groq-qwen",     label:"Qwen QwQ 32B",            model:"qwen-qwq-32b",                                  url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
 ];
 const GROQ_KEY_STORE = "inkmind_groq_key";
 const MODEL_KEY      = "inkmind_model";
@@ -680,6 +679,7 @@ function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const id
 // ══ STATE ══
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
 let activeModelIdx=parseInt(localStorage.getItem(MODEL_KEY)||"0");
+if(activeModelIdx>=MODELS.length||isNaN(activeModelIdx))activeModelIdx=0;
 // Compatibilité ancienne clé unique
 if(!groqKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;}
 let isDark=(localStorage.getItem("inkmind_theme")||"light")==="dark";
@@ -1374,13 +1374,16 @@ Ne change pas le sens ni la structure. Retourne le texte corrigé uniquement.`;
 // ══ API ══
 let _lastShownModelIdx=null;
 function showModelIndicator(modelLabel,idx){
-  // Montrer seulement si c'est un nouveau modèle de fallback (pas déjà affiché)
   if(idx===_lastShownModelIdx)return;
   _lastShownModelIdx=idx;
   let toast=document.getElementById("model-toast");
-  if(!toast){toast=document.createElement("div");toast.id="model-toast";toast.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:.25rem .75rem;font-size:.6rem;color:var(--gold-dim);z-index:100;pointer-events:none;transition:opacity .4s;";document.body.appendChild(toast);}
-  toast.textContent="✦ "+modelLabel;toast.style.opacity="1";
-  clearTimeout(toast._t);toast._t=setTimeout(()=>toast.style.opacity="0",2500);
+  if(!toast){toast=document.createElement("div");toast.id="model-toast";toast.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--gold-dim);border-radius:20px;padding:.35rem 1rem;font-size:.65rem;color:var(--gold);z-index:100;pointer-events:none;transition:opacity .4s;font-weight:400;letter-spacing:.05em;";document.body.appendChild(toast);}
+  toast.textContent="⚡ Basculement → "+modelLabel;toast.style.opacity="1";
+  clearTimeout(toast._t);toast._t=setTimeout(()=>toast.style.opacity="0",4000);
+  // Also update active model index to reflect the actual model being used
+  activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);
+  // Refresh model list if settings page is open
+  const list=document.getElementById("model-list");if(list)renderModelList();
 }
 
 async function tryFetch(url,key,body,stream){
@@ -2230,3 +2233,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
