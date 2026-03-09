@@ -1567,13 +1567,39 @@ function startWorldFocusChat(charId){
   S={id:"sess_"+Date.now(),title:char.name+" ✦",charId:char.id,char:focusChar,_focusMode:true,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
   setupChatUI();clearMsgs();
   const userName=getUserName();
-  const opener=(world.firstmsg?.trim()||char.firstMsg?.trim()||"Bonjour.")
-    .replace(/\{\{char\}\}/gi,char.name).replace(/\{\{user\}\}/gi,userName)
-    .replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
-  S.messages.push({role:"assistant",content:md(opener),rawText:opener,charId:char.id,sessionId:S.id});
-  S.hist.push(["assistant",opener]);
-  addBot(md(opener),focusChar,false);
-  autosave();renderSBSessions();navigateTo("chat",null);
+  if(char.firstMsg?.trim()){
+    // Use char's own first message
+    const opener=char.firstMsg.trim()
+      .replace(/\{\{char\}\}/gi,char.name).replace(/\{\{user\}\}/gi,userName)
+      .replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
+    S.messages.push({role:"assistant",content:md(opener),rawText:opener,charId:char.id,sessionId:S.id});
+    S.hist.push(["assistant",opener]);
+    addBot(md(opener),focusChar,false);
+    autosave();renderSBSessions();navigateTo("chat",null);
+  } else {
+    // Generate opening from char personality
+    navigateTo("chat",null);
+    setStatus("✦ "+char.name+" arrive...");
+    const sys=buildSystemPrompt(focusChar);
+    orCall([
+      {role:"system",content:sys},
+      {role:"user",content:"[Début de session — génère une première phrase d'ouverture courte et naturelle en accord avec la personnalité de "+char.name+". Max 3 phrases. Ne pose pas de question.]"}
+    ],300).then(opener=>{
+      removeStatus();
+      if(!opener){opener="...";}
+      S.messages.push({role:"assistant",content:md(opener),rawText:opener,charId:char.id,sessionId:S.id});
+      S.hist.push(["assistant",opener]);
+      addBot(md(opener),focusChar,false);
+      autosave();renderSBSessions();scrollBottom();
+    }).catch(()=>{
+      removeStatus();
+      const fallback=char.name+" est là.";
+      S.messages.push({role:"assistant",content:md(fallback),rawText:fallback,charId:char.id,sessionId:S.id});
+      S.hist.push(["assistant",fallback]);
+      addBot(md(fallback),focusChar,false);
+      autosave();renderSBSessions();
+    });
+  }
 }
 
 function startChatWithChar(charId){
