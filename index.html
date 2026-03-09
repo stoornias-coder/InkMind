@@ -171,7 +171,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 
 /* ══ SHARED PAGE LAYOUT ══ */
 #profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
-/* FIX CLAVIER MOBILE : espace supplémentaire en bas pour scroller jusqu'au dernier champ */
 #char-creator .page-body,#world-creator .page-body{padding-bottom:35vh;}
 
 .field{display:flex;flex-direction:column;gap:.25rem;}
@@ -1082,7 +1081,7 @@ function startWorldChat(mode){
   S.messages.push({role:"assistant",content:md(rawOpener),rawText:rawOpener,charId:virtualChar.id,sessionId:S.id});
   S.hist.push(["assistant",rawOpener]);
   addBot(md(rawOpener),virtualChar,false);
-  autosave();renderSBSessions();navigateTo("chat",null);
+  autosave();renderSBSessions();showScreen("chat");
 }
 
 // ══ CHAR CREATOR ══
@@ -1300,7 +1299,7 @@ ${isFocus?`━━━ FOCUS MODE — SOLO SESSION ━━━
 You are ${char._focusCharName||char.name}. ONLY ${char._focusCharName||char.name}. This is a private one-on-one conversation.
 ABSOLUTE RULES:
 - Write ${char._focusCharName||char.name} in THIRD PERSON: "${char._focusCharName||char.name} sourit", "${char._focusCharName||char.name} dit". NEVER "je/me/moi" for the character.
-- The player is ALWAYS "tu/toi/ton/ta/tes" — in narration AND in ${char._focusCharName||char.name}'s dialogue. NEVER use the player's name as a third party. "${char._focusCharName||char.name} te regarde" ✅ — "${char._focusCharName||char.name} regarde Khushi" ❌.
+- The player is ALWAYS "tu/toi/ton/ta/tes". NEVER name the player as a third party. "${char._focusCharName||char.name} te regarde" ✅ — "${char._focusCharName||char.name} regarde Khushi" ❌.
 - NO other characters exist unless the player introduces them.
 - NO mansion, NO reception, NO other universe events — you have NO knowledge of the universe opening scene.
 - NEVER invent actions for the player.
@@ -1572,7 +1571,7 @@ function startWorldFocusChat(charId,forceNew){
       existing.char=focusChar;existing._focusMode=true;S=existing;
       setupChatUI();clearMsgs();
       (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,focusChar,false,i);});
-      navigateTo("chat",null);scrollBottom();renderSBSessions();return;
+      showScreen("chat");scrollBottom();renderSBSessions();return;
     }
   }
   S={id:"sess_"+Date.now(),title:char.name+" ✦",charId:char.id,char:focusChar,_focusMode:true,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
@@ -1586,7 +1585,7 @@ function startWorldFocusChat(charId,forceNew){
     S.hist.push(["assistant",opener]);
     addBot(md(opener),focusChar,false);
   }
-  autosave();renderSBSessions();if(forceNew){showScreen("chat");}else{navigateTo("chat",null);}
+  autosave();renderSBSessions();showScreen("chat");
 }
 
 function startChatWithChar(charId){
@@ -1601,7 +1600,7 @@ function startChatWithChar(charId){
   if(existing){
     existing.char=char;S=existing;setupChatUI();clearMsgs();
     (S.messages||[]).forEach((m,i)=>{if(m._hidden)return;if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
-    navigateTo("chat",null);scrollBottom();renderSBSessions();return;
+    showScreen("chat");scrollBottom();renderSBSessions();return;
   }
   newChatWithChar(charId);
 }
@@ -1618,7 +1617,7 @@ function newChatWithChar(charId){
     S.hist.push(["assistant",rawOpener]);
     addBot(md(rawOpener),char,false);
   }
-  autosave();renderSBSessions();navigateTo("chat",null);
+  autosave();renderSBSessions();showScreen("chat");
 }
 function resumeSession(sid){
   const sess=loadSessions().find(s=>s.id===sid);if(!sess||!requireKey())return;
@@ -2257,7 +2256,6 @@ function newCurrentChat(){
   if(S.char.id.startsWith("world_")){
     startWorldChat("free");
   } else if(S.char.worldId){
-    // Perso d'univers : nouvelle session Focus sans ajouter dans la pile de navigation
     startWorldFocusChat(S.char.id,true);
   } else {
     newChatWithChar(S.char.id);
