@@ -472,12 +472,20 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     </div>
     <div class="page-body">
       <div class="api-field">
-        <label class="field-label">Clé Groq <span class="fhint">(console.groq.com)</span></label>
+        <label class="field-label">Clé Groq 1 <span class="fhint">(console.groq.com)</span></label>
         <div class="api-row">
           <input class="api-input" type="password" id="settings-groq-key" placeholder="gsk_..." autocomplete="off" spellcheck="false">
           <button class="api-reveal" onclick="toggleReveal('settings-groq-key',this)">Afficher</button>
         </div>
         <div class="api-status" id="groq-status-line">Aucune clé</div>
+      </div>
+      <div class="api-field" style="margin-top:.6rem;">
+        <label class="field-label">Clé Groq 2 <span class="fhint">optionnelle — rotation automatique</span></label>
+        <div class="api-row">
+          <input class="api-input" type="password" id="settings-groq-key2" placeholder="gsk_..." autocomplete="off" spellcheck="false">
+          <button class="api-reveal" onclick="toggleReveal('settings-groq-key2',this)">Afficher</button>
+        </div>
+        <div class="api-status" id="groq-status-line2">Aucune clé</div>
       </div>
       <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Enregistrer les clés →</button>
       <hr class="settings-divider">
@@ -673,7 +681,8 @@ const MODELS = [
   {id:"groq-llama4",   label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
   {id:"groq-llama3",   label:"Llama 3.3 70B",           model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
 ];
-const GROQ_KEY_STORE = "inkmind_groq_key";
+const GROQ_KEY_STORE  = "inkmind_groq_key";
+const GROQ_KEY2_STORE = "inkmind_groq_key2";
 const MODEL_KEY      = "inkmind_model";
 const SESS_KEY   = "inkmind_sess_v7";
 const CHARS_KEY  = "inkmind_chars_v7";
@@ -693,6 +702,8 @@ function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const id
 
 // ══ STATE ══
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
+let groqKey2=localStorage.getItem(GROQ_KEY2_STORE)||"";
+let _activeKeyIdx=0;// 0=clé1, 1=clé2 — rotation automatique
 let activeModelIdx=parseInt(localStorage.getItem(MODEL_KEY)||"0");
 if(activeModelIdx>=MODELS.length||isNaN(activeModelIdx))activeModelIdx=0;
 // Compatibilité ancienne clé unique
@@ -880,6 +891,7 @@ function selectGender(g){
 // ══ SETTINGS ══
 function loadSettingsPage(){
   document.getElementById("settings-groq-key").value=groqKey;
+  document.getElementById("settings-groq-key2").value=groqKey2;
   updateApiStatus();updateThemeBtn();updateLangBtns();renderModelList();
 }
 function toggleReveal(inputId,btn){
@@ -890,7 +902,10 @@ function toggleReveal(inputId,btn){
 }
 function saveApiKeys(){
   groqKey=document.getElementById("settings-groq-key").value.trim();
+  groqKey2=document.getElementById("settings-groq-key2").value.trim();
   if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
+  if(groqKey2)localStorage.setItem(GROQ_KEY2_STORE,groqKey2);else localStorage.removeItem(GROQ_KEY2_STORE);
+  _activeKeyIdx=0;// Reset rotation au save
   // Auto-sélectionner le premier modèle dont la clé est disponible
   const currentModel=MODELS[activeModelIdx];
   const currentKeyOk=currentModel&&groqKey.length>8;
@@ -910,7 +925,9 @@ function saveApiKeys(){
 }
 function updateApiStatus(){
   const gl=document.getElementById("groq-status-line");
-  if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
+  if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé 1 enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
+  const gl2=document.getElementById("groq-status-line2");
+  if(gl2)gl2.innerHTML=groqKey2.length>8?`<span class="api-status ok">Clé 2 enregistrée ✓ — rotation active</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
 }
 function renderModelList(){
   const list=document.getElementById("model-list");if(!list)return;
@@ -1482,6 +1499,14 @@ async function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 async function tryFetch(url,key,body,stream,attempt=0){
   const r=await fetch(url,{method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify(body)});
   if(r.status===429&&attempt<3){
+    rotateKey();// Basculer sur l'autre clé immédiatement
+    const keys=getKeys();
+    const newKey=getKeyForProvider("groq");
+    if(newKey&&newKey!==key){
+      // Autre clé dispo → retry immédiat sans attendre
+      return tryFetch(url,newKey,body,stream,attempt+1);
+    }
+    // Même clé (1 seule clé) → backoff
     const wait=[8000,15000,25000][attempt]||25000;
     setStatus(`⏳ Limite atteinte — reprise dans ${wait/1000}s…`);
     await sleep(wait);
@@ -1498,7 +1523,7 @@ async function orStream(messages,onChunk){
     const key=getKeyForProvider(m.provider);
     if(!key)continue;
     const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,messages},true);
-    if(r.status===429){continue;}// Retry épuisé → essayer modèle suivant silencieusement
+    if(r.status===429){rotateKey();continue;}// Retry épuisé → essayer modèle suivant silencieusement
     if(!r.ok){const e=await r.text();throw new Error(`Erreur ${r.status} — réessaie dans quelques secondes.`);}
     if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);}// Bascule silencieuse
     const reader=r.body.getReader(),dec=new TextDecoder();
@@ -1598,13 +1623,22 @@ function confirmRename(){const name=document.getElementById("rename-input").valu
 
 // ══ START / RESUME CHAT ══
 function requireKey(pendingFn){
-  if(!groqKey){
+  if(!groqKey&&!groqKey2){
     if(pendingFn)window._pendingAction=pendingFn;
     goSettings();return false;
   }
   return true;
 }
-function getKeyForProvider(provider){return groqKey;}
+function getKeys(){return[groqKey,groqKey2].filter(k=>k&&k.length>8);}
+function getKeyForProvider(provider){
+  const keys=getKeys();
+  if(!keys.length)return"";
+  return keys[_activeKeyIdx%keys.length];
+}
+function rotateKey(){
+  const keys=getKeys();
+  if(keys.length>1){_activeKeyIdx=(_activeKeyIdx+1)%keys.length;}
+}
 function showWorldCharOptions(charId){
   const char=loadChars().find(c=>c.id===charId);if(!char)return;
   const modal=document.getElementById("world-char-focus-modal");
