@@ -644,6 +644,17 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 </div>
 
 <!-- WORLD CHAR PICKER MODAL -->
+<div class="modal-overlay" id="world-char-focus-modal">
+  <div class="modal-content" style="max-width:320px;">
+    <div id="world-char-focus-name" style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--gold);text-align:center;margin-bottom:.8rem;"></div>
+    <div style="display:flex;flex-direction:column;gap:.5rem;">
+      <button class="btn-primary" id="world-char-focus-btn" onclick="">✦ Focus — jouer avec ce personnage</button>
+      <button class="btn-secondary" id="world-char-solo-btn" onclick="">⬚ Chat solo indépendant</button>
+    </div>
+    <button class="btn-cancel" onclick="closeModal('world-char-focus-modal')" style="margin-top:.5rem;">Annuler</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="world-char-picker">
   <div class="modal-box">
     <div class="modal-title">Choisir un personnage</div>
@@ -948,8 +959,8 @@ function renderChars(){
     const tags=(char.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc2(t)}</span>`).join("");
     const row=document.createElement("div");row.className="card";row.dataset.charid=char.id;
     row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div>${tags?`<div class="card-tags">${tags}</div>`:""}</div><button class="card-more" onclick="toggleDropdown(event,'c_${char.id}')">···</button><div class="dropdown" id="dd-c_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();newChatWithChar('${char.id}')">Nouveau chat</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
-    row.querySelector(".card-info").addEventListener("click",()=>startChatWithChar(char.id));
-    row.querySelector(".card-img").addEventListener("click",()=>startChatWithChar(char.id));
+    row.querySelector(".card-info").addEventListener("click",()=>showWorldCharOptions(char.id));
+    row.querySelector(".card-img").addEventListener("click",()=>showWorldCharOptions(char.id));
     list.appendChild(row);
   });
 }
@@ -1033,7 +1044,7 @@ function showWorldCharPicker(){
     const av=char.photo?`<img src="${char.photo}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:(char.name.charAt(0).toUpperCase());
     const btn=document.createElement("div");btn.className="card";btn.style.cursor="pointer";
     btn.innerHTML=`<div class="card-img round" style="width:36px;height:36px;font-size:.85rem;">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div>`;
-    btn.addEventListener("click",()=>{closeModal("world-char-picker");startChatWithChar(char.id);});
+    btn.addEventListener("click",()=>{closeModal("world-char-picker");startWorldFocusChat(char.id);});
     list.appendChild(btn);
   });
   document.getElementById("world-char-picker").classList.add("open");
@@ -1239,6 +1250,7 @@ function buildSystemPrompt(char){
       .replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
   }
   const genderNote=prof.gender==="f"?"Le joueur est féminin — accorde tous les adjectifs/participes passés au féminin.":prof.gender==="m"?"Le joueur est masculin — accorde tous les adjectifs/participes passés au masculin.":"Genre du joueur non précisé — utilise une formulation neutre ou inclusive.";
+  const isFocus=char._focusMode===true;
   const isRpg=char.type==="rpg"||char.worldId;
   // Récupérer le personnage joueur si défini dans l'univers
   let playerCharName="";
@@ -1246,7 +1258,10 @@ function buildSystemPrompt(char){
   else if(char.id&&char.id.startsWith("world_")){const world=loadWorlds().find(w=>w.id===char.worldId||("world_"+w.id)===char.id);if(world?.playerChar)playerCharName=world.playerChar;}
   // Get world lore and firstmsg if available
   let worldLore="", worldFirstMsg="", worldPlayerChar="";
-  if(char.worldId){
+  if(isFocus){
+    worldLore=char._worldLore||"";worldFirstMsg=char._worldFirstMsg||"";worldPlayerChar=char._worldPlayerChar||"";
+    if(char._worldPlayerChar)playerCharName=char._worldPlayerChar;
+  } else if(char.worldId){
     const world=loadWorlds().find(w=>w.id===char.worldId);
     if(world){worldLore=world.lore||"";worldFirstMsg=world.firstmsg||"";worldPlayerChar=world.playerChar||"";}
   } else if(char.id&&char.id.startsWith("world_")){
@@ -1272,6 +1287,9 @@ ${worldFirstMsg?`
 ━━━ OPENING SCENE (this is how the story begins — respect this setup) ━━━
 ${worldFirstMsg}
 ━━━ END OPENING ━━━
+`:""}
+${isFocus?`━━━ FOCUS MODE ━━━
+You are playing ${char._focusCharName||char.name} as the PRIMARY character. Speak and act ONLY as ${char._focusCharName||char.name}. Other characters from the universe may appear naturally in the scene but they are secondary — ${char._focusCharName||char.name} leads every interaction. NEVER switch narrator perspective away from ${char._focusCharName||char.name} as the main voice.
 `:""}
 ${isRpg?`CRITICAL CHARACTER RULE: Each character listed above has a fixed, canonical personality. You MUST portray them EXACTLY as described — their speech patterns, their reactions, their limits. A cold/arrogant character NEVER suddenly helps a stranger, confides secrets, or acts warmly. A shy character stays shy.
 CRITICAL — NO EXTERNAL KNOWLEDGE: If this universe is based on a real TV show, book, or movie — IGNORE everything you know about it from your training data. You ONLY know what is written in the Lore and Backstory above. Do NOT introduce plot points, relationships, marriages, secrets, or events from the original source. If it is not written above → it does not exist in this story. The player decides what happens, not the original script.
@@ -1505,6 +1523,52 @@ function requireKey(){
   return true;
 }
 function getKeyForProvider(provider){return groqKey;}
+function showWorldCharOptions(charId){
+  const char=loadChars().find(c=>c.id===charId);if(!char)return;
+  const modal=document.getElementById("world-char-focus-modal");
+  document.getElementById("world-char-focus-name").textContent=char.name;
+  document.getElementById("world-char-focus-btn").onclick=()=>{closeModal("world-char-focus-modal");startWorldFocusChat(charId);};
+  document.getElementById("world-char-solo-btn").onclick=()=>{closeModal("world-char-focus-modal");startChatWithChar(charId);};
+  modal.classList.add("open");
+}
+function startWorldFocusChat(charId){
+  if(!requireKey())return;
+  const char=loadChars().find(c=>c.id===charId);if(!char||!char.worldId)return startChatWithChar(charId);
+  const world=loadWorlds().find(w=>w.id===char.worldId);if(!world)return startChatWithChar(charId);
+  // Create a focused char object: solo char but with world context injected
+  const focusChar={
+    ...char,
+    _focusMode:true,
+    _worldName:world.name,
+    _worldLore:world.lore||"",
+    _worldFirstMsg:world.firstmsg||"",
+    _worldPlayerChar:world.playerChar||"",
+    _worldBackstory:world.backstory||char.backstory||"",
+    _focusCharName:char.name
+  };
+  // Look for existing focus session
+  const sessions=loadSessions().filter(s=>s.charId===charId&&s._focusMode);
+  const withMsg=sessions.filter(s=>(s.messages||[]).some(m=>m.role==="user"));
+  const pool=withMsg.length?withMsg:sessions;
+  const existing=pool.sort((a,b)=>(b.savedAt||b.createdAt)-(a.savedAt||a.createdAt))[0];
+  if(existing){
+    existing.char=focusChar;existing._focusMode=true;S=existing;
+    setupChatUI();clearMsgs();
+    (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,focusChar,false,i);});
+    navigateTo("chat",null);scrollBottom();renderSBSessions();return;
+  }
+  S={id:"sess_"+Date.now(),title:char.name+" ✦",charId:char.id,char:focusChar,_focusMode:true,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
+  setupChatUI();clearMsgs();
+  const userName=getUserName();
+  const opener=(world.firstmsg?.trim()||char.firstMsg?.trim()||"Bonjour.")
+    .replace(/\{\{char\}\}/gi,char.name).replace(/\{\{user\}\}/gi,userName)
+    .replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
+  S.messages.push({role:"assistant",content:md(opener),rawText:opener,charId:char.id,sessionId:S.id});
+  S.hist.push(["assistant",opener]);
+  addBot(md(opener),focusChar,false);
+  autosave();renderSBSessions();navigateTo("chat",null);
+}
+
 function startChatWithChar(charId){
   if(!requireKey())return;
   const char=loadChars().find(c=>c.id===charId);if(!char)return;
