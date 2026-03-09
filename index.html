@@ -964,8 +964,8 @@ function renderChars(){
     const tags=(char.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc2(t)}</span>`).join("");
     const row=document.createElement("div");row.className="card";row.dataset.charid=char.id;
     row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div>${tags?`<div class="card-tags">${tags}</div>`:""}</div><button class="card-more" onclick="toggleDropdown(event,'c_${char.id}')">···</button><div class="dropdown" id="dd-c_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();newChatWithChar('${char.id}')">Nouveau chat</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
-    row.querySelector(".card-info").addEventListener("click",()=>showWorldCharOptions(char.id));
-    row.querySelector(".card-img").addEventListener("click",()=>showWorldCharOptions(char.id));
+    row.querySelector(".card-info").addEventListener("click",()=>startChatWithChar(char.id));
+    row.querySelector(".card-img").addEventListener("click",()=>startChatWithChar(char.id));
     list.appendChild(row);
   });
 }
@@ -1576,7 +1576,6 @@ function startWorldFocusChat(charId){
   setupChatUI();clearMsgs();
   const userName=getUserName();
   if(char.firstMsg?.trim()){
-    // Use char's own first message
     const opener=char.firstMsg.trim()
       .replace(/\{\{char\}\}/gi,char.name).replace(/\{\{user\}\}/gi,userName)
       .replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
@@ -1585,28 +1584,9 @@ function startWorldFocusChat(charId){
     addBot(md(opener),focusChar,false);
     autosave();renderSBSessions();navigateTo("chat",null);
   } else {
-    // Generate opening from char personality
+    // Pas de firstMsg → chat vide, même comportement qu'un perso solo
     navigateTo("chat",null);
-    setStatus("✦ "+char.name+" arrive...");
-    const sys=buildSystemPrompt(focusChar);
-    orCall([
-      {role:"system",content:sys},
-      {role:"user",content:"[FOCUS SESSION START. You play ONLY "+char.name+". CRITICAL: Do NOT use any universe opening scene. Do NOT describe any location, mansion, reception or event. Do NOT introduce other characters. Generate ONE short natural line from "+char.name+" speaking directly to the player. In character, faithful to their personality. Nothing else.]"}
-    ],300).then(opener=>{
-      removeStatus();
-      if(!opener){opener="...";}
-      S.messages.push({role:"assistant",content:md(opener),rawText:opener,charId:char.id,sessionId:S.id});
-      S.hist.push(["assistant",opener]);
-      addBot(md(opener),focusChar,false);
-      autosave();renderSBSessions();scrollBottom();
-    }).catch(()=>{
-      removeStatus();
-      const fallback=char.name+" est là.";
-      S.messages.push({role:"assistant",content:md(fallback),rawText:fallback,charId:char.id,sessionId:S.id});
-      S.hist.push(["assistant",fallback]);
-      addBot(md(fallback),focusChar,false);
-      autosave();renderSBSessions();
-    });
+    autosave();renderSBSessions();
   }
 }
 
@@ -1632,11 +1612,13 @@ function newChatWithChar(charId){
   S={id:"sess_"+Date.now(),title:char.name,charId:char.id,char,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
   setupChatUI();clearMsgs();
   const userName=getUserName();
-  const rawOpener=(char.firstMsg?.trim()||`Bonjour. Je suis ${char.name}.`)
-    .replace(/\{\{char\}\}/gi,char.name).replace(/\{\{user\}\}/gi,userName).replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
-  S.messages.push({role:"assistant",content:md(rawOpener),rawText:rawOpener,charId:char.id,sessionId:S.id});
-  S.hist.push(["assistant",rawOpener]);
-  addBot(md(rawOpener),char,false);
+  if(char.firstMsg?.trim()){
+    const rawOpener=char.firstMsg.trim()
+      .replace(/\{\{char\}\}/gi,char.name).replace(/\{\{user\}\}/gi,userName).replace(/\{\{User\}\}/gi,userName).replace(/\{\{Char\}\}/gi,char.name);
+    S.messages.push({role:"assistant",content:md(rawOpener),rawText:rawOpener,charId:char.id,sessionId:S.id});
+    S.hist.push(["assistant",rawOpener]);
+    addBot(md(rawOpener),char,false);
+  }
   autosave();renderSBSessions();navigateTo("chat",null);
 }
 function resumeSession(sid){
@@ -2366,3 +2348,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
