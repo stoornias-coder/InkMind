@@ -1580,7 +1580,7 @@ function startChatWithChar(charId){
   const existing=pool.sort((a,b)=>(b.savedAt||b.createdAt)-(a.savedAt||a.createdAt))[0];
   if(existing){
     existing.char=char;S=existing;setupChatUI();clearMsgs();
-    (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
+    (S.messages||[]).forEach((m,i)=>{if(m._hidden)return;if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
     navigateTo("chat",null);scrollBottom();renderSBSessions();return;
   }
   newChatWithChar(charId);
@@ -1603,7 +1603,7 @@ function resumeSession(sid){
   if(sess.charId){const lc=loadChars().find(c=>c.id===sess.charId);if(lc)sess.char=lc;}
   if(sess.summary&&sess.char&&sess.messages?.length){const firstCharId=sess.messages.find(m=>m.charId)?.charId;if(firstCharId&&firstCharId!==sess.charId)sess.summary="";}
   S=sess;setupChatUI();clearMsgs();
-  (S.messages||[]).forEach((m,i)=>{if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
+  (S.messages||[]).forEach((m,i)=>{if(m._hidden)return;if(m.role==="user")addUser(m.rawText||"",false,i);else addBot(m.content,S.char,false,i);});
   navigateTo("chat",null);scrollBottom();closeSB();
 }
 function setupChatUI(){
@@ -1621,6 +1621,7 @@ function setupChatUI(){
 function rebuildHist(){
   S.hist=[];const currentCharId=S.charId;
   (S.messages||[]).forEach(m=>{
+    if(m._styleNote){S.hist.push(["user",m.content]);return;}
     if(m.charId&&m.charId!==currentCharId)return;
     if(m.role==="user")S.hist.push(["user",m.rawText||m.content]);
     else if(m.role==="assistant"&&m.rawText)S.hist.push(["assistant",m.rawText]);
@@ -1777,9 +1778,33 @@ function startEditBotMsg(btn){
 }
 function confirmBotEdit(btn){
   const msgEl=btn.closest(".msg.bot");const box=msgEl.querySelector("textarea.edit-box");const newTxt=box.value.trim();if(!newTxt){cancelBotEdit(btn);return;}
+  const bubble=msgEl.querySelector(".bubble");
+  const oldTxt=bubble.innerText||bubble.textContent||"";
   cancelBotEdit(btn);
-  const bubble=msgEl.querySelector(".bubble");bubble.innerHTML=md(newTxt);bubble.style.display="";
-  if(S&&S.messages){const idx=parseInt(msgEl.dataset.idx);if(!isNaN(idx)&&S.messages[idx]){S.messages[idx].content=md(newTxt);S.messages[idx].rawText=newTxt;}else{for(let i=S.messages.length-1;i>=0;i--){if(S.messages[i].role==="assistant"){S.messages[i].content=md(newTxt);S.messages[i].rawText=newTxt;break;}}}}
+  bubble.innerHTML=md(newTxt);bubble.style.display="";
+  if(S&&S.messages){
+    const idx=parseInt(msgEl.dataset.idx);
+    let targetIdx=-1;
+    if(!isNaN(idx)&&S.messages[idx]){targetIdx=idx;}
+    else{for(let i=S.messages.length-1;i>=0;i--){if(S.messages[i].role==="assistant"){targetIdx=i;break;}}}
+    if(targetIdx>=0){
+      S.messages[targetIdx].content=md(newTxt);
+      S.messages[targetIdx].rawText=newTxt;
+      // Inject a silent style note after the edited message
+      const styleNote={
+        role:"user",
+        content:"[Note de style — ne pas jouer en jeu : le joueur a corrigé la réponse précédente. Observe les différences entre l'ancienne et la nouvelle version et adapte ton style pour la suite de la conversation.]",
+        rawText:"[Note de style — ne pas jouer en jeu : le joueur a corrigé la réponse précédente. Observe les différences entre l'ancienne et la nouvelle version et adapte ton style pour la suite de la conversation.]",
+        _styleNote:true,
+        _hidden:true,
+        sessionId:S.id
+      };
+      // Remove any previous style note right after this message
+      const nextIdx=targetIdx+1;
+      if(S.messages[nextIdx]&&S.messages[nextIdx]._styleNote)S.messages.splice(nextIdx,1);
+      S.messages.splice(targetIdx+1,0,styleNote);
+    }
+  }
   autosave();
 }
 function cancelBotEdit(btn){const msgEl=btn.closest(".msg.bot");msgEl.classList.remove("editing");const box=msgEl.querySelector("textarea.edit-box");const btns=msgEl.querySelector(".edit-btns");const bubble=msgEl.querySelector(".bubble");if(bubble)bubble.style.display="";if(box)box.remove();if(btns)btns.remove();}
@@ -2300,4 +2325,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
