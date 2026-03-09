@@ -1029,9 +1029,9 @@ function renderWorldChars(worldId){
   chars.forEach(char=>{
     const av=char.photo?`<img src="${char.photo}" alt="${char.name}">`:(char.name.charAt(0).toUpperCase());
     const row=document.createElement("div");row.className="card";
-    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div><button class="card-more" onclick="toggleDropdown(event,'wc_${char.id}')">···</button><div class="dropdown" id="dd-wc_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();startChatWithChar('${char.id}')">Chat solo</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
-    row.querySelector(".card-info").addEventListener("click",()=>startChatWithChar(char.id));
-    row.querySelector(".card-img").addEventListener("click",()=>startChatWithChar(char.id));
+    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div><button class="card-more" onclick="toggleDropdown(event,'wc_${char.id}')">···</button><div class="dropdown" id="dd-wc_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();startWorldFocusChat('${char.id}')">Chat solo</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
+    row.querySelector(".card-info").addEventListener("click",()=>startWorldFocusChat(char.id));
+    row.querySelector(".card-img").addEventListener("click",()=>startWorldFocusChat(char.id));
     list.appendChild(row);
   });
 }
