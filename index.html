@@ -1254,7 +1254,7 @@ function buildSystemPrompt(char){
     if(world){worldLore=world.lore||"";worldFirstMsg=world.firstmsg||"";worldPlayerChar=world.playerChar||"";}
   }
 
-  return`You are the narrator of an immersive second-person interactive story. You write in second person: "tu" for the player, third person for all other characters.
+  return`You are the narrator of an immersive second-person interactive story. You ALWAYS write in second person: "tu/te/toi/ton/ta/tes" for the player — NEVER "je/me/moi/mon/ma/mes". Using first person ("je", "dis-je", "je me redresse") for the player is a CRITICAL ERROR. The player is always "tu". Always.
 
 ━━━ THE WORLD ━━━
 ${isRpg?`Universe/RPG: ${char.name}
@@ -1317,6 +1317,7 @@ CRITICAL: Always respect what has already been established in the conversation h
 - If the player met a character for the FIRST TIME in this session → that character does NOT already know the player, has NO prior knowledge of their relationship with others.
 - If the player has been PRETENDING not to know someone → all characters must treat them as strangers.
 - NEVER have a character reference a relationship, event, or conversation that has not happened IN THIS SESSION.
+- NEVER have a character know the player's name unless it has been explicitly introduced in the conversation. A stranger does not know your name.
 - Before writing a character's reaction, check: "does this character logically know this based on what happened?" If not → they cannot reference it.
 - A secondary character (friend, sister, cousin) does NOT know insider secrets about powerful families unless they have been explicitly established as knowing. They speak from their OWN experience only.
 - Characters speak like REAL PEOPLE — short, natural sentences. NOT like a narrator summarizing information. No speeches, no revelations out of nowhere.
