@@ -1088,7 +1088,7 @@ function openCharCreator(charId){
       if(char.photo){charPhoto=char.photo;document.getElementById("char-photo-circle").innerHTML=`<img src="${char.photo}" alt="photo">`;}
       setTraits(char.traits);
     }
-  }else{document.getElementById("char-creator-title").textContent="Nouveau Personnage";}
+  }else{document.getElementById("char-creator-title").textContent="Nouveau Personnage";buildTraitsGrid();}
   document.getElementById("char-save-btn").textContent=charId?"Enregistrer les modifications →":"Enregistrer →";
   navigateTo("char-creator",null);
 }
@@ -1325,6 +1325,7 @@ CRITICAL: Always respect what has already been established in the conversation h
 - NEVER have a character know the player's name unless it has been explicitly introduced in the conversation. A stranger does not know your name.
 - CRITICAL: A character only knows what THEY PERSONALLY witnessed or were told ON SCREEN. Anjali was not present during the street encounter → she cannot know about it, cannot ask about it, cannot hint at it. Each character has ONLY their own perspective and experience.
 - A character meeting the player for the first time does NOT immediately confide personal family secrets, personal information about relatives, or private matters. That requires trust built over time.
+- A character cannot assert facts they cannot observe from their current position. Example: if a character is alone with the player outside, they CANNOT say "our absence is being noticed" as a fact — they can only say "before our absence starts to be noticed" as a precaution. Never state as fact what can only be a guess.
 - Before writing a character's reaction, check: "does this character logically know this based on what happened?" If not → they cannot reference it.
 - A secondary character (friend, sister, cousin) does NOT know insider secrets about powerful families unless they have been explicitly established as knowing. They speak from their OWN experience only.
 - Characters speak like REAL PEOPLE — short, natural sentences. NOT like a narrator summarizing information. No speeches, no revelations out of nowhere.
@@ -1344,6 +1345,7 @@ ${isRpg?`JAMAIS utiliser "${char.name}" comme locuteur. Si l'utilisateur mention
 NEVER dump all characters into one response. Introduce characters naturally as the scene unfolds — only show who is DIRECTLY relevant to the current moment.
 NEVER list who is present in the room like a stage direction. Show characters through action and dialogue, not inventory.
 CRITICAL POV CONSISTENCY: If the player IS playing a named character (e.g. playerCharName is set), and another character addresses that named character in dialogue — that IS the player being addressed. Do NOT write it as if the named character is a separate person standing next to the player. There is only ONE "tu" in the scene — the player.
+- When describing tension, chemistry, or dynamic between the player and a character, NEVER write "la tension entre toi" (incomplete). Always write "la tension entre vous" or "la tension entre vous deux" — never leave it dangling.
 
 ━━━ NARRATIVE QUALITY ━━━
 Show don't tell. Sensory details. Vary sentence length.
@@ -2234,3 +2236,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
