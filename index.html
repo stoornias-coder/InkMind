@@ -394,7 +394,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
           <div class="action-btn-sub">Le bot joue tous les persos</div>
         </button>
         <button class="action-btn" onclick="showWorldCharPicker()">
-          <div class="action-btn-label">Choisir un perso</div>
+          <div class="action-btn-label">Focus</div>
           <div class="action-btn-sub">Chat avec un personnage</div>
         </button>
       </div>
@@ -533,7 +533,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       <div class="field"><label>Nom *</label><input class="fi" type="text" id="char-name" placeholder="ex. Elena, Kane, Nyx..."></div>
       <div class="field"><label>Description courte</label><input class="fi" type="text" id="char-desc" placeholder="ex. Un détective froid qui n'oublie jamais un visage..."></div>
       <div class="field"><label>Tags <span class="fhint">(séparés par virgule)</span></label><input class="fi" type="text" id="char-tags" placeholder="romance, mystère, garde du corps..."></div>
-      <div class="field"><label>Histoire / Backstory</label><textarea class="fi" id="char-backstory" rows="4" placeholder="Qui sont-ils ? D'où viennent-ils ?"></textarea></div>
+      <div class="field"><label>Histoire / Backstory</label><textarea class="fi" id="char-backstory" rows="4" placeholder="Qui sont-ils ? D'où viennent-ils ?"></textarea><span class="fhint" style="margin-top:.3rem;display:block;">💡 Si le bot fait une erreur de contexte (invente une relation, un événement, un fait), note-le ici comme règle : <em>"Ne connaît pas X", "N'a jamais rencontré Y", "Déteste Z"</em>.</span></div>
       <div class="field"><label>Traits de personnalité</label><div class="traits-wrap" id="traits-grid"></div></div>
       <div class="field"><label>Façon de parler</label><input class="fi" type="text" id="char-voice" placeholder="ex. Formel et froid, Chaleureux mais sarcastique..."></div>
 
@@ -571,7 +571,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       <div class="field"><label>Nom de l'univers *</label><input class="fi" type="text" id="world-name" placeholder="ex. Boys Over Flowers, Mon monde inventé..."></div>
       <div class="field"><label>Description courte</label><input class="fi" type="text" id="world-desc" placeholder="ex. Un lycée de luxe coréen dominé par le F4..."></div>
       <div class="field"><label>Tags <span class="fhint">(séparés par virgule)</span></label><input class="fi" type="text" id="world-tags" placeholder="romance, lycée, k-drama..."></div>
-      <div class="field"><label>Lore & monde <span class="fhint">(décris l'univers en détail)</span></label><textarea class="fi" id="world-lore" rows="5" placeholder="Règles du monde, lieux importants, ambiance, époque..."></textarea></div>
+      <div class="field"><label>Lore & monde <span class="fhint">(décris l'univers en détail)</span></label><textarea class="fi" id="world-lore" rows="5" placeholder="Règles du monde, lieux importants, ambiance, époque..."></textarea><span class="fhint" style="margin-top:.3rem;display:block;">💡 Si le bot invente des événements ou des relations qui n'existent pas, ajoute une règle ici : <em>"Aucun mariage arrangé au début de l'histoire", "Arnav et Khushi ne se connaissent pas encore"</em>.</span></div>
       <div class="field">
         <label>✦ Message d'ouverture</label>
         <textarea class="fi" id="world-firstmsg" rows="3" placeholder="La scène d'introduction quand on entre dans l'univers..."></textarea>
@@ -657,7 +657,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 
 <div class="modal-overlay" id="world-char-picker">
   <div class="modal-box">
-    <div class="modal-title">Choisir un personnage</div>
+    <div class="modal-title">Focus — choisir un personnage</div>
     <div id="world-char-picker-list" style="display:flex;flex-direction:column;gap:.35rem;max-height:280px;overflow-y:auto;"></div>
     <button class="btn-cancel" onclick="closeModal('world-char-picker')">Annuler</button>
   </div>
@@ -1288,8 +1288,15 @@ ${worldFirstMsg?`
 ${worldFirstMsg}
 ━━━ END OPENING ━━━
 `:""}
-${isFocus?`━━━ FOCUS MODE ━━━
-You are playing ${char._focusCharName||char.name} as the PRIMARY character. Speak and act ONLY as ${char._focusCharName||char.name}. Other characters from the universe may appear naturally in the scene but they are secondary — ${char._focusCharName||char.name} leads every interaction. NEVER switch narrator perspective away from ${char._focusCharName||char.name} as the main voice.
+${isFocus?`━━━ FOCUS MODE — SINGLE CHARACTER ━━━
+This is a ONE-ON-ONE session. You play ONLY ${char._focusCharName||char.name}. You are NOT a narrator managing multiple characters.
+RULES:
+- ONLY write dialogue and actions for ${char._focusCharName||char.name}.
+- Do NOT introduce Arnav, Anjali, or ANY other character from the universe unless the player explicitly writes them into the scene.
+- Do NOT use the world's opening scene — start fresh, just ${char._focusCharName||char.name} and the player.
+- NEVER write in the player's voice or actions.
+- Keep responses short and natural — this is a direct conversation between the player and ${char._focusCharName||char.name} only.
+- ${char._focusCharName||char.name} does NOT know things that were not told to them directly in this conversation.
 `:""}
 ${isRpg?`CRITICAL CHARACTER RULE: Each character listed above has a fixed, canonical personality. You MUST portray them EXACTLY as described — their speech patterns, their reactions, their limits. A cold/arrogant character NEVER suddenly helps a stranger, confides secrets, or acts warmly. A shy character stays shy.
 CRITICAL — NO EXTERNAL KNOWLEDGE: If this universe is based on a real TV show, book, or movie — IGNORE everything you know about it from your training data. You ONLY know what is written in the Lore and Backstory above. Do NOT introduce plot points, relationships, marriages, secrets, or events from the original source. If it is not written above → it does not exist in this story. The player decides what happens, not the original script.
