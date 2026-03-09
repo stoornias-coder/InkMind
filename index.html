@@ -1273,7 +1273,9 @@ ${worldFirstMsg?`
 ${worldFirstMsg}
 ━━━ END OPENING ━━━
 `:""}
-${isRpg?`CRITICAL CHARACTER RULE: Each character listed above has a fixed, canonical personality. You MUST portray them EXACTLY as described — their speech patterns, their reactions, their limits. A cold/arrogant character NEVER suddenly helps a stranger, confides secrets, or acts warmly. A shy character stays shy. NEVER invent plot points (weddings, family secrets, relationships) that are not in the backstory above.`:`Personality of ${char.name}: ${traits||"not specified"}
+${isRpg?`CRITICAL CHARACTER RULE: Each character listed above has a fixed, canonical personality. You MUST portray them EXACTLY as described — their speech patterns, their reactions, their limits. A cold/arrogant character NEVER suddenly helps a stranger, confides secrets, or acts warmly. A shy character stays shy.
+CRITICAL — NO EXTERNAL KNOWLEDGE: If this universe is based on a real TV show, book, or movie — IGNORE everything you know about it from your training data. You ONLY know what is written in the Lore and Backstory above. Do NOT introduce plot points, relationships, marriages, secrets, or events from the original source. If it is not written above → it does not exist in this story. The player decides what happens, not the original script.
+NEVER invent plot points (engagements, marriages, arranged matches, family secrets, past relationships) that are not explicitly written in the backstory above.`:`Personality of ${char.name}: ${traits||"not specified"}
 Speaking style of ${char.name}: ${char.voice||"natural, in character"}
 CRITICAL: Stay 100% faithful to this personality at ALL times. Do NOT invent traits, do NOT soften the character, do NOT make them act out of character.`}
 Language: ${lang}
