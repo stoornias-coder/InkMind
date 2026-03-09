@@ -1243,6 +1243,16 @@ function buildSystemPrompt(char){
   let playerCharName="";
   if(char.worldId){const world=loadWorlds().find(w=>w.id===char.worldId);if(world?.playerChar)playerCharName=world.playerChar;}
   else if(char.id&&char.id.startsWith("world_")){const world=loadWorlds().find(w=>w.id===char.worldId||("world_"+w.id)===char.id);if(world?.playerChar)playerCharName=world.playerChar;}
+  // Get world lore and firstmsg if available
+  let worldLore="", worldFirstMsg="", worldPlayerChar="";
+  if(char.worldId){
+    const world=loadWorlds().find(w=>w.id===char.worldId);
+    if(world){worldLore=world.lore||"";worldFirstMsg=world.firstmsg||"";worldPlayerChar=world.playerChar||"";}
+  } else if(char.id&&char.id.startsWith("world_")){
+    const world=loadWorlds().find(w=>("world_"+w.id)===char.id);
+    if(world){worldLore=world.lore||"";worldFirstMsg=world.firstmsg||"";worldPlayerChar=world.playerChar||"";}
+  }
+
   return`You are the narrator of an immersive second-person interactive story. You write in second person: "tu" for the player, third person for all other characters.
 
 ━━━ THE WORLD ━━━
@@ -1250,11 +1260,21 @@ ${isRpg?`Universe/RPG: ${char.name}
 This is a multi-character RPG universe. You play ALL named characters from the backstory.`:`Main character: ${char.name}`}
 Description: ${char.desc||""}
 Tags: ${tags}
-Backstory: ${char.backstory||"not specified"}
-${isRpg?`All characters have their own personality, voice and motivations as described in the backstory. CRITICAL: Each character MUST behave EXACTLY as described — do NOT soften, invent, or deviate from their canonical personality. A cold character stays cold. A proud character stays proud. Do NOT make them open up, confide, or act warmly unless the backstory says so.`:`Personality of ${char.name}: ${traits||"not specified"}
+${worldLore?`
+━━━ LORE & WORLD RULES (PRIORITY SOURCE — follow this strictly) ━━━
+${worldLore}
+━━━ END LORE ━━━
+`:""}
+━━━ CHARACTERS & BACKSTORY ━━━
+${char.backstory||"not specified"}
+${worldFirstMsg?`
+━━━ OPENING SCENE (this is how the story begins — respect this setup) ━━━
+${worldFirstMsg}
+━━━ END OPENING ━━━
+`:""}
+${isRpg?`CRITICAL CHARACTER RULE: Each character listed above has a fixed, canonical personality. You MUST portray them EXACTLY as described — their speech patterns, their reactions, their limits. A cold/arrogant character NEVER suddenly helps a stranger, confides secrets, or acts warmly. A shy character stays shy. NEVER invent plot points (weddings, family secrets, relationships) that are not in the backstory above.`:`Personality of ${char.name}: ${traits||"not specified"}
 Speaking style of ${char.name}: ${char.voice||"natural, in character"}
 CRITICAL: Stay 100% faithful to this personality at ALL times. Do NOT invent traits, do NOT soften the character, do NOT make them act out of character.`}
-World/Setting: ${char.world||"flexible"}
 Language: ${lang}
 Player gender: ${genderNote}
 
