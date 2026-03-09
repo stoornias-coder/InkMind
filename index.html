@@ -1856,36 +1856,50 @@ function importAll(){
 function confirmImportAll(){
   const box=document.getElementById("import-all-box");if(!box)return;
   try{
-    const data=JSON.parse(box.value.trim());
+    let raw=box.value.trim();
+    const data=JSON.parse(raw);
     let addedW=0,addedC=0;
     const existingWorlds=loadWorlds();
     const existingChars=loadChars();
-    // Format export complet
-    if(data.worlds||data.chars){
-      (data.worlds||[]).forEach(w=>{
-        if(!w.id||!w.name)return;
-        if(existingWorlds.find(x=>x.id===w.id))return;
-        existingWorlds.unshift(w);addedW++;
+
+    // Normalise : extraire worlds et chars peu importe le format
+    let worlds=[], chars=[];
+
+    if(Array.isArray(data)){
+      // Liste de personnages OU liste mixte
+      data.forEach(item=>{
+        if(item.lore||item.playerChar!==undefined) worlds.push(item); // c'est un monde
+        else if(item.name) chars.push(item);
       });
-      (data.chars||[]).forEach(c=>{
-        if(!c.id||!c.name)return;
-        if(existingChars.find(x=>x.id===c.id))return;
-        existingChars.unshift(c);addedC++;
-      });
+    } else if(data.world && !data.worlds){
+      // Export univers seul : {world, chars}
+      worlds=[data.world];
+      chars=data.chars||[];
+    } else {
+      // Export complet : {worlds, chars} ou {version, worlds, chars}
+      worlds=data.worlds||[];
+      chars=data.chars||[];
     }
-    // Format export univers seul {world,chars}
-    else if(data.world){
-      if(!existingWorlds.find(x=>x.id===data.world.id)){existingWorlds.unshift(data.world);addedW++;}
-      (data.chars||[]).forEach(c=>{if(!existingChars.find(x=>x.id===c.id)){existingChars.unshift(c);addedC++;}});
-    }
-    // Format liste de personnages
-    else if(Array.isArray(data)){
-      data.forEach(c=>{if(c.name&&!existingChars.find(x=>x.id===c.id)){existingChars.unshift(c);addedC++;}});
-    }
+
+    // Générer un ID si manquant
+    worlds.forEach(w=>{
+      if(!w.name)return;
+      if(!w.id)w.id="world_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+      if(existingWorlds.find(x=>x.id===w.id))return;
+      existingWorlds.unshift(w);addedW++;
+    });
+    chars.forEach(c=>{
+      if(!c.name)return;
+      if(!c.id)c.id="char_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+      if(existingChars.find(x=>x.id===c.id))return;
+      existingChars.unshift(c);addedC++;
+    });
+
     saveWorlds(existingWorlds);saveChars(existingChars);renderAll();
     document.getElementById("import-all-modal").style.display="none";
-    alert(`Importé : ${addedW} univers, ${addedC} personnages.`);
-  }catch{alert("JSON invalide.");}
+    if(addedW===0&&addedC===0){alert("Rien importé — les éléments existent peut-être déjà, ou le format n'est pas reconnu.");}
+    else{alert(`Importé : ${addedW} univers, ${addedC} personnages.`);}
+  }catch(e){alert("JSON invalide — vérifie la syntaxe. "+e.message);}
 }
 
 function exportWorld(id){
