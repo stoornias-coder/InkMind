@@ -605,6 +605,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         <button class="icon-btn" onclick="editCurrentChar()">✎</button>
         <button class="icon-btn" onclick="newCurrentChat()">⬚</button>
         <button class="icon-btn" onclick="copyConversation()" title="Copier la conversation">⎘</button>
+        <button class="icon-btn" id="refresh-mem-btn" onclick="refreshMemory()" title="Rafraîchir la mémoire">❋</button>
       </div>
     </div>
     <div class="messages" id="messages"></div>
@@ -1712,6 +1713,43 @@ function confirmBotEdit(btn){
   autosave();
 }
 function cancelBotEdit(btn){const msgEl=btn.closest(".msg.bot");msgEl.classList.remove("editing");const box=msgEl.querySelector("textarea.edit-box");const btns=msgEl.querySelector(".edit-btns");const bubble=msgEl.querySelector(".bubble");if(bubble)bubble.style.display="";if(box)box.remove();if(btns)btns.remove();}
+// ══ REFRESH MEMORY ══
+async function refreshMemory(){
+  if(busy||!S||!S.messages||!S.messages.length)return;
+  const btn=document.getElementById("refresh-mem-btn");
+  if(btn){btn.style.color="var(--gold)";btn.style.animation="pulse 1s infinite";}
+  setStatus("❋ Régénération de la mémoire...");
+  try{
+    // Build full history for summarization
+    const allHist=(S.messages||[]).filter(m=>m.rawText||m.role==="user").map(m=>{
+      const raw=m.rawText||m.content||"";
+      const clean=raw.replace(/<[^>]+>/g,"").trim();
+      return(m.role==="user"?"user":"assistant")+": "+clean;
+    }).join("\n");
+
+    const newSummary=await orCall([
+      {role:"system",content:"Tu résumes une session de roleplay interactif. Retourne UNIQUEMENT un résumé factuel structuré en 2 parties :\nIDENTITÉ : qui joue le joueur (son rôle, son nom si établi, sa relation avec les personnages).\nÉVÉNEMENTS : ce qui s'est passé (rencontres, lieux, révélations, tensions, décisions importantes).\nFusionne tout en 6 phrases max. Sois précis et factuel — pas de suppositions."},
+      {role:"user",content:"Voici toute la conversation :\n"+allHist}
+    ],400);
+
+    if(newSummary&&newSummary.length>20){
+      S.summary=newSummary;
+      autosave();
+      removeStatus();
+      // Show confirmation toast
+      let t=document.getElementById("mem-toast");
+      if(!t){t=document.createElement("div");t.id="mem-toast";t.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--gold-dim);border-radius:20px;padding:.3rem .9rem;font-size:.65rem;color:var(--gold);z-index:300;pointer-events:none;transition:opacity .3s;";document.body.appendChild(t);}
+      t.textContent="❋ Mémoire régénérée";t.style.opacity="1";
+      clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity="0",2500);
+    } else {
+      removeStatus();
+    }
+  }catch(e){
+    removeStatus();
+  }
+  if(btn){btn.style.color="";btn.style.animation="";}
+}
+
 // ══ COPY FUNCTIONS ══
 async function copyText(txt){
   try{
