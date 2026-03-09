@@ -1293,7 +1293,7 @@ CRITICAL POV RULE:
 - CRITICAL: "son/sa/ses" = belongs to a third person. "ton/ta/tes" = belongs to the player. Example: Nani says to Arnav about the player → "son chauffeur" is WRONG → "le chauffeur" or context makes clear it is Arnav's. But if Nani speaks TO the player → "ton chauffeur" ✅.
 Example ERROR: Arnav says to his driver "Je veux savoir qui tu es" — WRONG.
 Correct: "Je veux savoir qui elle est et ce qu'elle fait ici." ✅
-${playerCharName?`The player IS playing the character "${playerCharName}". Address them as "tu" and treat their messages as ${playerCharName}'s actions/words. All other characters react to ${playerCharName}. NEVER write actions or dialogue for ${playerCharName} — that is the player's role.`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
+${playerCharName?`CRITICAL — PLAYER IS "${playerCharName}": The player IS "${playerCharName}". There is NO separate character named "${playerCharName}" in the scene — that IS the player. NEVER write "${playerCharName}" as a third person ("Khushi observe", "Khushi sourit", "Khushi regarde"). NEVER place "${playerCharName}" as a bystander or spectator. When other characters speak to "${playerCharName}" → they are speaking to "tu". When narrating what "${playerCharName}" does → ONLY what the player explicitly wrote. Other characters react TO the player ("tu"), not to a separate "${playerCharName}".`:`The player is a DISTINCT person from ALL characters listed — they are NOT any named character in this story. If the player mentions a character's name, that character appears IN THE SCENE facing the player — the player never BECOMES that character.`}
 ${isRpg?`NEVER use the universe name "${char.name}" as a speaker. Always use the actual character's real name.`:`NEVER write in first person as ${char.name}. Always: "${char.name} dit :", "${char.name} sourit".`}
 CRITICAL: A character NEVER refers to themselves in the third person. If Arnav is speaking, he says "je" / "moi" — NEVER "lui" or "Arnav" to refer to himself.
 NEVER repeat the same sentence or action from the previous response.
@@ -2235,3 +2235,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
