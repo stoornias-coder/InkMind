@@ -657,7 +657,6 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 const MODELS = [
   {id:"groq-llama4",   label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
   {id:"groq-llama3",   label:"Llama 3.3 70B",           model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
-  {id:"groq-deepseek",  label:"DeepSeek R1 70B",          model:"deepseek-r1-distill-llama-70b",                 url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
 ];
 const GROQ_KEY_STORE = "inkmind_groq_key";
 const MODEL_KEY      = "inkmind_model";
@@ -911,7 +910,7 @@ function renderModelList(){
 function updateActiveIndicator(){
   const el=document.getElementById("active-model-indicator");if(!el)return;
   const m=MODELS[activeModelIdx];
-  el.textContent=m?"Actif : "+m.label:"";
+  el.textContent=m?"✦ Actif : "+m.label:"";
 }
 function setTheme(dark){isDark=dark;try{document.body.classList.toggle("light",!isDark);}catch(e){console.warn(e);}localStorage.setItem("inkmind_theme",isDark?"dark":"light");updateThemeBtn();}
 function updateThemeBtn(){
@@ -2235,4 +2234,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
