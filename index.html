@@ -171,7 +171,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 
 /* ══ SHARED PAGE LAYOUT ══ */
 #profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
-#char-creator .page-body,#world-creator .page-body{padding-bottom:35vh;}
+#char-creator .page-body,#world-creator .page-body{padding-bottom:6rem;}
+/* Padding augmenté seulement quand le clavier est ouvert */
+body.kb-open #char-creator .page-body,body.kb-open #world-creator .page-body{padding-bottom:35vh;}
+#profile-page .page-body,#settings-page .page-body{padding-bottom:3rem;}
 
 .field{display:flex;flex-direction:column;gap:.25rem;}
 .field label,.field-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);}
@@ -1243,6 +1246,48 @@ function toggleDropdown(e,id){
 function closeAllDropdowns(){if(openDropdown){const dd=document.getElementById("dd-"+openDropdown);if(dd)dd.style.display="none";openDropdown=null;}}
 document.addEventListener("click",e=>{if(openDropdown&&!e.target.closest(".dropdown")&&!e.target.closest(".card-more"))closeAllDropdowns();});
 
+// ══ SHORT CARD ══
+// Génère une version courte (~60 mots max) d'une fiche personnage pour l'API.
+// La fiche longue reste UNIQUEMENT en localStorage — jamais envoyée telle quelle.
+function buildShortCard(char){
+  const parts=[];
+  if(char.desc)parts.push(char.desc.slice(0,120));
+  if(char.traits?.length)parts.push("Traits: "+char.traits.slice(0,5).join(", "));
+  if(char.voice)parts.push("Voix: "+char.voice.slice(0,80));
+  // Backstory: 200 mots max (première partie la plus importante)
+  if(char.backstory){
+    const words=char.backstory.split(/\s+/);
+    parts.push(words.slice(0,200).join(" ")+(words.length>200?" […]":""));
+  }
+  return parts.join("\n");
+}
+
+// Filtre les personnages ACTIFS dans la scène : ceux mentionnés dans les N derniers échanges.
+function getActiveChars(allCharsText, recentHist){
+  if(!allCharsText||!recentHist?.length)return allCharsText||"";
+  // Extraire les noms propres des derniers 8 échanges
+  const recentText=recentHist.slice(-8).map(([,c])=>c).join(" ");
+  // Découper allCharsText en blocs par personnage (séparés par "- Nom" ou "Nom :")
+  const lines=allCharsText.split("\n");
+  const blocks=[];let cur=null;
+  for(const line of lines){
+    const m=line.match(/^[-•]?\s*([A-ZÀÂÄÉÈÊËÏÎÔÙÛÜÇ][a-zàâäéèêëïîôùûüç]{1,}(?:\s[A-ZÀÂÄÉÈÊËÏÎÔÙÛÜÇ][a-zàâäéèêëïîôùûüç]{1,})*)\s*[:—\-]/);
+    if(m){if(cur)blocks.push(cur);cur={name:m[1],text:line};}
+    else if(cur)cur.text+="\n"+line;
+    else blocks.push({name:null,text:line});
+  }
+  if(cur)blocks.push(cur);
+  if(blocks.length<=3)return allCharsText; // Peu de persos → tout garder
+  // Garder les persos mentionnés récemment + les blocs sans nom (intro lore)
+  const active=blocks.filter(b=>{
+    if(!b.name)return true;
+    return recentText.includes(b.name);
+  });
+  // Si moins de 2 persos actifs → garder tous (début de scène)
+  if(active.filter(b=>b.name).length<2)return allCharsText;
+  return active.map(b=>b.text).join("\n");
+}
+
 // ══ SYSTEM PROMPT ══
 function buildSystemPrompt(char){
   const prof=loadProfile(),userName=getUserName();
@@ -1289,7 +1334,7 @@ ${worldLore}
 ━━━ END LORE ━━━
 `:""}
 ━━━ CHARACTERS & BACKSTORY ━━━
-${char.backstory||"not specified"}
+${(()=>{const card=buildShortCard(char);if(!card||card.trim().length<10)return "No backstory defined. CRITICAL: Do NOT invent any named character (no NPC, no name, no person). The setting is empty until the player establishes it. React only to what the player writes.";return getActiveChars(card,(typeof S!=="undefined"&&S?.hist)||[]);})()}
 ${(!isFocus&&worldFirstMsg)?`
 ━━━ OPENING SCENE (this is how the story begins — respect this setup) ━━━
 ${worldFirstMsg}
@@ -1307,9 +1352,13 @@ ABSOLUTE RULES:
 `:""}
 ${isRpg?`CRITICAL CHARACTER RULE: Each character listed above has a fixed, canonical personality. You MUST portray them EXACTLY as described — their speech patterns, their reactions, their limits. A cold/arrogant character NEVER suddenly helps a stranger, confides secrets, or acts warmly. A shy character stays shy.
 CRITICAL — NO EXTERNAL KNOWLEDGE: If this universe is based on a real TV show, book, or movie — IGNORE everything you know about it from your training data. You ONLY know what is written in the Lore and Backstory above. Do NOT introduce plot points, relationships, marriages, secrets, or events from the original source. If it is not written above → it does not exist in this story. The player decides what happens, not the original script.
-NEVER invent plot points (engagements, marriages, arranged matches, family secrets, past relationships) that are not explicitly written in the backstory above.`:`Personality of ${char.name}: ${traits||"not specified"}
-Speaking style of ${char.name}: ${char.voice||"natural, in character"}
-CRITICAL: Stay 100% faithful to this personality at ALL times. Do NOT invent traits, do NOT soften the character, do NOT make them act out of character.`}
+NEVER invent plot points (engagements, marriages, arranged matches, family secrets, past relationships) that are not explicitly written in the backstory above.`:`CORE IDENTITY OF ${char.name} — THIS NEVER CHANGES, EVER:
+Personality: ${traits||"not specified"}
+Speaking style: ${char.voice||"natural, in character"}
+${char.desc?`Description: ${char.desc}`:""}
+ABSOLUTE RULE: ${char.name}'s personality is LOCKED. It does NOT evolve, soften, or shift based on alcohol, time passing, or the player's attitude — unless the player's backstory EXPLICITLY says so.
+A cold character stays cold. A sarcastic character stays sarcastic. Do NOT reward the player with sudden warmth or kindness. Do NOT let the character become "nicer" just because the scene relaxes.
+Before each response: ask "Is this reaction consistent with ${char.name}'s core identity?" If not → rewrite.`}
 Language: ${lang}
 Player gender: ${genderNote}
 
@@ -1386,9 +1435,17 @@ Short responses for short actions. Rich for key scenes.
 
 ━━━ LANGUAGE ━━━
 ${lang}. 100% in that language.
+
+━━━ AUTO-CORRECTION (applique silencieusement à ta propre réponse) ━━━
+- Aucun mot anglais parasite isolé → remplace par le français naturel (enough→assez, still→encore, just→juste, etc.)
+- Jamais le possessif anglais "'s" après un nom propre → "le visage de Nani" ou "son visage", jamais "Nani's visage".
+- Pas de "!" abusif → "." si l'intensité est déjà dans le texte.
+- "vous" pour le joueur → toujours "tu/toi/ton/ta/tes".
+- Après préposition (entre, avec, pour, sans…) → "toi" jamais "tu".
+- Nom propre répété 2× dans un même §→ "il/elle" pour les suivants.
 ${examples?`\n━━━ EXAMPLE EXCHANGES (style guide only) ━━━\n${examples}\n━━━ END EXAMPLES ━━━`:""}`;}
 
-// ══ CORR ══
+// ══ CORR (conservé pour usage manuel éventuel) ══
 const CORR=`Tu es un correcteur silencieux de texte de roleplay. Retourne UNIQUEMENT le texte corrigé, sans commentaire, sans explication.
 RÈGLES :
 1. Mots anglais isolés parasites → remplace par l'équivalent français. Liste non-exhaustive : enough, seems, still, yet, though, however, suddenly, indeed, rather, quite, almost, just, even, so, then, now, while, though, despite, towards, around, among, through, within, beyond, behind, against, somehow, somewhere, nothing, everything, everyone, already, always, never, maybe, perhaps, truly, deeply, slowly, quickly, softly, finally, after, before, without, unless, whether, either, neither, both, only, very, really.
@@ -1421,21 +1478,29 @@ function showModelIndicator(modelLabel,idx){
   const list=document.getElementById("model-list");if(list)renderModelList();
 }
 
-async function tryFetch(url,key,body,stream){
-  return fetch(url,{method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify(body)});
+async function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+async function tryFetch(url,key,body,stream,attempt=0){
+  const r=await fetch(url,{method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(r.status===429&&attempt<3){
+    const wait=[8000,15000,25000][attempt]||25000;
+    setStatus(`⏳ Limite atteinte — reprise dans ${wait/1000}s…`);
+    await sleep(wait);
+    removeStatus();
+    return tryFetch(url,key,body,stream,attempt+1);
+  }
+  return r;
 }
 
 async function orStream(messages,onChunk){
-  // Essayer le modèle actif, puis fallback sur les suivants si 429
   const order=[activeModelIdx,...MODELS.map((_,i)=>i).filter(i=>i!==activeModelIdx)];
   for(const idx of order){
     const m=MODELS[idx];
     const key=getKeyForProvider(m.provider);
     if(!key)continue;
     const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,messages},true);
-    if(r.status===429){continue;}// Rate limit → essayer suivant
-    if(!r.ok){const e=await r.text();throw new Error(`API ${r.status}: ${e.slice(0,100)}`);}
-    if(idx!==activeModelIdx)showModelIndicator(m.label,idx);
+    if(r.status===429){continue;}// Retry épuisé → essayer modèle suivant silencieusement
+    if(!r.ok){const e=await r.text();throw new Error(`Erreur ${r.status} — réessaie dans quelques secondes.`);}
+    if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);}// Bascule silencieuse
     const reader=r.body.getReader(),dec=new TextDecoder();
     let buf="",full="";
     while(true){
@@ -1650,6 +1715,7 @@ function rebuildHist(){
 }
 async function sendMessage(overrideText=null,fromIndex=null){
   if(busy||!S)return;
+  if(overrideText===null&&!canSend())return;// Debounce rafale
   const input=document.getElementById("msg-input");
   const txt=overrideText!==null?overrideText:input.value.trim();
   if(!txt)return;
@@ -1721,18 +1787,7 @@ ${prevSummary?"Fusionne avec le résumé précédent sans répétition. ":""}Max
     const msgIdx=S.messages.length;
     S.messages.push({role:"assistant",content:md(rawFull),rawText:rawFull,charId:S.charId,sessionId:S.id});
     rebuildHist();autosave();renderSBSessions();
-    // Silent correction pass
-    (async()=>{
-      try{
-        const corrected=await correct(rawFull);
-        if(corrected&&corrected!==rawFull&&corrected!=="..."){
-          const allBubbles=document.querySelectorAll(".msg.bot .bubble");
-          const lastBubble=allBubbles[allBubbles.length-1];
-          if(lastBubble)lastBubble.innerHTML=md(corrected);
-          if(S.messages[msgIdx])S.messages[msgIdx]={...S.messages[msgIdx],content:md(corrected),rawText:corrected};
-        }
-      }catch{}
-    })();
+    // Correction intégrée au prompt principal — pas de second appel API
   }catch(e){
     removeStatus();addBot(`<em style="color:var(--red)">Erreur : ${esc(e.message)}</em>`,null);
   }
@@ -1938,9 +1993,19 @@ function updateScrollBtn(){
 }
 
 document.getElementById("messages").addEventListener("scroll",updateScrollBtn,{passive:true});
+let _lastSendTime=0;
 function setBusy(v){
   busy=v;
-  document.getElementById("send-btn").disabled=v;
+  const btn=document.getElementById("send-btn");
+  btn.disabled=v;
+  if(!v)btn.style.opacity="1";
+}
+// Debounce : bloquer si dernier envoi < 1.5s
+function canSend(){
+  const now=Date.now();
+  if(now-_lastSendTime<1500)return false;
+  _lastSendTime=now;
+  return true;
 }
 let _inputWasFocused=false;
 document.getElementById("msg-input").addEventListener("focus",()=>{_inputWasFocused=true;});
@@ -2289,6 +2354,8 @@ if(window.visualViewport){
     const newH=window.visualViewport.height;
     const delta=Math.abs(newH-_lastVPHeight);
     _lastVPHeight=newH;
+    const kbOpen=delta>=100&&newH<_lastVPHeight+(delta*0.1);
+    document.body.classList.toggle("kb-open",newH<window.screen.height*0.75);
     if(delta<100)return;
     if(app){
       if(chatActive||creatorActive){app.style.height=newH+"px";}
