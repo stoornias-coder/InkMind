@@ -604,6 +604,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       <div class="chat-right">
         <button class="icon-btn" onclick="editCurrentChar()">✎</button>
         <button class="icon-btn" onclick="newCurrentChat()">⬚</button>
+        <button class="icon-btn" onclick="copyConversation()" title="Copier la conversation">⎘</button>
       </div>
     </div>
     <div class="messages" id="messages"></div>
@@ -1591,7 +1592,7 @@ ${prevSummary?"Fusionne avec le résumé précédent sans répétition. ":""}Max
     const el=document.createElement("div");el.className="msg bot";
     const char=S.char;let av="✦";
     if(char?.photo)av=`<img src="${char.photo}" alt="${char.name}">`;else if(char)av=char.name.charAt(0).toUpperCase();
-    el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
+    el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble" id="stream-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button><button class="bot-act-btn" onclick="copyBotMsg(this)">⎘ Copier</button></div></div>`;
     document.getElementById("messages").appendChild(el);scrollBottom();
     let rawFull="";
     let _streamThrottle=null;
@@ -1657,7 +1658,7 @@ function addUser(txt,save=true,idx=null){
   const msgIdx=idx!==null?idx:getMsgIndex();
   const el=document.createElement("div");el.className="msg user";el.dataset.idx=msgIdx;
   const userAv=getUserAvHTML();
-  el.innerHTML=`<div class="user-body"><div class="msg-actions"><button class="msg-act-btn" onclick="startEditMsg(this)">✎</button><button class="msg-act-btn" onclick="resendMsg(this)">↺</button></div><div class="bubble">${escMd(txt)}</div></div><div class="user-av">${userAv}</div>`;
+  el.innerHTML=`<div class="user-body"><div class="msg-actions"><button class="msg-act-btn" onclick="startEditMsg(this)">✎</button><button class="msg-act-btn" onclick="resendMsg(this)">↺</button><button class="msg-act-btn" onclick="copyUserMsg(this)">⎘</button></div><div class="bubble">${escMd(txt)}</div></div><div class="user-av">${userAv}</div>`;
   document.getElementById("messages").appendChild(el);
   if(save&&S){S.messages=S.messages||[];S.messages.push({role:"user",content:esc(txt),rawText:txt,charId:S.charId,sessionId:S.id});}
   scrollBottom();
@@ -1665,7 +1666,7 @@ function addUser(txt,save=true,idx=null){
 function addBot(html,char,save=true,idx=null){
   const el=document.createElement("div");el.className="msg bot";
   let av="✦";if(char?.photo)av=`<img src="${char.photo}" alt="${char.name}">`;else if(char)av=char.name.charAt(0).toUpperCase();
-  el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble">${html}</div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button></div></div>`;
+  el.innerHTML=`<div class="bot-av">${av}</div><div class="bot-content"><div class="bubble">${html}</div><div class="bot-msg-actions"><button class="bot-act-btn" onclick="startEditBotMsg(this)">✎</button><button class="bot-act-btn" onclick="regenerateLast()">↺ Régénérer</button><button class="bot-act-btn" onclick="copyBotMsg(this)">⎘ Copier</button></div></div>`;
   document.getElementById("messages").appendChild(el);
   if(save&&S){S.messages=S.messages||[];S.messages.push({role:"assistant",content:html});}
   scrollBottom();
@@ -1705,6 +1706,59 @@ function confirmBotEdit(btn){
   autosave();
 }
 function cancelBotEdit(btn){const msgEl=btn.closest(".msg.bot");msgEl.classList.remove("editing");const box=msgEl.querySelector("textarea.edit-box");const btns=msgEl.querySelector(".edit-btns");const bubble=msgEl.querySelector(".bubble");if(bubble)bubble.style.display="";if(box)box.remove();if(btns)btns.remove();}
+// ══ COPY FUNCTIONS ══
+async function copyText(txt){
+  try{
+    if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Clipboard){
+      await window.Capacitor.Plugins.Clipboard.write({string:txt});
+    } else {
+      await navigator.clipboard.writeText(txt);
+    }
+    return true;
+  }catch{
+    // Fallback
+    const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";
+    document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
+    return true;
+  }
+}
+function showCopyToast(btn){
+  const orig=btn?btn.textContent:"";
+  if(btn){btn.textContent="✓ Copié";setTimeout(()=>btn.textContent=orig,1500);}
+  else{
+    let t=document.getElementById("copy-toast");
+    if(!t){t=document.createElement("div");t.id="copy-toast";t.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--gold-dim);border-radius:20px;padding:.3rem .9rem;font-size:.65rem;color:var(--gold);z-index:300;pointer-events:none;transition:opacity .3s;";document.body.appendChild(t);}
+    t.textContent="⎘ Conversation copiée";t.style.opacity="1";
+    clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity="0",2000);
+  }
+}
+async function copyBotMsg(btn){
+  const bubble=btn.closest(".bot-content").querySelector(".bubble");
+  if(!bubble)return;
+  const txt=bubble.innerText||bubble.textContent||"";
+  await copyText(txt);showCopyToast(btn);
+}
+async function copyUserMsg(btn){
+  const bubble=btn.closest(".user-body").querySelector(".bubble");
+  if(!bubble)return;
+  const txt=bubble.innerText||bubble.textContent||"";
+  await copyText(txt);showCopyToast(btn);
+}
+async function copyConversation(){
+  if(!S||!S.messages||!S.messages.length)return;
+  const userName=getUserName()||"Moi";
+  const charName=S.char?.name||"Personnage";
+  const lines=S.messages.map(m=>{
+    const raw=m.rawText||m.content||"";
+    const clean=raw.replace(/<[^>]+>/g,"").trim();
+    const speaker=m.role==="user"?userName:charName;
+    return speaker+" :\n"+clean;
+  }).join("\n\n");
+  const header="— "+(S.title||charName)+" —\n\n";
+  await copyText(header+lines);
+  showCopyToast(null);
+}
+
 function setStatus(txt){removeStatus();if(!txt)return;const el=document.createElement("div");el.className="status-line";el.id="st";el.textContent=txt;document.getElementById("messages").appendChild(el);scrollBottom();}
 function removeStatus(){const e=document.getElementById("st");if(e)e.remove();}
 function scrollBottom(){
