@@ -656,8 +656,6 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 const MODELS = [
   {id:"groq-llama4",   label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
   {id:"groq-llama3",   label:"Llama 3.3 70B",           model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
-  {id:"groq-llama3-8", label:"Llama 3.1 8B (Rapide)",  model:"llama-3.1-8b-instant",                          url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:900},
-  {id:"groq-mistral",  label:"Mistral Saba 24B",        model:"mistral-saba-24b",                              url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
   {id:"groq-qwen",     label:"Qwen QwQ 32B",            model:"qwen-qwq-32b",                                  url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
 ];
 const GROQ_KEY_STORE = "inkmind_groq_key";
@@ -683,7 +681,7 @@ let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
 let activeModelIdx=parseInt(localStorage.getItem(MODEL_KEY)||"0");
 // Compatibilité ancienne clé unique
 if(!groqKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;}
-let isDark=(localStorage.getItem("inkmind_theme")||"dark")==="dark";
+let isDark=(localStorage.getItem("inkmind_theme")||"light")==="dark";
 let currentLang=localStorage.getItem(LANG_KEY)||"fr";
 let busy=false,S=null;
 let editingCharId=null,editingWorldId=null,charCreatorFrom="home",worldCreatorFrom="home";
