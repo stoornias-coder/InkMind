@@ -898,6 +898,11 @@ function saveApiKeys(){
   renderModelList();
   const btn=document.querySelector("[onclick='saveApiKeys()']");
   if(btn){btn.textContent="Enregistré ✓";setTimeout(()=>btn.textContent="Enregistrer les clés →",1500);}
+  // Execute pending action if any (e.g. start chat after key was missing)
+  if(groqKey.length>8&&window._pendingAction){
+    const fn=window._pendingAction;window._pendingAction=null;
+    setTimeout(fn,300);
+  }
 }
 function updateApiStatus(){
   const gl=document.getElementById("groq-status-line");
@@ -1525,8 +1530,11 @@ function askConfirm(title,msg,okLabel="Supprimer"){
 function confirmRename(){const name=document.getElementById("rename-input").value.trim();if(!name){closeModal("rename-modal");return;}const sessions=loadSessions();const sess=sessions.find(s=>s.id===renameTargetId);if(sess){sess.title=name;localStorage.setItem(SESS_KEY,JSON.stringify(sessions));}if(S?.id===renameTargetId){S.title=name;document.getElementById("chat-name").textContent=name;}closeModal("rename-modal");renderSBSessions();}
 
 // ══ START / RESUME CHAT ══
-function requireKey(){
-  if(!groqKey){goSettings();return false;}
+function requireKey(pendingFn){
+  if(!groqKey){
+    if(pendingFn)window._pendingAction=pendingFn;
+    goSettings();return false;
+  }
   return true;
 }
 function getKeyForProvider(provider){return groqKey;}
@@ -1539,7 +1547,7 @@ function showWorldCharOptions(charId){
   modal.classList.add("open");
 }
 function startWorldFocusChat(charId){
-  if(!requireKey())return;
+  if(!requireKey(()=>startWorldFocusChat(charId)))return;
   const char=loadChars().find(c=>c.id===charId);if(!char||!char.worldId)return startChatWithChar(charId);
   const world=loadWorlds().find(w=>w.id===char.worldId);if(!world)return startChatWithChar(charId);
   // Create a focused char object: solo char but with world context injected
@@ -1603,7 +1611,7 @@ function startWorldFocusChat(charId){
 }
 
 function startChatWithChar(charId){
-  if(!requireKey())return;
+  if(!requireKey(()=>startChatWithChar(charId)))return;
   const char=loadChars().find(c=>c.id===charId);if(!char)return;
   // Prendre la session avec le dernier MESSAGE envoyé (pas juste créée)
   const sessions=loadSessions().filter(s=>s.charId===charId);
@@ -1619,7 +1627,7 @@ function startChatWithChar(charId){
   newChatWithChar(charId);
 }
 function newChatWithChar(charId){
-  if(!requireKey())return;
+  if(!requireKey(()=>newChatWithChar(charId)))return;
   const char=loadChars().find(c=>c.id===charId);if(!char)return;
   S={id:"sess_"+Date.now(),title:char.name,charId:char.id,char,summary:"",turn:0,hist:[],messages:[],createdAt:Date.now()};
   setupChatUI();clearMsgs();
