@@ -761,6 +761,12 @@ function handleBack(){
 
 // popstate = résultat de history.back() déclenché par le bridge Android
 window.addEventListener("popstate",function(){
+  // Sidebar ouverte → la fermer en priorité
+  if(document.getElementById("sidebar").classList.contains("open")){
+    closeSB();
+    history.pushState({screen:"app"},"",window.location.href);
+    return;
+  }
   const active=document.querySelector(".screen.active");
   if(!active||active.id==="home"){
     try{if(window.Capacitor?.Plugins?.App)window.Capacitor.Plugins.App.minimizeApp();}catch{}
@@ -784,6 +790,11 @@ function goProfile(){navigateTo("profile-page",null);loadProfilePage();}
     try{
       if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){
         window.Capacitor.Plugins.App.addListener("backButton",function(){
+          // Sidebar ouverte → la fermer en priorité
+          if(document.getElementById("sidebar").classList.contains("open")){
+            closeSB();
+            return;
+          }
           const active=document.querySelector(".screen.active");
           if(!active||active.id==="home"){
             window.Capacitor.Plugins.App.minimizeApp();
@@ -1992,7 +2003,7 @@ async function onCharPhotoFile(input){if(!input.files[0])return;const url=await 
 async function onWorldPhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);input.value="";onWorldPhoto(url);}
 async function onProfilePhotoFile(input){if(!input.files[0])return;const url=await fileToDataURL(input.files[0]);input.value="";onProfilePhoto(url);}
 
-function openSB(){renderSBSessions();updateSBProfile();document.getElementById("sidebar").classList.add("open");}
+function openSB(){renderSBSessions();updateSBProfile();document.getElementById("sidebar").classList.add("open");history.pushState({screen:"sidebar"},"",window.location.href);}
 function closeSB(){document.getElementById("sidebar").classList.remove("open");}
 function newWorldChat(worldId){
   // Ouvrir la page monde puis démarrer un chat libre
