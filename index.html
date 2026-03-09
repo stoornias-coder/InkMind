@@ -1433,26 +1433,47 @@ Before writing, check: did I write this same sentence or description in ANY of m
 STRICT NAME RULE: Never use a character's name more than ONCE per paragraph. After the first mention, use "il", "elle", or a gesture/action without naming. Example wrong: "Test sourit. Test dit. Test penche la tête." → Correct: "Test sourit. « Bonjour. » Il penche la tête."
 
 ━━━ BLACKLIST — MOTS ET PHRASES INTERDITS ━━━
-Ces expressions sont BANNIES. Ne les écris JAMAIS, même une seule fois :
-INTERDITS ABSOLUS :
-- "son expression impassible" → décris ce que le visage FAIT concrètement
-- "son regard te transperçant" → trouve une action physique précise
-- "sa voix est basse" / "voix basse" → montre l'intention derrière le ton
-- "la lumière (de X) éclaire/se reflète sur son visage" → remplace par une action ou sensation
-- "son regard balayant la salle" → reformule avec une intention claire
-- "s'attendant à ce que tu le suives" → jamais — laisse la scène ouverte
-- "sans chaleur excessive" / "sans tendresse excessive" → trop vague, montre
-- "comme si de rien n'était" → banni
-- "son regard perçant mais indéchiffrable" → choisis l'un ou l'autre
-- "sentant la tension/le malaise" (pour un PNJ) → PNJ réagissent par des actions, pas des déductions
-- "la musique et les rires/conversations créent une atmosphère" → rembourrage interdit
-- "lourde de tension" → montré pas dit
-- "ses pensées" / "face à tes propres pensées" → le narrateur ne commente pas l'état interne du joueur
-- "soudain" → banni (déjà dans les règles)
-- "comme si" → banni (déjà dans les règles)
+Ces expressions sont BANNIES absolument — une seule occurrence est une erreur critique :
 
-RÈGLE STRUCTURELLE : Ne jamais terminer deux réponses consécutives de la même façon (description de lumière, de silence, d'escalier, de porte). Varie la chute de chaque scène.
-COPIE INTERDITE : Si ta réponse ressemble mot pour mot à une réponse précédente → réécris entièrement. Une réponse identique est une erreur critique.
+DESCRIPTIONS PHYSIQUES INTERDITES :
+- "son regard est intense et froid" / "son regard est toujours aussi froid" → montre ce que les yeux FONT
+- "son expression impassible" → décris ce que le visage fait concrètement
+- "son regard te transperçant" → action physique précise
+- "son regard balayant la salle" → intention claire
+- "son regard perçant mais indéchiffrable" → choisis l'un ou l'autre
+- "la lumière (de X) éclaire/se reflète sur son visage" → remplace par action ou sensation
+- "son œil gauche se plisse" → dit une seule fois max par scène
+
+TON ET VOIX INTERDITS :
+- "sa voix est basse" / "voix basse" / "ton est bas et menaçant" → montre l'intention derrière
+- "son ton est neutre mais..." → trop formulaique, reformule
+- "son souffle est chaud/froid contre ton oreille/ta peau" → interdit après la 1ère occurrence par scène
+- "murmure-t-il, son ton est..." → jamais deux descripteurs de voix dans la même phrase
+
+GESTES ET CORPS INTERDITS :
+- "son bras autour de ta taille est ferme" → dit une fois max, jamais répété
+- "son geste est lent et délibéré" → trop générique, décris le geste précis
+- "il se force à sourire à nouveau" → "à nouveau" interdit après déjà utilisé
+- "son masque de bonheur factice" → une seule fois par conversation
+- "il se ressaisit aussitôt" → tic, reformule
+
+REMBOURRAGE INTERDIT :
+- "la musique et les rires/conversations créent une atmosphère" → banni
+- "les invités continuent de discuter/rire/féliciter" → banni comme remplissage
+- "jette un coup d'œil autour de la salle, s'assurant que personne n'écoute" → banni après 1ère occurrence
+- "son attention reste fixée sur toi" / "ses yeux ne te quittent pas" → dit une fois max
+- "il continue de te fixer, attendant que tu comprennes" → banni
+- "lourde de tension" / "l'atmosphère s'est alourdie" → montré pas dit
+- "comme si de rien n'était" → banni
+- "s'attendant à ce que tu le suives" → banni
+- "sans chaleur excessive" / "sans tendresse excessive" → trop vague
+- "ses pensées" / "face à tes propres pensées" → jamais
+- "soudain" → banni
+- "comme si" → banni
+
+RÈGLE STRUCTURELLE : Ne jamais terminer deux réponses consécutives de la même façon. Pas de clôture sur les invités, la musique, ou une description de salle. Finis sur une action du personnage ou un silence chargé de sens — jamais un inventaire de la scène.
+COPIE INTERDITE : Réponse identique ou quasi-identique à la précédente → réécris entièrement. Erreur critique.
+LIMITE PAR SCÈNE : Un même tic physique (souffle, regard, bras) ne peut apparaître qu'UNE FOIS par réponse. Après → autre partie du corps, autre sens, autre action.
 
 ━━━ DIALOGUE FORMAT ━━━
 TOUTE réplique DOIT être entre guillemets. Utilise « » en français, " " en anglais.
@@ -2399,6 +2420,37 @@ function fixLayout(){
 
 // visualViewport : la seule API fiable pour le clavier Android/iOS
 let _lastVPHeight=window.visualViewport?.height||window.innerHeight;
+
+// Détection clavier via focus direct sur les champs — plus fiable que visualViewport seul
+function _onFieldFocus(){
+  const creatorActive=["char-creator","world-creator","profile-page","settings-page"]
+    .some(id=>document.getElementById(id)?.classList.contains("active"));
+  if(!creatorActive)return;
+  document.body.classList.add("kb-open");
+  setTimeout(()=>{
+    const f=document.activeElement;
+    if(f&&(f.tagName==="INPUT"||f.tagName==="TEXTAREA")){
+      f.scrollIntoView({behavior:"smooth",block:"center"});
+    }
+  },300);
+}
+function _onFieldBlur(){
+  // Petit délai pour éviter le flash si on passe d'un champ à un autre
+  setTimeout(()=>{
+    const f=document.activeElement;
+    if(!f||!(f.tagName==="INPUT"||f.tagName==="TEXTAREA")){
+      document.body.classList.remove("kb-open");
+    }
+  },200);
+}
+// Attacher sur tous les champs des pages créateur/paramètres
+document.addEventListener("focusin",e=>{
+  if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA") _onFieldFocus();
+});
+document.addEventListener("focusout",e=>{
+  if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA") _onFieldBlur();
+});
+
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize",()=>{
     const chatActive=document.getElementById("chat")?.classList.contains("active");
@@ -2408,9 +2460,9 @@ if(window.visualViewport){
     const newH=window.visualViewport.height;
     const delta=Math.abs(newH-_lastVPHeight);
     _lastVPHeight=newH;
-    const kbOpen=delta>=100&&newH<_lastVPHeight+(delta*0.1);
-    document.body.classList.toggle("kb-open",newH<window.screen.height*0.75);
-    if(delta<100)return;
+    // Sync kb-open avec visualViewport aussi
+    if(delta>=80)document.body.classList.toggle("kb-open",newH<window.screen.height*0.75);
+    if(delta<80)return;
     if(app){
       if(chatActive||creatorActive){app.style.height=newH+"px";}
       else{app.style.height="";}
@@ -2473,4 +2525,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
