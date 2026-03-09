@@ -1405,7 +1405,14 @@ async function correct(txt){
   if(!txt.trim())return txt;
   const bad=["Page web","WebPage","scalablytyped",".cmo"];
   if(bad.some(b=>txt.includes(b)))return"...";
-  try{const r=await orCall([{role:"system",content:CORR},{role:"user",content:txt}],1400);if(bad.some(b=>r.includes(b)))return txt;return r.length>txt.length*0.4?r:txt;}catch{return txt;}
+  try{
+    const r=await orCall([{role:"system",content:CORR},{role:"user",content:txt}],1400);
+    if(bad.some(b=>r.includes(b)))return txt;
+    // Rejeter si le correcteur a trop changé le texte (réécriture complète)
+    const lenOk=r.length>=txt.length*0.75&&r.length<=txt.length*1.4;
+    if(!lenOk)return txt;
+    return r;
+  }catch{return txt;}
 }
 
 // ══ SESSIONS ══
