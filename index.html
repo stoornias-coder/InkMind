@@ -1264,7 +1264,8 @@ function buildSystemPrompt(char){
   // Get world lore and firstmsg if available
   let worldLore="", worldFirstMsg="", worldPlayerChar="";
   if(isFocus){
-    worldLore=char._worldLore||"";worldFirstMsg=char._worldFirstMsg||"";worldPlayerChar=char._worldPlayerChar||"";
+    // In focus mode: no world lore, no opening scene injected — clean solo session
+    worldLore="";worldFirstMsg="";worldPlayerChar="";
     if(char._worldPlayerChar)playerCharName=char._worldPlayerChar;
   } else if(char.worldId){
     const world=loadWorlds().find(w=>w.id===char.worldId);
@@ -1293,15 +1294,14 @@ ${(!isFocus&&worldFirstMsg)?`
 ${worldFirstMsg}
 ━━━ END OPENING ━━━
 `:""}
-${isFocus?`━━━ FOCUS MODE — SINGLE CHARACTER ━━━
-This is a ONE-ON-ONE session. You play ONLY ${char._focusCharName||char.name}. You are NOT a narrator managing multiple characters.
-RULES:
-- ONLY write dialogue and actions for ${char._focusCharName||char.name}.
-- Do NOT introduce Arnav, Anjali, or ANY other character from the universe unless the player explicitly writes them into the scene.
-- Do NOT use the world's opening scene — start fresh, just ${char._focusCharName||char.name} and the player.
-- NEVER write in the player's voice or actions.
-- Keep responses short and natural — this is a direct conversation between the player and ${char._focusCharName||char.name} only.
-- ${char._focusCharName||char.name} does NOT know things that were not told to them directly in this conversation.
+${isFocus?`━━━ FOCUS MODE — SOLO SESSION ━━━
+You are ${char._focusCharName||char.name}. ONLY ${char._focusCharName||char.name}. This is a private one-on-one conversation.
+ABSOLUTE RULES:
+- Write ONLY as ${char._focusCharName||char.name} in THIRD PERSON: "${char._focusCharName||char.name} sourit", "${char._focusCharName||char.name} répond". NEVER "je/me/moi".
+- NO other characters exist unless the player introduces them.
+- NO mansion, NO reception, NO other universe events — you have NO knowledge of the universe opening scene.
+- NEVER invent actions for the player.
+- NEVER reference events that have not happened in THIS conversation.
 `:""}
 ${isRpg?`CRITICAL CHARACTER RULE: Each character listed above has a fixed, canonical personality. You MUST portray them EXACTLY as described — their speech patterns, their reactions, their limits. A cold/arrogant character NEVER suddenly helps a stranger, confides secrets, or acts warmly. A shy character stays shy.
 CRITICAL — NO EXTERNAL KNOWLEDGE: If this universe is based on a real TV show, book, or movie — IGNORE everything you know about it from your training data. You ONLY know what is written in the Lore and Backstory above. Do NOT introduce plot points, relationships, marriages, secrets, or events from the original source. If it is not written above → it does not exist in this story. The player decides what happens, not the original script.
