@@ -2511,15 +2511,7 @@ function updateCreatorHeight(){
   CREATOR_SCREENS.forEach(id=>{
     const screen=document.getElementById(id);
     if(!screen)return;
-    const body=screen.querySelector(".page-body");
-    if(body){
-      // Padding uniquement si clavier ouvert, sinon CSS par défaut
-      if(kbH>50){
-        body.style.paddingBottom=(kbH+40)+"px";
-      } else {
-        body.style.paddingBottom="";
-      }
-    }
+    // Pas de padding dynamique — le CSS fixe suffit
   });
 }
 updateCreatorHeight();
@@ -2586,3 +2578,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
