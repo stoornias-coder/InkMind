@@ -676,8 +676,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 <script>
 // ══ CONSTANTS ══
 const MODELS = [
-  {id:"groq-llama4",   label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1200},
-  {id:"groq-llama3",   label:"Llama 3.3 70B",           model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
+  {id:"groq-llama3",   label:"Llama 3.3 70B",   model:"llama-3.3-70b-versatile",  url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
 ];
 const GROQ_KEY_STORE  = "inkmind_groq_key";
 const GROQ_KEY2_STORE = "inkmind_groq_key2";
@@ -702,8 +701,10 @@ function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const id
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
 let groqKey2=localStorage.getItem(GROQ_KEY2_STORE)||"";
 let _activeKeyIdx=0;// 0=clé1, 1=clé2 — rotation automatique
-let activeModelIdx=parseInt(localStorage.getItem(MODEL_KEY)||"0");
-if(activeModelIdx>=MODELS.length||isNaN(activeModelIdx))activeModelIdx=0;
+// Reset model index par ID plutôt que par position (résistant aux réordres)
+let _savedModelId=localStorage.getItem(MODEL_KEY+"_id")||"groq-llama3";
+let activeModelIdx=MODELS.findIndex(m=>m.id===_savedModelId);
+if(activeModelIdx<0)activeModelIdx=0;
 // Compatibilité ancienne clé unique
 if(!groqKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;}
 let isDark=(localStorage.getItem("inkmind_theme")||"light")==="dark";
@@ -940,7 +941,7 @@ function renderModelList(){
     btn.className="tgl-btn"+(isActive?" on":"");
     btn.style.cssText="text-align:left;display:flex;align-items:center;gap:.5rem;width:100%;justify-content:space-between;";
     btn.innerHTML=`<span>${isActive?"✦ ":""}${m.label}</span><span style="font-size:.55rem;color:${hasKey?"var(--gold-dim)":"var(--red)"}">${hasKey?"✓ clé ok":"✗ clé manquante"}</span>`;
-    btn.onclick=()=>{activeModelIdx=i;_lastShownModelIdx=null;localStorage.setItem(MODEL_KEY,i);renderModelList();updateActiveIndicator();};
+    btn.onclick=()=>{activeModelIdx=i;_lastShownModelIdx=null;localStorage.setItem(MODEL_KEY+"_id",MODELS[i]?.id||"");localStorage.setItem(MODEL_KEY,i);renderModelList();updateActiveIndicator();};
     list.appendChild(btn);
   });
   updateActiveIndicator();
@@ -1580,7 +1581,15 @@ async function orStream(messages,onChunk){
     if(!key)continue;
     const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,frequency_penalty:0.6,presence_penalty:0.4,messages},true);
     if(r.status===429){rotateKey();continue;}// Retry épuisé → essayer modèle suivant silencieusement
-    if(!r.ok){const e=await r.text();throw new Error(`Erreur ${r.status} — réessaie dans quelques secondes.`);}
+    if(!r.ok){
+      const e=await r.text();
+      let msg=`Erreur ${r.status}`;
+      if(r.status===401)msg="Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.";
+      else if(r.status===404)msg="Modèle introuvable (404) — le modèle n'est plus disponible sur Groq.";
+      else if(r.status===429)msg="Limite de requêtes atteinte — attends quelques secondes.";
+      else if(r.status===400)msg="Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.";
+      throw new Error(msg);
+    }
     if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);}// Bascule silencieuse
     const reader=r.body.getReader(),dec=new TextDecoder();
     let buf="",full="";
@@ -2578,4 +2587,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
