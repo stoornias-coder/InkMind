@@ -1605,37 +1605,48 @@ async function tryFetch(url,key,body,stream,attempt=0){
 
 async function orStream(messages,onChunk){
   const order=[activeModelIdx,...MODELS.map((_,i)=>i).filter(i=>i!==activeModelIdx)];
+  const allKeys=getKeys();
   for(const idx of order){
     const m=MODELS[idx];
-    const key=getKeyForProvider(m.provider);
-    if(!key)continue;
-    const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,frequency_penalty:0.6,presence_penalty:0.4,messages},true);
-    if(r.status===429){rotateKey();continue;}// Retry épuisé → essayer modèle suivant silencieusement
-    if(!r.ok){
-      const e=await r.text();
-      let msg=`Erreur ${r.status}`;
-      if(r.status===401)msg="Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.";
-      else if(r.status===404)msg="Modèle introuvable (404) — le modèle n'est plus disponible sur Groq.";
-      else if(r.status===429)msg="Limite de requêtes atteinte — attends quelques secondes.";
-      else if(r.status===400)msg="Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.";
-      throw new Error(msg);
-    }
-    if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);}// Bascule silencieuse
-    const reader=r.body.getReader(),dec=new TextDecoder();
-    let buf="",full="";
-    while(true){
-      const{done,value}=await reader.read();if(done)break;
-      buf+=dec.decode(value,{stream:true});
-      const lines=buf.split("\n");buf=lines.pop();
-      for(const line of lines){
-        if(!line.startsWith("data:"))continue;
-        const d=line.slice(5).trim();if(d==="[DONE]")continue;
-        try{const j=JSON.parse(d);const t=j.choices?.[0]?.delta?.content||"";if(t){full+=t;onChunk(full);}}catch{}
+    // Essayer toutes les clés disponibles pour ce modèle
+    const triedKeys=new Set();
+    let lastStatus=0;
+    for(let ki=0;ki<allKeys.length;ki++){
+      const key=allKeys[(_activeKeyIdx+ki)%allKeys.length];
+      if(triedKeys.has(key))continue;
+      triedKeys.add(key);
+      const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,frequency_penalty:0.6,presence_penalty:0.4,messages},true);
+      lastStatus=r.status;
+      if(r.status===429){continue;}// Clé en limite → essayer la suivante
+      if(!r.ok){
+        const e=await r.text();
+        let msg=`Erreur ${r.status}`;
+        if(r.status===401)msg="Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.";
+        else if(r.status===404)msg="Modèle introuvable (404) — le modèle n'est plus disponible sur Groq.";
+        else if(r.status===400)msg="Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.";
+        throw new Error(msg);
       }
+      if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);}
+      const reader=r.body.getReader(),dec=new TextDecoder();
+      let buf="",full="";
+      while(true){
+        const{done,value}=await reader.read();if(done)break;
+        buf+=dec.decode(value,{stream:true});
+        const lines=buf.split("\n");buf=lines.pop();
+        for(const line of lines){
+          if(!line.startsWith("data:"))continue;
+          const d=line.slice(5).trim();if(d==="[DONE]")continue;
+          try{const j=JSON.parse(d);const t=j.choices?.[0]?.delta?.content||"";if(t){full+=t;onChunk(full);}}catch{}
+        }
+      }
+      return full;
     }
-    return full;
   }
-  throw new Error("Tous les modèles sont en limite. Attends quelques minutes.");
+  // Toutes les clés sont en limite — attendre 15s et réessayer automatiquement
+  setStatus("⏳ Les deux clés sont en limite — reprise dans 15s…");
+  await sleep(15000);
+  removeStatus();
+  return orStream(messages,onChunk);
 }
 
 async function orCall(messages,maxTok=400){
