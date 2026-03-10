@@ -2455,38 +2455,7 @@ let _lastVPHeight=window.visualViewport?.height||window.innerHeight;
 // Détection clavier via focus direct sur les champs — plus fiable que visualViewport seul
 const CREATOR_SCREENS=["char-creator","world-creator","profile-page","settings-page"];
 function _isCreatorActive(){return CREATOR_SCREENS.some(id=>document.getElementById(id)?.classList.contains("active"));}
-
-let _scrollPosBeforeKb=0;
-
-function _onFieldFocus(){
-  if(!_isCreatorActive())return;
-  // Mémoriser la position de scroll AVANT que le clavier décale tout
-  const activeScreen=CREATOR_SCREENS.map(id=>document.getElementById(id)).find(el=>el?.classList.contains("active"));
-  if(activeScreen)_scrollPosBeforeKb=activeScreen.scrollTop;
-  setTimeout(()=>{
-    // Restaurer la position de scroll pour annuler le saut involontaire
-    if(activeScreen)activeScreen.scrollTop=_scrollPosBeforeKb;
-    // Puis scroller doucement vers le champ actif
-    const f=document.activeElement;
-    if(f&&(f.tagName==="INPUT"||f.tagName==="TEXTAREA")){
-      f.scrollIntoView({behavior:"smooth",block:"center"});
-    }
-  },350);
-}
-function _onFieldBlur(){
-  setTimeout(()=>{
-    const f=document.activeElement;
-    if(!f||!(f.tagName==="INPUT"||f.tagName==="TEXTAREA")){
-      document.body.classList.remove("kb-open");
-    }
-  },200);
-}
-document.addEventListener("focusin",e=>{
-  if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA") _onFieldFocus();
-});
-document.addEventListener("focusout",e=>{
-  if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA") _onFieldBlur();
-});
+// Scroll géré nativement par le navigateur — aucune intervention JS
 
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize",()=>{
@@ -2562,4 +2531,3 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
-
