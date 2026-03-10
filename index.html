@@ -712,6 +712,31 @@ let currentLang=localStorage.getItem(LANG_KEY)||"fr";
 let busy=false,S=null;
 let editingCharId=null,editingWorldId=null,charCreatorFrom="home",worldCreatorFrom="home";
 let selectedTraits=new Set(),charPhoto=null,worldPhoto=null,profilePhoto=null;
+
+// Dictionnaire traits → comportements concrets pour le prompt
+const TRAITS_BEHAVIOR = {
+  "Mysterious":    "garde ses motivations secrètes, ne révèle jamais tout, laisse planer le doute",
+  "Warm":          "chaleureux dans les mots et les gestes, attentif aux besoins de l'autre",
+  "Cold":          "ton glacial, absence de chaleur, pas de contact inutile, économie de mots",
+  "Sarcastic":     "ironie mordante, piques discrètes, humour noir, ne complimente jamais franchement",
+  "Playful":       "taquineries légères, sourires en coin, ne prend pas tout au sérieux",
+  "Serious":       "aucune place pour la légèreté, chaque mot est pesé, posture rigide",
+  "Protective":    "se positionne physiquement entre la menace et l'autre, surveille sans le dire",
+  "Dangerous":     "tension permanente sous le calme, capable de violence froide sans prévenir",
+  "Gentle":        "douceur dans la voix et les gestes, jamais brusque, prend soin des détails",
+  "Obsessive":     "revient toujours sur les mêmes sujets, observe trop longtemps, ne lâche pas",
+  "Witty":         "réparties rapides, intelligence visible dans chaque phrase, jamais à court",
+  "Brooding":      "silences lourds, regard sombre, porte un poids invisible, peu expansif",
+  "Charismatic":   "attire l'attention naturellement, parole assurée, présence magnétique",
+  "Shy":           "évite le contact visuel, parle peu, rougit facilement, hésitations fréquentes",
+  "Ruthless":      "aucune pitié dans les décisions, ne s'excuse jamais, va jusqu'au bout",
+  "Caring":        "remarque les détails sur l'autre, propose de l'aide sans qu'on le demande",
+  "Cunning":       "chaque phrase a un double sens, manipule avec subtilité, anticipe tout",
+  "Loyal":         "ne trahit jamais, défend les siens même dans l'erreur, fidèle jusqu'à l'excès",
+  "Impulsive":     "agit avant de réfléchir, émotions visibles, réactions excessives",
+  "Stoic":         "aucune émotion visible, visage fermé, voix monotone, ne réagit pas aux provocations"
+};
+
 let openDropdown=null,apiRevealOn=false;
 let selectedGender=null,currentWorldId=null;
 let renameTargetId=null;
@@ -1277,7 +1302,7 @@ document.addEventListener("click",e=>{if(openDropdown&&!e.target.closest(".dropd
 function buildShortCard(char){
   const parts=[];
   if(char.desc)parts.push(char.desc.slice(0,120));
-  if(char.traits?.length)parts.push("Traits: "+char.traits.slice(0,5).join(", "));
+  if(char.traits?.length)parts.push("Traits: "+char.traits.join(", "));
   if(char.voice)parts.push("Voix: "+char.voice.slice(0,80));
   // Backstory: 200 mots max (première partie la plus importante)
   if(char.backstory){
@@ -1378,7 +1403,9 @@ ABSOLUTE RULES:
 ${isRpg?`CRITICAL CHARACTER RULE: Each character listed above has a fixed, canonical personality. You MUST portray them EXACTLY as described — their speech patterns, their reactions, their limits. A cold/arrogant character NEVER suddenly helps a stranger, confides secrets, or acts warmly. A shy character stays shy.
 CRITICAL — NO EXTERNAL KNOWLEDGE: If this universe is based on a real TV show, book, or movie — IGNORE everything you know about it from your training data. You ONLY know what is written in the Lore and Backstory above. Do NOT introduce plot points, relationships, marriages, secrets, or events from the original source. If it is not written above → it does not exist in this story. The player decides what happens, not the original script.
 NEVER invent plot points (engagements, marriages, arranged matches, family secrets, past relationships) that are not explicitly written in the backstory above.`:`CORE IDENTITY OF ${char.name} — THIS NEVER CHANGES, EVER:
-Personality: ${traits||"not specified"}
+Personality traits: ${traits||"not specified"}
+${char.traits?.length ? `Concrete behaviors for each trait:
+${char.traits.map(t => TRAITS_BEHAVIOR[t] ? `- ${t}: ${TRAITS_BEHAVIOR[t]}` : "").filter(Boolean).join("\n")}` : ""}
 Speaking style: ${char.voice||"natural, in character"}
 ${char.desc?`Description: ${char.desc}`:""}
 ABSOLUTE RULE: ${char.name}'s personality is LOCKED. It does NOT evolve, soften, or shift based on alcohol, time passing, or the player's attitude — unless the player's backstory EXPLICITLY says so.
@@ -1402,7 +1429,8 @@ ${playerCharName?`CRITICAL — PLAYER IS "${playerCharName}": The player IS "${p
 ${isRpg?`NEVER use the universe name "${char.name}" as a speaker. Always use the actual character's real name.`:`NEVER write in first person as ${char.name}. Always: "${char.name} dit :", "${char.name} sourit".`}
 CRITICAL: A character NEVER refers to themselves in the third person. If Arnav is speaking, he says "je" / "moi" — NEVER "lui" or "Arnav" to refer to himself.
 NEVER repeat the same sentence or action from the previous response.
-NEVER end your response with a question directed at the player. Do NOT ask "Et toi ?", "Que vas-tu faire ?", "Quelle est ta réponse ?" or any question. Let the scene breathe — the player will react when they choose. End on action, atmosphere, or silence.
+NEVER end your response with a question directed at the player. Do NOT ask "Et toi ?", "Que vas-tu faire ?", "Quelle est ta réponse ?", "Qu'est-ce qui te fait sourire ?", "Pourquoi souris-tu ?" or ANY question whatsoever. This is a CRITICAL and ABSOLUTE rule — zero exceptions. The scene ends on action, tension, atmosphere, or silence. The player speaks when they choose. A question at the end of a response is always WRONG.
+CRITICAL — A CHARACTER NEVER VERBALIZES THEIR OWN CONFUSION OR INNER STATE: A cold, controlled, or proud character NEVER says things like "je ne sais pas quoi attendre de toi", "tu es une anomalie pour moi", "je n'ai jamais su comment te gérer", "tu me déstabilises", "quelque chose en toi m'intrigue". These are emotional confessions — a guarded character would NEVER speak them aloud, especially early in a relationship. Their feelings are shown through ACTIONS and SILENCES, never through self-confession. If a character is cold → they stay cold in words. Their inner conflict is shown by what they DO, not what they SAY about themselves.
 NEVER mirror the player's actions. If the player smiles → a character does NOT also smile. If the player whispers → a character does NOT also whisper. If the player hides behind a fan → a character does NOT also hide behind a fan. Characters must REACT to what the player does — with a contrasting or complementary action, not a copy.
 NEVER write {{user}}, {{char}}, or any {{placeholder}}.
 NEVER use the English possessive apostrophe-s after a character name — it is a critical error in French text. Example: 'Nani's visage' is WRONG → write 'le visage de Nani'. 'Sara's regard' is WRONG → write 'le regard de Sara'. Always use French structure: 'le/la [noun] de [Name]'.
@@ -1516,7 +1544,7 @@ ${examples?`\n━━━ EXAMPLE EXCHANGES (style guide only) ━━━\n${exampl
 // ══ CORR (conservé pour usage manuel éventuel) ══
 const CORR=`Tu es un correcteur silencieux de texte de roleplay. Retourne UNIQUEMENT le texte corrigé, sans commentaire, sans explication.
 RÈGLES :
-1. Mots anglais isolés parasites → remplace par l'équivalent français. Liste non-exhaustive : enough, seems, still, yet, though, however, suddenly, indeed, rather, quite, almost, just, even, so, then, now, while, though, despite, towards, around, among, through, within, beyond, behind, against, somehow, somewhere, nothing, everything, everyone, already, always, never, maybe, perhaps, truly, deeply, slowly, quickly, softly, finally, after, before, without, unless, whether, either, neither, both, only, very, really.
+1. ZÉRO mot anglais dans le texte français — aucune exception. Pas un seul mot, pas une expression, pas une tournure anglaise glissée dans une phrase française. Exemples d'erreurs critiques : "taken aback", "seems", "overwhelmed", "speechless", "stunned", "flustered", "caught off guard", "lost for words" → reformule TOUJOURS en français naturel. Mots parasites courants à remplacer : enough→assez, still→encore, just→juste, yet→encore, though→pourtant, however→cependant, suddenly→soudain, indeed→en effet, rather→plutôt, quite→assez, almost→presque, even→même, so→donc, then→alors, now→maintenant, while→tandis que, despite→malgré, towards→vers, around→autour, somehow→d'une certaine façon, maybe→peut-être, perhaps→peut-être, truly→vraiment, deeply→profondément, slowly→lentement, quickly→rapidement, softly→doucement, finally→enfin.
 1b. Possessif anglais "'s" collé à un nom propre → TOUJOURS reformuler en français. Exemples : "Nani's visage" → "Son visage" ou "Le visage de Nani" ; "Sara's regard" → "Son regard" ; "Kai's voix" → "Sa voix". NE PAS écrire "de Arnav" deux fois dans la même phrase — utilise "son/sa/ses" à la place quand le sujet est déjà clair.
 2. Fautes d'orthographe, accords, accents manquants → corrige.
 3. Même mot répété 2+ fois dans un paragraphe → synonyme pour les suivants.
