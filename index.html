@@ -918,9 +918,9 @@ function saveApiKeys(){
   const hasKey=groqKey.length>8||groqKey2.length>8;
   if(hasKey&&window._pendingAction){
     const fn=window._pendingAction;window._pendingAction=null;
-    // Revenir en arrière d'abord (quitter les paramètres), puis exécuter l'action
-    handleBack();
-    setTimeout(fn,200);
+    // Vider la nav stack et laisser l'action naviguer directement vers le chat
+    _navStack.length=0;
+    setTimeout(fn,150);
   }
 }
 function updateApiStatus(){
@@ -1076,7 +1076,7 @@ function showWorldCharPicker(){
   document.getElementById("world-char-picker").classList.add("open");
 }
 function startWorldChat(mode){
-  if(!requireKey())return;
+  if(!requireKey(()=>startWorldChat(mode)))return;
   const world=loadWorlds().find(w=>w.id===currentWorldId);if(!world)return;
   const chars=loadChars().filter(c=>c.worldId===currentWorldId);
   // Build a "virtual char" representing the whole world
@@ -1165,8 +1165,14 @@ function saveCharacter(){
   const isWorld=!!worldId;
   creatorBack();
   // Si nouveau personnage solo → démarrer le chat directement
-  if(isNew&&!isWorld&&requireKey()){
-    startChatWithChar(char.id);
+  // On passe la pendingFn pour que requireKey() la mémorise si pas de clé
+  if(isNew&&!isWorld){
+    const charId=char.id;
+    if(getKeys().length){
+      startChatWithChar(charId);
+    } else {
+      requireKey(()=>startChatWithChar(charId));
+    }
   }
 }
 async function deleteChar(id){
@@ -1768,7 +1774,7 @@ function newChatWithChar(charId){
   autosave();renderSBSessions();showScreen("chat");
 }
 function resumeSession(sid){
-  const sess=loadSessions().find(s=>s.id===sid);if(!sess||!requireKey())return;
+  const sess=loadSessions().find(s=>s.id===sid);if(!sess||!requireKey(()=>resumeSession(sid)))return;
   if(sess.charId){const lc=loadChars().find(c=>c.id===sess.charId);if(lc)sess.char=lc;}
   if(sess.summary&&sess.char&&sess.messages?.length){const firstCharId=sess.messages.find(m=>m.charId)?.charId;if(firstCharId&&firstCharId!==sess.charId)sess.summary="";}
   S=sess;setupChatUI();clearMsgs();
@@ -2556,3 +2562,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
