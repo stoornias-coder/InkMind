@@ -171,10 +171,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 
 /* ══ SHARED PAGE LAYOUT ══ */
 #profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
-#char-creator .page-body,#world-creator .page-body{padding-bottom:6rem;}
-/* Padding augmenté seulement quand le clavier est ouvert */
-body.kb-open #char-creator .page-body,body.kb-open #world-creator .page-body{padding-bottom:35vh;}
-#profile-page .page-body,#settings-page .page-body{padding-bottom:3rem;}
+#char-creator .page-body,#world-creator .page-body,#profile-page .page-body,#settings-page .page-body{padding-bottom:6rem;}
 
 .field{display:flex;flex-direction:column;gap:.25rem;}
 .field label,.field-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);}
@@ -1546,12 +1543,18 @@ async function tryFetch(url,key,body,stream,attempt=0){
     const keys=getKeys();
     const newKey=getKeyForProvider("groq");
     if(newKey&&newKey!==key){
-      // Autre clé dispo → retry immédiat sans attendre
       return tryFetch(url,newKey,body,stream,attempt+1);
     }
-    // Même clé (1 seule clé) → backoff
     const wait=[8000,15000,25000][attempt]||25000;
     setStatus(`⏳ Limite atteinte — reprise dans ${wait/1000}s…`);
+    await sleep(wait);
+    removeStatus();
+    return tryFetch(url,key,body,stream,attempt+1);
+  }
+  if(r.status===503&&attempt<3){
+    // Groq surchargé → attendre 5s et réessayer silencieusement
+    const wait=[5000,10000,15000][attempt]||15000;
+    setStatus(`⏳ Serveur indisponible — reprise dans ${wait/1000}s…`);
     await sleep(wait);
     removeStatus();
     return tryFetch(url,key,body,stream,attempt+1);
@@ -2422,28 +2425,37 @@ function fixLayout(){
 let _lastVPHeight=window.visualViewport?.height||window.innerHeight;
 
 // Détection clavier via focus direct sur les champs — plus fiable que visualViewport seul
+const CREATOR_SCREENS=["char-creator","world-creator","profile-page","settings-page"];
+function _isCreatorActive(){return CREATOR_SCREENS.some(id=>document.getElementById(id)?.classList.contains("active"));}
+
+let _scrollPosBeforeKb=0;
+
 function _onFieldFocus(){
-  const creatorActive=["char-creator","world-creator","profile-page","settings-page"]
-    .some(id=>document.getElementById(id)?.classList.contains("active"));
-  if(!creatorActive)return;
-  document.body.classList.add("kb-open");
+  if(!_isCreatorActive())return;
+  // Mémoriser la position de scroll AVANT que le clavier décale tout
+  const activeScreen=CREATOR_SCREENS.map(id=>document.getElementById(id)).find(el=>el?.classList.contains("active"));
+  if(activeScreen)_scrollPosBeforeKb=activeScreen.scrollTop;
   setTimeout(()=>{
+    // Restaurer la position de scroll pour annuler le saut involontaire
+    if(activeScreen)activeScreen.scrollTop=_scrollPosBeforeKb;
+    // Puis scroller doucement vers le champ actif
     const f=document.activeElement;
     if(f&&(f.tagName==="INPUT"||f.tagName==="TEXTAREA")){
       f.scrollIntoView({behavior:"smooth",block:"center"});
     }
-  },300);
+  },350);
 }
 function _onFieldBlur(){
-  // Petit délai pour éviter le flash si on passe d'un champ à un autre
   setTimeout(()=>{
     const f=document.activeElement;
     if(!f||!(f.tagName==="INPUT"||f.tagName==="TEXTAREA")){
+      // Clavier fermé → restaurer hauteur normale
+      const app=document.getElementById("app");
+      if(app)app.style.height="";
       document.body.classList.remove("kb-open");
     }
   },200);
 }
-// Attacher sur tous les champs des pages créateur/paramètres
 document.addEventListener("focusin",e=>{
   if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA") _onFieldFocus();
 });
