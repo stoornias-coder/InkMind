@@ -43,11 +43,11 @@ jobs:
           npx cap add android
           npx cap sync android
           sed -i 's/<activity/<activity android:enableOnBackInvokedCallback="false"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
-          sed -i 's/android:windowSoftInputMode="[^"]*"/android:windowSoftInputMode="adjustPan"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
-          grep -q 'adjustPan' android/app/src/main/AndroidManifest.xml || \
-            sed -i 's/android:theme="[^"]*"/& android:windowSoftInputMode="adjustPan"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
+          sed -i 's/android:windowSoftInputMode="[^"]*"/android:windowSoftInputMode="adjustResize"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
+          grep -q 'adjustResize' android/app/src/main/AndroidManifest.xml || \
+            sed -i 's/android:theme="[^"]*"/& android:windowSoftInputMode="adjustResize"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
           sed -i 's/super.onCreate/getWindow().getDecorView().setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES); super.onCreate/' android/app/src/main/java/com/inkmind/app/MainActivity.java 2>/dev/null || true
-          
+
       - name: Copy splash screens
         run: |
           mkdir -p android/app/src/main/res/drawable
