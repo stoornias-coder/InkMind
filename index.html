@@ -150,7 +150,7 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 .hdr-btn{background:none;border:none;color:var(--text-dim);font-size:.95rem;cursor:pointer;padding:.15rem;}
 .hdr-btn:active{color:var(--gold);}
 .page-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:300;color:var(--gold);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.page-body{padding:.9rem 1rem 1rem;display:flex;flex-direction:column;gap:.85rem;max-width:500px;width:100%;margin:0 auto;}
+.page-body{padding:.9rem 1rem 1rem;display:flex;flex-direction:column;gap:.85rem;max-width:500px;width:100%;margin:0 auto;;touch-action:pan-y;}
 
 .world-banner{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:.9rem 1rem;display:flex;gap:.85rem;align-items:flex-start;}
 .world-banner-img{width:64px;height:64px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--gold-dim);}
@@ -170,7 +170,8 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 .world-section-title{font-size:.5rem;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);}
 
 /* ══ SHARED PAGE LAYOUT ══ */
-#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;}
+#profile-page textarea,#settings-page textarea,#char-creator textarea,#world-creator textarea,#profile-page input,#settings-page input,#char-creator input,#world-creator input{touch-action:pan-y;}
 #char-creator .page-body,#world-creator .page-body,#profile-page .page-body,#settings-page .page-body{padding-bottom:6rem;}
 
 .field{display:flex;flex-direction:column;gap:.25rem;}
