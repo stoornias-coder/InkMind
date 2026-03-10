@@ -170,9 +170,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 .world-section-title{font-size:.5rem;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);}
 
 /* ══ SHARED PAGE LAYOUT ══ */
-#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;height:100%;}
-#profile-page textarea,#settings-page textarea,#char-creator textarea,#world-creator textarea,#profile-page input,#settings-page input,#char-creator input,#world-creator input{touch-action:pan-y;}
-#char-creator .page-body,#world-creator .page-body,#profile-page .page-body,#settings-page .page-body{padding-bottom:6rem;}
+#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;height:var(--vh-creator,100%);scroll-padding-bottom:8rem;}
+#profile-page textarea,#settings-page textarea,#char-creator textarea,#world-creator textarea,#profile-page input,#settings-page input,#char-creator input,#world-creator input{touch-action:pan-y;overscroll-behavior:none;}#profile-page .page-body *,#settings-page .page-body *,#char-creator .page-body *,#world-creator .page-body *{-webkit-overflow-scrolling:auto;}
+#char-creator .page-body,#world-creator .page-body,#profile-page .page-body,#settings-page .page-body{padding-bottom:8rem;}
 
 .field{display:flex;flex-direction:column;gap:.25rem;}
 .field label,.field-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);}
@@ -2453,37 +2453,91 @@ function fixLayout(){
 // visualViewport : la seule API fiable pour le clavier Android/iOS
 let _lastVPHeight=window.visualViewport?.height||window.innerHeight;
 
-// Détection clavier via focus direct sur les champs — plus fiable que visualViewport seul
 const CREATOR_SCREENS=["char-creator","world-creator","profile-page","settings-page"];
 function _isCreatorActive(){return CREATOR_SCREENS.some(id=>document.getElementById(id)?.classList.contains("active"));}
-// Scroll géré nativement par le navigateur — aucune intervention JS
+
+// Permettre le scroll du conteneur même quand un input/textarea est focus
+// On intercepte touchstart/touchmove sur TOUTE la page des créateurs
+(function(){
+  let _touchStartY=0;
+  let _scrollTarget=null;
+
+  function getScrollableParent(el){
+    while(el&&el!==document.body){
+      const style=window.getComputedStyle(el);
+      const overflow=style.overflowY;
+      if((overflow==="auto"||overflow==="scroll")&&el.scrollHeight>el.clientHeight+2){
+        return el;
+      }
+      el=el.parentElement;
+    }
+    return null;
+  }
+
+  document.addEventListener("touchstart",(e)=>{
+    _touchStartY=e.touches[0].clientY;
+    _scrollTarget=null;
+    const target=e.target;
+    // Si on touche un input/textarea dans un créateur
+    if(target.tagName==="INPUT"||target.tagName==="TEXTAREA"){
+      const screen=target.closest("#char-creator,#world-creator,#profile-page,#settings-page");
+      if(screen) _scrollTarget=screen;
+    }
+  },{passive:true});
+
+  document.addEventListener("touchmove",(e)=>{
+    if(!_scrollTarget)return;
+    const dy=_touchStartY-e.touches[0].clientY;
+    // Vérifier si le scroll est encore possible dans ce sens
+    const atTop=_scrollTarget.scrollTop<=0&&dy<0;
+    const atBottom=_scrollTarget.scrollTop+_scrollTarget.clientHeight>=_scrollTarget.scrollHeight-2&&dy>0;
+    if(!atTop&&!atBottom){
+      // Laisser le scroll se faire sur le conteneur
+      _scrollTarget.scrollTop+=dy*0.5;
+      _touchStartY=e.touches[0].clientY;
+    }
+  },{passive:true});
+})();
+
+function updateCreatorHeight(){
+  const vp=window.visualViewport;
+  const vpH=vp?vp.height:window.innerHeight;
+  const fullH=window.innerHeight;
+  const kbH=Math.max(0, fullH-vpH); // hauteur du clavier
+  // Hauteur disponible au-dessus du clavier
+  document.documentElement.style.setProperty("--vh-creator", vpH+"px");
+  // Padding-bottom = hauteur clavier + marge confortable
+  // Pour que le scroll puisse atteindre le dernier champ même clavier ouvert
+  CREATOR_SCREENS.forEach(id=>{
+    const screen=document.getElementById(id);
+    if(!screen)return;
+    const body=screen.querySelector(".page-body");
+    if(body){
+      // Padding uniquement si clavier ouvert, sinon CSS par défaut
+      if(kbH>50){
+        body.style.paddingBottom=(kbH+40)+"px";
+      } else {
+        body.style.paddingBottom="";
+      }
+    }
+  });
+}
+updateCreatorHeight();
 
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize",()=>{
     const chatActive=document.getElementById("chat")?.classList.contains("active");
-    const creatorActive=["char-creator","world-creator","profile-page","settings-page"]
-      .some(id=>document.getElementById(id)?.classList.contains("active"));
     const app=document.getElementById("app");
     const newH=window.visualViewport.height;
     const delta=Math.abs(newH-_lastVPHeight);
     _lastVPHeight=newH;
-    // Sync kb-open avec visualViewport aussi
     if(delta>=80)document.body.classList.toggle("kb-open",newH<window.screen.height*0.75);
+    updateCreatorHeight();
     if(delta<80)return;
-    if(app){
-      if(chatActive){app.style.height=newH+"px";}// Créateurs gérés nativement via 100dvh
-      else if(!creatorActive){app.style.height="";}
-    }
+    if(app){app.style.height=newH+"px";}
     if(chatActive)fixLayout();
-    if(creatorActive){
-      setTimeout(()=>{
-        const f=document.activeElement;
-        if(f&&(f.tagName==="INPUT"||f.tagName==="TEXTAREA")){
-          f.scrollIntoView({behavior:"smooth",block:"center"});
-        }
-      },150);
-    }
   });
+  window.visualViewport.addEventListener("scroll",updateCreatorHeight);
 }
 
 // Quand l'app revient au premier plan (Capacitor)
