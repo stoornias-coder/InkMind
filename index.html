@@ -485,6 +485,14 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         </div>
         <div class="api-status" id="groq-status-line2">Aucune clé</div>
       </div>
+      <div class="api-field" style="margin-top:.6rem;">
+        <label class="field-label">Clé Mistral <span class="fhint">(console.mistral.ai — plan Experiment gratuit)</span></label>
+        <div class="api-row">
+          <input class="api-input" type="password" id="settings-mistral-key" placeholder="..." autocomplete="off" spellcheck="false">
+          <button class="api-reveal" onclick="toggleReveal('settings-mistral-key',this)">Afficher</button>
+        </div>
+        <div class="api-status" id="mistral-status-line">Aucune clé</div>
+      </div>
       <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Enregistrer les clés →</button>
       <hr class="settings-divider">
       <div class="field">
@@ -676,10 +684,15 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 <script>
 // ══ CONSTANTS ══
 const MODELS = [
-  {id:"groq-llama3",   label:"Llama 3.3 70B",   model:"llama-3.3-70b-versatile",  url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq", maxTokens:1000},
+  {id:"groq-llama3",    label:"Llama 3.3 70B",         model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",    maxTokens:900},
+  {id:"groq-scout",     label:"Llama 4 Scout",          model:"meta-llama/llama-4-scout-17b-16e-instruct",     url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",    maxTokens:900},
+  {id:"groq-maverick",  label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",    maxTokens:900},
+  {id:"groq-llama8b",   label:"Llama 3.1 8B",           model:"llama-3.1-8b-instant",                         url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",    maxTokens:900},
+  {id:"mistral-small",  label:"Mistral Small",          model:"mistral-small-latest",                          url:"https://api.mistral.ai/v1/chat/completions",      provider:"mistral", maxTokens:900},
 ];
-const GROQ_KEY_STORE  = "inkmind_groq_key";
-const GROQ_KEY2_STORE = "inkmind_groq_key2";
+const GROQ_KEY_STORE    = "inkmind_groq_key";
+const GROQ_KEY2_STORE   = "inkmind_groq_key2";
+const MISTRAL_KEY_STORE = "inkmind_mistral_key";
 const MODEL_KEY      = "inkmind_model";
 const SESS_KEY   = "inkmind_sess_v7";
 const CHARS_KEY  = "inkmind_chars_v7";
@@ -700,6 +713,7 @@ function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const id
 // ══ STATE ══
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
 let groqKey2=localStorage.getItem(GROQ_KEY2_STORE)||"";
+let mistralKey=localStorage.getItem(MISTRAL_KEY_STORE)||"";
 let _activeKeyIdx=0;// 0=clé1, 1=clé2 — rotation automatique
 // Reset model index par ID plutôt que par position (résistant aux réordres)
 let _savedModelId=localStorage.getItem(MODEL_KEY+"_id")||"groq-llama3";
@@ -916,6 +930,7 @@ function selectGender(g){
 function loadSettingsPage(){
   document.getElementById("settings-groq-key").value=groqKey;
   document.getElementById("settings-groq-key2").value=groqKey2;
+  document.getElementById("settings-mistral-key").value=mistralKey;
   updateApiStatus();updateThemeBtn();updateLangBtns();renderModelList();
 }
 function toggleReveal(inputId,btn){
@@ -927,8 +942,10 @@ function toggleReveal(inputId,btn){
 function saveApiKeys(){
   groqKey=document.getElementById("settings-groq-key").value.trim();
   groqKey2=document.getElementById("settings-groq-key2").value.trim();
+  mistralKey=document.getElementById("settings-mistral-key").value.trim();
   if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
   if(groqKey2)localStorage.setItem(GROQ_KEY2_STORE,groqKey2);else localStorage.removeItem(GROQ_KEY2_STORE);
+  if(mistralKey)localStorage.setItem(MISTRAL_KEY_STORE,mistralKey);else localStorage.removeItem(MISTRAL_KEY_STORE);
   _activeKeyIdx=0;// Reset rotation au save
   // Auto-sélectionner le premier modèle dont la clé est disponible
   const currentModel=MODELS[activeModelIdx];
@@ -955,6 +972,8 @@ function updateApiStatus(){
   if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé 1 enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
   const gl2=document.getElementById("groq-status-line2");
   if(gl2)gl2.innerHTML=groqKey2.length>8?`<span class="api-status ok">Clé 2 enregistrée ✓ — rotation active</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
+  const gm=document.getElementById("mistral-status-line");
+  if(gm)gm.innerHTML=mistralKey.length>8?`<span class="api-status ok">Clé Mistral enregistrée ✓</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
 }
 function renderModelList(){
   const list=document.getElementById("model-list");if(!list)return;
@@ -1674,6 +1693,7 @@ function requireKey(pendingFn){
 }
 function getKeys(){return[groqKey,groqKey2].filter(k=>k&&k.length>8);}
 function getKeyForProvider(provider){
+  if(provider==="mistral") return mistralKey||"";
   const keys=getKeys();
   if(!keys.length)return"";
   return keys[_activeKeyIdx%keys.length];
