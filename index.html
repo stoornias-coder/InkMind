@@ -170,7 +170,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 .world-section-title{font-size:.5rem;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);}
 
 /* ══ SHARED PAGE LAYOUT ══ */
-#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;height:var(--vh-creator,100%);scroll-padding-bottom:2rem;}
+#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;height:100dvh;scroll-padding-bottom:2rem;}
 #profile-page textarea,#settings-page textarea,#char-creator textarea,#world-creator textarea,#profile-page input,#settings-page input,#char-creator input,#world-creator input{touch-action:pan-y;overscroll-behavior:none;}#profile-page .page-body *,#settings-page .page-body *,#char-creator .page-body *,#world-creator .page-body *{-webkit-overflow-scrolling:auto;}
 #char-creator .page-body,#world-creator .page-body,#profile-page .page-body,#settings-page .page-body{padding-bottom:2rem;}
 
@@ -485,13 +485,14 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         </div>
         <div class="api-status" id="groq-status-line2">Aucune clé</div>
       </div>
+
       <div class="api-field" style="margin-top:.6rem;">
-        <label class="field-label">Clé Mistral <span class="fhint">(console.mistral.ai — plan Experiment gratuit)</span></label>
+        <label class="field-label">Clé Cerebras <span class="fhint">(cloud.cerebras.ai — 100% gratuit, sans CB)</span></label>
         <div class="api-row">
-          <input class="api-input" type="password" id="settings-mistral-key" placeholder="..." autocomplete="off" spellcheck="false">
-          <button class="api-reveal" onclick="toggleReveal('settings-mistral-key',this)">Afficher</button>
+          <input class="api-input" type="password" id="settings-cerebras-key" placeholder="..." autocomplete="off" spellcheck="false">
+          <button class="api-reveal" onclick="toggleReveal('settings-cerebras-key',this)">Afficher</button>
         </div>
-        <div class="api-status" id="mistral-status-line">Aucune clé</div>
+        <div class="api-status" id="cerebras-status-line">Aucune clé</div>
       </div>
       <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Enregistrer les clés →</button>
       <hr class="settings-divider">
@@ -684,15 +685,15 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 <script>
 // ══ CONSTANTS ══
 const MODELS = [
-  {id:"groq-llama3",    label:"Llama 3.3 70B",         model:"llama-3.3-70b-versatile",                       url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",    maxTokens:900},
-  {id:"groq-scout",     label:"Llama 4 Scout",          model:"meta-llama/llama-4-scout-17b-16e-instruct",     url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",    maxTokens:900},
-  {id:"groq-maverick",  label:"Llama 4 Maverick",       model:"meta-llama/llama-4-maverick-17b-128e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",    maxTokens:900},
-  {id:"groq-llama8b",   label:"Llama 3.1 8B",           model:"llama-3.1-8b-instant",                         url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",    maxTokens:900},
-  {id:"mistral-small",  label:"Mistral Small",          model:"mistral-small-latest",                          url:"https://api.mistral.ai/v1/chat/completions",      provider:"mistral", maxTokens:900},
+  {id:"groq-llama3",    label:"Llama 3.3 70B",     model:"llama-3.3-70b-versatile",                   url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:900},
+  {id:"groq-scout",     label:"Llama 4 Scout",      model:"meta-llama/llama-4-scout-17b-16e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:900},
+  {id:"groq-llama8b",   label:"Llama 3.1 8B",       model:"llama-3.1-8b-instant",                     url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:900},
+  {id:"cbr-qwen3",      label:"Qwen 3 235B",        model:"qwen-3-235b-a22b-instruct-2507",            url:"https://api.cerebras.ai/v1/chat/completions",     provider:"cerebras", maxTokens:900},
+  {id:"cbr-gptoss",     label:"GPT-OSS 120B",       model:"gpt-oss-120b",                              url:"https://api.cerebras.ai/v1/chat/completions",     provider:"cerebras", maxTokens:900},
 ];
 const GROQ_KEY_STORE    = "inkmind_groq_key";
 const GROQ_KEY2_STORE   = "inkmind_groq_key2";
-const MISTRAL_KEY_STORE = "inkmind_mistral_key";
+const CEREBRAS_KEY_STORE  = "inkmind_cerebras_key";
 const MODEL_KEY      = "inkmind_model";
 const SESS_KEY   = "inkmind_sess_v7";
 const CHARS_KEY  = "inkmind_chars_v7";
@@ -713,7 +714,7 @@ function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const id
 // ══ STATE ══
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
 let groqKey2=localStorage.getItem(GROQ_KEY2_STORE)||"";
-let mistralKey=localStorage.getItem(MISTRAL_KEY_STORE)||"";
+let cerebrasKey=localStorage.getItem(CEREBRAS_KEY_STORE)||"";
 let _activeKeyIdx=0;// 0=clé1, 1=clé2 — rotation automatique
 // Reset model index par ID plutôt que par position (résistant aux réordres)
 let _savedModelId=localStorage.getItem(MODEL_KEY+"_id")||"groq-llama3";
@@ -930,7 +931,7 @@ function selectGender(g){
 function loadSettingsPage(){
   document.getElementById("settings-groq-key").value=groqKey;
   document.getElementById("settings-groq-key2").value=groqKey2;
-  document.getElementById("settings-mistral-key").value=mistralKey;
+  document.getElementById("settings-cerebras-key").value=cerebrasKey;
   updateApiStatus();updateThemeBtn();updateLangBtns();renderModelList();
 }
 function toggleReveal(inputId,btn){
@@ -942,10 +943,10 @@ function toggleReveal(inputId,btn){
 function saveApiKeys(){
   groqKey=document.getElementById("settings-groq-key").value.trim();
   groqKey2=document.getElementById("settings-groq-key2").value.trim();
-  mistralKey=document.getElementById("settings-mistral-key").value.trim();
   if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
   if(groqKey2)localStorage.setItem(GROQ_KEY2_STORE,groqKey2);else localStorage.removeItem(GROQ_KEY2_STORE);
-  if(mistralKey)localStorage.setItem(MISTRAL_KEY_STORE,mistralKey);else localStorage.removeItem(MISTRAL_KEY_STORE);
+  cerebrasKey=document.getElementById("settings-cerebras-key").value.trim();
+  if(cerebrasKey)localStorage.setItem(CEREBRAS_KEY_STORE,cerebrasKey);else localStorage.removeItem(CEREBRAS_KEY_STORE);
   _activeKeyIdx=0;// Reset rotation au save
   // Auto-sélectionner le premier modèle dont la clé est disponible
   const currentModel=MODELS[activeModelIdx];
@@ -972,8 +973,8 @@ function updateApiStatus(){
   if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé 1 enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
   const gl2=document.getElementById("groq-status-line2");
   if(gl2)gl2.innerHTML=groqKey2.length>8?`<span class="api-status ok">Clé 2 enregistrée ✓ — rotation active</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
-  const gm=document.getElementById("mistral-status-line");
-  if(gm)gm.innerHTML=mistralKey.length>8?`<span class="api-status ok">Clé Mistral enregistrée ✓</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
+  const gc=document.getElementById("cerebras-status-line");
+  if(gc)gc.innerHTML=cerebrasKey.length>8?`<span class="api-status ok">Clé Cerebras enregistrée ✓</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
 }
 function renderModelList(){
   const list=document.getElementById("model-list");if(!list)return;
@@ -1693,7 +1694,7 @@ function requireKey(pendingFn){
 }
 function getKeys(){return[groqKey,groqKey2].filter(k=>k&&k.length>8);}
 function getKeyForProvider(provider){
-  if(provider==="mistral") return mistralKey||"";
+  if(provider==="cerebras") return cerebrasKey||"";
   const keys=getKeys();
   if(!keys.length)return"";
   return keys[_activeKeyIdx%keys.length];
@@ -2506,22 +2507,7 @@ function _isCreatorActive(){return CREATOR_SCREENS.some(id=>document.getElementB
   },{passive:true});
 })();
 
-function updateCreatorHeight(){
-  const vp=window.visualViewport;
-  const vpH=vp?vp.height:window.innerHeight;
-  const fullH=window.innerHeight;
-  const kbH=Math.max(0, fullH-vpH); // hauteur du clavier
-  // Hauteur disponible au-dessus du clavier
-  document.documentElement.style.setProperty("--vh-creator", vpH+"px");
-  // Padding-bottom = hauteur clavier + marge confortable
-  // Pour que le scroll puisse atteindre le dernier champ même clavier ouvert
-  CREATOR_SCREENS.forEach(id=>{
-    const screen=document.getElementById(id);
-    if(!screen)return;
-    // Pas de padding dynamique — le CSS fixe suffit
-  });
-}
-updateCreatorHeight();
+// Plus besoin de JS pour la hauteur — 100dvh gère nativement le clavier
 
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize",()=>{
@@ -2531,12 +2517,11 @@ if(window.visualViewport){
     const delta=Math.abs(newH-_lastVPHeight);
     _lastVPHeight=newH;
     if(delta>=80)document.body.classList.toggle("kb-open",newH<window.screen.height*0.75);
-    updateCreatorHeight();
     if(delta<80)return;
     if(app){app.style.height=newH+"px";}
     if(chatActive)fixLayout();
   });
-  window.visualViewport.addEventListener("scroll",updateCreatorHeight);
+
 }
 
 // Quand l'app revient au premier plan (Capacitor)
