@@ -1396,6 +1396,7 @@ function buildSystemPrompt(char){
   // Prompt court pour petits modèles
   const activeModel=MODELS[activeModelIdx];
   const isSmallModel=activeModel&&activeModel.id==="groq-scout";
+  const isGptOss=activeModel&&activeModel.id==="cbr-gptoss";
   if(isSmallModel){
     const traitsBehavior=char.traits?.length?char.traits.map(t=>{const b=TRAITS_BEHAVIOR[t];return b?`${t}: ${b}`:t;}).join(" · "):"";
     return`Tu joues ${char.name}${char.description?` — ${char.description}`:""}${traits?`
@@ -1435,7 +1436,7 @@ ${(!isFocus&&worldFirstMsg)?`
 ${worldFirstMsg}
 ━━━ END OPENING ━━━
 `:""}
-${isFocus?`━━━ FOCUS MODE ━━━
+${isGptOss?`DÉCOR : Ne jamais inventer d'éléments de décor absents de la scène ou du lore. Si ce n'est pas décrit, ça n'existe pas.\n`:""}${isFocus?`━━━ FOCUS MODE ━━━
 Tu es ${char._focusCharName||char.name} UNIQUEMENT. Session en tête-à-tête.
 - Toujours 3ᵉ personne : "${char._focusCharName||char.name} dit", jamais "je/me/moi".
 - Joueur = "tu/toi" toujours. Jamais nommer le joueur en 3ᵉ personne.
@@ -1608,7 +1609,7 @@ async function orStream(messages,onChunk){
         const e=await r.text();
         let msg=`Erreur ${r.status}`;
         if(r.status===401)msg="Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.";
-        else if(r.status===404)msg="Modèle introuvable (404) — le modèle n'est plus disponible sur Groq.";
+        else if(r.status===404){continue;}// Modèle indispo → essayer le suivant
         else if(r.status===400)msg="Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.";
         throw new Error(msg);
       }
@@ -1715,7 +1716,7 @@ function confirmRename(){const name=document.getElementById("rename-input").valu
 
 // ══ START / RESUME CHAT ══
 function requireKey(pendingFn){
-  if(!groqKey&&!groqKey2){
+  if(!groqKey&&!groqKey2&&!cerebrasKey){
     if(pendingFn)window._pendingAction=pendingFn;
     goSettings();return false;
   }
