@@ -486,14 +486,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         <div class="api-status" id="groq-status-line2">Aucune clé</div>
       </div>
 
-      <div class="api-field" style="margin-top:.6rem;">
-        <label class="field-label">Clé Cerebras <span class="fhint">(cloud.cerebras.ai — 100% gratuit, sans CB)</span></label>
-        <div class="api-row">
-          <input class="api-input" type="password" id="settings-cerebras-key" placeholder="..." autocomplete="off" spellcheck="false">
-          <button class="api-reveal" onclick="toggleReveal('settings-cerebras-key',this)">Afficher</button>
-        </div>
-        <div class="api-status" id="cerebras-status-line">Aucune clé</div>
-      </div>
+
       <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Enregistrer les clés →</button>
       <hr class="settings-divider">
       <div class="field">
@@ -687,12 +680,9 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 const MODELS = [
   {id:"groq-llama3",    label:"Llama 3.3 70B",     model:"llama-3.3-70b-versatile",                   url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:900},
   {id:"groq-scout",     label:"Llama 4 Scout",      model:"meta-llama/llama-4-scout-17b-16e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:900},
-    {id:"cbr-qwen3",      label:"Qwen 3 235B",        model:"qwen-3-235b-a22b-instruct-2507",            url:"https://api.cerebras.ai/v1/chat/completions",     provider:"cerebras", maxTokens:900},
-  {id:"cbr-gptoss",     label:"GPT-OSS 120B",       model:"gpt-oss-120b",                              url:"https://api.cerebras.ai/v1/chat/completions",     provider:"cerebras", maxTokens:900},
-];
+  ];
 const GROQ_KEY_STORE    = "inkmind_groq_key";
 const GROQ_KEY2_STORE   = "inkmind_groq_key2";
-const CEREBRAS_KEY_STORE  = "inkmind_cerebras_key";
 const MODEL_KEY      = "inkmind_model";
 const SESS_KEY   = "inkmind_sess_v7";
 const CHARS_KEY  = "inkmind_chars_v7";
@@ -713,7 +703,6 @@ function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const id
 // ══ STATE ══
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
 let groqKey2=localStorage.getItem(GROQ_KEY2_STORE)||"";
-let cerebrasKey=localStorage.getItem(CEREBRAS_KEY_STORE)||"";
 let _activeKeyIdx=0;// 0=clé1, 1=clé2 — rotation automatique
 // Reset model index par ID plutôt que par position (résistant aux réordres)
 let _savedModelId=localStorage.getItem(MODEL_KEY+"_id")||"groq-llama3";
@@ -930,7 +919,6 @@ function selectGender(g){
 function loadSettingsPage(){
   document.getElementById("settings-groq-key").value=groqKey;
   document.getElementById("settings-groq-key2").value=groqKey2;
-  document.getElementById("settings-cerebras-key").value=cerebrasKey;
   updateApiStatus();updateThemeBtn();updateLangBtns();renderModelList();
 }
 function toggleReveal(inputId,btn){
@@ -944,17 +932,13 @@ function saveApiKeys(){
   groqKey2=document.getElementById("settings-groq-key2").value.trim();
   if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
   if(groqKey2)localStorage.setItem(GROQ_KEY2_STORE,groqKey2);else localStorage.removeItem(GROQ_KEY2_STORE);
-  cerebrasKey=document.getElementById("settings-cerebras-key").value.trim();
-  if(cerebrasKey)localStorage.setItem(CEREBRAS_KEY_STORE,cerebrasKey);else localStorage.removeItem(CEREBRAS_KEY_STORE);
   _activeKeyIdx=0;// Reset rotation au save
   // Auto-sélectionner le premier modèle dont la clé est disponible
   const hasGroq=groqKey.length>8;
-  const hasCerebras=cerebrasKey.length>8;
-  function keyOkForModel(m){ return m.provider==="cerebras"?hasCerebras:hasGroq; }
   const currentModel=MODELS[activeModelIdx];
-  const currentKeyOk=currentModel&&keyOkForModel(currentModel);
+  const currentKeyOk=currentModel&&hasGroq;
   if(!currentKeyOk){
-    const firstValid=MODELS.findIndex(m=>keyOkForModel(m));
+    const firstValid=MODELS.findIndex(()=>hasGroq);
     if(firstValid>=0){activeModelIdx=firstValid;localStorage.setItem(MODEL_KEY,firstValid);}
   }
   updateApiStatus();
@@ -975,14 +959,12 @@ function updateApiStatus(){
   if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé 1 enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
   const gl2=document.getElementById("groq-status-line2");
   if(gl2)gl2.innerHTML=groqKey2.length>8?`<span class="api-status ok">Clé 2 enregistrée ✓ — rotation active</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
-  const gc=document.getElementById("cerebras-status-line");
-  if(gc)gc.innerHTML=cerebrasKey.length>8?`<span class="api-status ok">Clé Cerebras enregistrée ✓</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
 }
 function renderModelList(){
   const list=document.getElementById("model-list");if(!list)return;
   list.innerHTML="";
   MODELS.forEach((m,i)=>{
-    const hasKey=m.provider==="cerebras"?cerebrasKey.length>8:groqKey.length>8;
+    const hasKey=groqKey.length>8;
     const btn=document.createElement("button");
     const isActive=i===activeModelIdx;
     btn.className="tgl-btn"+(isActive?" on":"");
@@ -1396,7 +1378,6 @@ function buildSystemPrompt(char){
   // Prompt court pour petits modèles
   const activeModel=MODELS[activeModelIdx];
   const isSmallModel=activeModel&&activeModel.id==="groq-scout";
-  const isGptOss=activeModel&&activeModel.id==="cbr-gptoss";
   if(isSmallModel){
     const traitsBehavior=char.traits?.length?char.traits.map(t=>{const b=TRAITS_BEHAVIOR[t];return b?`${t}: ${b}`:t;}).join(" · "):"";
     return`Tu joues ${char.name}${char.description?` — ${char.description}`:""}${traits?`
@@ -1436,7 +1417,7 @@ ${(!isFocus&&worldFirstMsg)?`
 ${worldFirstMsg}
 ━━━ END OPENING ━━━
 `:""}
-${isGptOss?`DÉCOR : Ne jamais inventer d'éléments de décor absents de la scène ou du lore. Si ce n'est pas décrit, ça n'existe pas.\n`:""}${isFocus?`━━━ FOCUS MODE ━━━
+${isFocus?`━━━ FOCUS MODE ━━━
 Tu es ${char._focusCharName||char.name} UNIQUEMENT. Session en tête-à-tête.
 - Toujours 3ᵉ personne : "${char._focusCharName||char.name} dit", jamais "je/me/moi".
 - Joueur = "tu/toi" toujours. Jamais nommer le joueur en 3ᵉ personne.
@@ -1591,8 +1572,7 @@ async function orStream(messages,onChunk){
   for(const idx of order){
     const m=MODELS[idx];
     // Clés selon le provider
-    const providerKeys = m.provider==="cerebras" ? (cerebrasKey?[cerebrasKey]:[]) :
-                         getKeys();
+    const providerKeys = getKeys();
     if(!providerKeys.length) continue;
     const triedKeys=new Set();
     let lastStatus=0;
@@ -1601,7 +1581,7 @@ async function orStream(messages,onChunk){
       if(triedKeys.has(key))continue;
       triedKeys.add(key);
       const body={model:m.model,max_tokens:m.maxTokens,stream:true,messages};
-      if(m.provider!=="cerebras"){body.frequency_penalty=0.6;body.presence_penalty=0.4;}
+      body.frequency_penalty=0.6;body.presence_penalty=0.4;
       const r=await tryFetch(m.url,key,body,true);
       lastStatus=r.status;
       if(r.status===429){continue;}// Clé en limite → essayer la suivante
@@ -1716,7 +1696,7 @@ function confirmRename(){const name=document.getElementById("rename-input").valu
 
 // ══ START / RESUME CHAT ══
 function requireKey(pendingFn){
-  if(!groqKey&&!groqKey2&&!cerebrasKey){
+  if(!groqKey&&!groqKey2){
     if(pendingFn)window._pendingAction=pendingFn;
     goSettings();return false;
   }
@@ -1724,7 +1704,6 @@ function requireKey(pendingFn){
 }
 function getKeys(){return[groqKey,groqKey2].filter(k=>k&&k.length>8);}
 function getKeyForProvider(provider){
-  if(provider==="cerebras") return cerebrasKey||"";
   const keys=getKeys();
   if(!keys.length)return"";
   return keys[_activeKeyIdx%keys.length];
