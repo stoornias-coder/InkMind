@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1391,6 +1391,29 @@ function buildSystemPrompt(char){
     if(world){worldLore=world.lore||"";worldFirstMsg=world.firstmsg||"";worldPlayerChar=world.playerChar||"";}
   }
 
+  // Prompt court pour petits modèles
+  const activeModel=MODELS[activeModelIdx];
+  const isSmallModel=activeModel&&(activeModel.id==="groq-llama8b"||activeModel.id==="groq-scout");
+  if(isSmallModel){
+    const traitsBehavior=char.traits?.length?char.traits.map(t=>{const b=TRAITS_BEHAVIOR[t];return b?`${t}: ${b}`:t;}).join(" · "):"";
+    return`Tu joues ${char.name}${char.description?` — ${char.description}`:""}${traits?`
+Traits: ${traitsBehavior}`:""}${char.backstory?`
+Backstory: ${char.backstory}`:""}
+RÈGLES ABSOLUES:
+- Toujours 3ᵉ personne: "${char.name} dit", "${char.name} sourit" — JAMAIS "je/me/moi"
+- Joueur = "tu/te/toi/ton/ta" — JAMAIS "vous" seul pour s'adresser au joueur
+- JAMAIS de question en fin de réponse
+- JAMAIS inventer une action pour le joueur
+- Tout en français, zéro mot anglais
+- Max 1 didascalie *...* par réponse
+- 1 phrase de décor/atmosphère minimum par réponse
+- Réponses courtes et naturelles, phrases simples
+${genderNote}
+${isFocus?`Session solo: ${char.name} uniquement, pas d'autres personnages.`:""}
+${examples?`EXEMPLES DE STYLE (guide uniquement):
+${examples}`:""}`;
+  }
+
   return`You are the narrator of an immersive second-person interactive story. You ALWAYS write in second person: "tu/te/toi/ton/ta/tes" for the player — NEVER "je/me/moi/mon/ma/mes". Using first person ("je", "dis-je", "je me redresse") for the player is a CRITICAL ERROR. The player is always "tu". Always.
 
 ━━━ THE WORLD ━━━
@@ -1562,14 +1585,16 @@ async function tryFetch(url,key,body,stream,attempt=0){
 
 async function orStream(messages,onChunk){
   const order=[activeModelIdx,...MODELS.map((_,i)=>i).filter(i=>i!==activeModelIdx)];
-  const allKeys=getKeys();
   for(const idx of order){
     const m=MODELS[idx];
-    // Essayer toutes les clés disponibles pour ce modèle
+    // Clés selon le provider
+    const providerKeys = m.provider==="cerebras" ? (cerebrasKey?[cerebrasKey]:[]) :
+                         getKeys();
+    if(!providerKeys.length) continue;
     const triedKeys=new Set();
     let lastStatus=0;
-    for(let ki=0;ki<allKeys.length;ki++){
-      const key=allKeys[(_activeKeyIdx+ki)%allKeys.length];
+    for(let ki=0;ki<providerKeys.length;ki++){
+      const key=providerKeys[(_activeKeyIdx+ki)%providerKeys.length];
       if(triedKeys.has(key))continue;
       triedKeys.add(key);
       const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,frequency_penalty:0.6,presence_penalty:0.4,messages},true);
