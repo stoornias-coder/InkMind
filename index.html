@@ -170,7 +170,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Jost',
 .world-section-title{font-size:.5rem;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);}
 
 /* ══ SHARED PAGE LAYOUT ══ */
-#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;height:100dvh;scroll-padding-bottom:2rem;}
+#profile-page,#settings-page,#char-creator,#world-creator{overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;height:100%;max-height:100%;scroll-padding-bottom:2rem;}
 #profile-page textarea,#settings-page textarea,#char-creator textarea,#world-creator textarea,#profile-page input,#settings-page input,#char-creator input,#world-creator input{touch-action:pan-y;overscroll-behavior:none;}#profile-page .page-body *,#settings-page .page-body *,#char-creator .page-body *,#world-creator .page-body *{-webkit-overflow-scrolling:auto;}
 #char-creator .page-body,#world-creator .page-body,#profile-page .page-body,#settings-page .page-body{padding-bottom:2rem;}
 
@@ -949,10 +949,13 @@ function saveApiKeys(){
   if(cerebrasKey)localStorage.setItem(CEREBRAS_KEY_STORE,cerebrasKey);else localStorage.removeItem(CEREBRAS_KEY_STORE);
   _activeKeyIdx=0;// Reset rotation au save
   // Auto-sélectionner le premier modèle dont la clé est disponible
+  const hasGroq=groqKey.length>8;
+  const hasCerebras=cerebrasKey.length>8;
+  function keyOkForModel(m){ return m.provider==="cerebras"?hasCerebras:hasGroq; }
   const currentModel=MODELS[activeModelIdx];
-  const currentKeyOk=currentModel&&groqKey.length>8;
+  const currentKeyOk=currentModel&&keyOkForModel(currentModel);
   if(!currentKeyOk){
-    const firstValid=MODELS.findIndex(()=>groqKey.length>8);
+    const firstValid=MODELS.findIndex(m=>keyOkForModel(m));
     if(firstValid>=0){activeModelIdx=firstValid;localStorage.setItem(MODEL_KEY,firstValid);}
   }
   updateApiStatus();
@@ -1597,7 +1600,9 @@ async function orStream(messages,onChunk){
       const key=providerKeys[(_activeKeyIdx+ki)%providerKeys.length];
       if(triedKeys.has(key))continue;
       triedKeys.add(key);
-      const r=await tryFetch(m.url,key,{model:m.model,max_tokens:m.maxTokens,stream:true,frequency_penalty:0.6,presence_penalty:0.4,messages},true);
+      const body={model:m.model,max_tokens:m.maxTokens,stream:true,messages};
+      if(m.provider!=="cerebras"){body.frequency_penalty=0.6;body.presence_penalty=0.4;}
+      const r=await tryFetch(m.url,key,body,true);
       lastStatus=r.status;
       if(r.status===429){continue;}// Clé en limite → essayer la suivante
       if(!r.ok){
