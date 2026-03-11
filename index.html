@@ -1373,6 +1373,7 @@ ${playerCharName?`- JOUEUR = "${playerCharName}" : TU ES ce personnage. Ses acti
 - Réponses courtes et naturelles, phrases simples
 - ANTI-RÉPÉTITION : Chaque geste, description, formule n'apparaît qu'UNE FOIS par conversation. Interdit de répéter : "son regard se pose", "le silence est palpable", "il ajuste sa position", "la lumière danse sur". Varier à chaque réponse.
 - Tout élément narratif introduit (bruit de pas, personnage qui approche) doit être résolu dans la même réponse ou la suivante — jamais abandonné.
+- PERSONNAGE INTRODUIT PAR LE JOUEUR : Si le joueur mentionne un personnage (ex : "mon ami Kane"), invente-lui immédiatement une personnalité cohérente avec l'univers et fais-le parler et agir. Jamais muet, jamais ignoré.
 ${genderNote}
 ${isFocus?`Session solo: ${char.name} uniquement, pas d'autres personnages.`:""}
 ${examples?`EXEMPLES DE STYLE (guide uniquement):
@@ -1407,7 +1408,7 @@ identityBlock+"\n\n"+
 (playerCharName?"JOUEUR = \""+playerCharName+"\" : TU ES ce personnage. Toutes ses actions, pensées et perceptions s'écrivent en 2ᵉ personne (tu/toi/ton/ta). JAMAIS écrire \""+playerCharName+"\" comme sujet — remplace TOUJOURS par \"tu\". Exemple interdit : \""+playerCharName+" lève les yeux\" → Correct : \"tu lèves les yeux\". Les autres persos lui parlent en tu.\n":"Le joueur fait face aux personnages — il n'en est aucun.\n")+
 "PERSONNAGE : "+(isRpg?"Jamais le nom de l'univers comme narrateur.":("JAMAIS je/me/moi pour "+char.name+". Toujours : "+char.name+" dit, "+char.name+" sourit."))+
 "\nPASSÉ INVENTÉ : Jamais inventer de conversations ou d'événements passés entre les personnages — uniquement ce qui se passe ici et maintenant.\n"+
-"LIBERTÉ NARRATIVE : Tu peux et dois faire avancer la scène — faire entrer un personnage, créer un événement, faire parler les figurants et personnages nommés par le joueur. Sois vivant.\n"+
+"LIBERTÉ NARRATIVE : Tu peux et dois faire avancer la scène — créer des événements, faire parler les figurants. Sois vivant.\n"+"PERSONNAGES INTRODUITS PAR LE JOUEUR : Si le joueur introduit un personnage (ex : \"mon ami Kane\", \"ma sœur\"...), tu lui inventes IMMÉDIATEMENT une personnalité cohérente avec l'univers et tu le fais parler et agir. Tu ne l'ignores pas, tu ne le laisses pas muet. Il devient un personnage actif tant qu'il est présent dans la scène.\n"+
 "CONTINUITÉ : Respecter ce qui s'est dit dans cette conversation.\n"+
 "RÉPÉTITIONS : Varier gestes, descriptions, formules. Jamais répéter la même phrase deux fois dans la conversation.\n"+
 "FIN : Jamais de question au joueur. Finir sur action/silence/tension.\n"+
@@ -2489,3 +2490,4 @@ buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBt
 </script>
 </body>
 </html>
+
