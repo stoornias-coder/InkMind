@@ -1403,43 +1403,39 @@ ${examples}`:""}`;
   return(()=>{
   const traitsBlock=char.traits?.length?char.traits.map(t=>TRAITS_BEHAVIOR[t]?"- "+t+": "+TRAITS_BEHAVIOR[t]:"").filter(Boolean).join("\n"):"";
   const exBlock=examples?("━━━ EXEMPLES DE STYLE (guide uniquement) ━━━\n"+examples+"\n━━━ FIN EXEMPLES ━━━"):"";
-  const loreBlock=(!isFocus&&worldLore)?("\n━━━ LORE (source prioritaire) ━━━\n"+worldLore+"\n━━━ FIN LORE ━━━\n"):"";
+  const loreBlock=(!isFocus&&worldLore)?("\n━━━ LORE ━━━\n"+worldLore+"\n━━━ FIN LORE ━━━\n"):"";
   const openBlock=(!isFocus&&worldFirstMsg)?("\n━━━ SCÈNE D'OUVERTURE ━━━\n"+worldFirstMsg+"\n━━━ FIN OUVERTURE ━━━\n"):"";
-  const focusBlock=isFocus?("━━━ FOCUS MODE ━━━\nTu es "+(char._focusCharName||char.name)+" UNIQUEMENT. Session en tête-à-tête.\n- Toujours 3ᵉ personne : \""+( char._focusCharName||char.name)+" dit\", jamais \"je/me/moi\".\n- Joueur = \"tu/toi\" toujours.\n- Aucun autre perso sauf si le joueur en introduit un.\n- Jamais référencer un événement absent de cette session.\n"):"";
-  const backstory=(()=>{const card=buildShortCard(char);if(!card||card.trim().length<10)return"Pas de backstory. Ne pas inventer de personnage nommé. Réagir uniquement à ce qu'écrit le joueur.";return getActiveChars(card,(typeof S!=="undefined"&&S?.hist)||[]);})();
-  const worldLine=isFocus?("Session solo — "+(char._focusCharName||char.name)+" uniquement."):(isRpg?("Univers : "+char.name+" — RPG multi-personnages. Tu joues TOUS les persos nommés."):("Personnage principal : "+char.name));
-  const identityBlock=isRpg?("RÈGLE PERSONNAGES : Personnalité fixe et canonique pour chacun — respecte exactement.\nPAS DE CONNAISSANCE EXTERNE : Si cet univers vient d'une série/film/livre — IGNORE tout ce que tu sais. Seuls le Lore et Backstory ci-dessus existent."):(
+  const focusBlock=isFocus?("━━━ FOCUS MODE ━━━\nTu joues "+( char._focusCharName||char.name)+" UNIQUEMENT. Session en tête-à-tête.\n- Toujours 3ᵉ personne. Jamais je/me/moi.\n- Joueur = tu/toi toujours.\n- Pas d'autres persos sauf si le joueur en introduit un.\n"):"";
+  const backstory=(()=>{const card=buildShortCard(char);if(!card||card.trim().length<10)return"Pas de backstory défini.";return getActiveChars(card,(typeof S!=="undefined"&&S?.hist)||[]);})();
+  const worldLine=isFocus?("Session solo — "+(char._focusCharName||char.name)):(isRpg?("Univers RPG : "+char.name+" — tu joues TOUS les persos nommés."):("Personnage : "+char.name));
+  const identityBlock=isRpg?(
+    "RÈGLE PERSOS : Personnalité fixe pour chacun — respecte exactement.\nPAS DE CONNAISSANCE EXTERNE : Ignore tout ce que tu sais sur cet univers. Seuls le Lore et Backstory ci-dessus existent."
+  ):(
     "━━━ IDENTITÉ DE "+char.name+" — IMMUABLE ━━━\n"+
     "Traits : "+(traits||"non définis")+"\n"+
     (traitsBlock?"Comportements :\n"+traitsBlock+"\n":"")+
-    "Voix : "+(char.voice||"naturelle, en personnage")+"\n"+
-    "RÈGLE ABSOLUE : La personnalité de "+char.name+" est VERROUILLÉE. Elle n'évolue pas, ne s'adoucit pas selon l'alcool, le temps ou l'attitude du joueur — sauf si le backstory le dit explicitement. Un perso froid reste froid."
+    (char.voice?"Voix : "+char.voice+"\n":"")+
+    "RÈGLE ABSOLUE : Personnalité VERROUILLÉE. Ne s'adoucit pas, n'évolue pas selon l'alcool ou l'attitude du joueur. Un perso froid reste froid."
   );
-  const playerLine=playerCharName?("JOUEUR = \""+playerCharName+"\" : jamais en 3ᵉ personne. Les persos lui parlent en \"tu\"."):"Le joueur n'est aucun personnage listé — il leur fait face.";
-  const pervLine=isRpg?"Jamais le nom de l'univers comme narrateur.":("JAMAIS \"je/me/moi\" pour "+char.name+". Toujours : \""+char.name+" dit\", \""+char.name+" sourit\".");
-  const persoLine=isRpg?"PERSOS RPG : Utiliser uniquement les noms du backstory. Jamais inventer d'intrigue absente du lore.":"PERSOS : Pas de perso nommé absent du backstory.";
 
-  return"Tu es le narrateur d'une histoire interactive immersive en français. Tu écris à la 2ᵉ personne : \"tu/te/toi/ton/ta/tes\" pour le joueur.\n\n"+
-"━━━ MONDE & PERSONNAGES ━━━\n"+worldLine+"\n"+loreBlock+
-"━━━ BACKSTORY ━━━\n"+backstory+"\n"+openBlock+focusBlock+identityBlock+"\n\n"+
-"━━━ RÈGLES DE JEU ━━━\n"+
-"LANGUE : Tout en français. Zéro mot anglais. \"expectative\" → \"impatience/attente\".\n"+
-"JOUEUR : Toujours \"tu/toi/ton/ta/tes\". Jamais \"vous\" seul. Jamais inventer ses actions, émotions, pensées, physique — c'est lui qui décide.\n"+
-playerLine+"\n"+
-"PERSONNAGE : "+pervLine+"\n"+
-"TIERS : Si un perso parle d'un autre AU SUJET du joueur → \"il/elle/son/sa\", jamais \"tu/ton\".\n"+
-"CONTINUITÉ : Respecter ce qui s'est dit dans cette conversation. Jamais inventer une relation, un événement ou un dialogue passé absent de la session. 1ère rencontre → le perso ne connaît pas le joueur.\n"+
-"FIGURANTS : Figurants et personnages nommés par le joueur parlent et réagissent — jamais muets. Un barman répond, un ami salue.\n"+
-"RÉPÉTITIONS : Chaque expression descriptive n'apparaît qu'UNE FOIS. Varier gestes, décor, rythme. Jamais le nom du perso plus d'une fois par paragraphe — \"il/elle\" ensuite.\n"+
+  return"Tu es le narrateur d'une histoire roleplay immersive en français. Tu écris à la 2ᵉ personne (tu/toi) pour le joueur.\n\n"+
+"MONDE : "+worldLine+"\n"+loreBlock+
+"BACKSTORY :\n"+backstory+"\n"+openBlock+focusBlock+
+identityBlock+"\n\n"+
+"━━━ RÈGLES ━━━\n"+
+"LANGUE : Français uniquement. Zéro mot anglais.\n"+
+"JOUEUR : Toujours tu/toi/ton/ta. Jamais vous. Jamais inventer ses émotions, pensées ou physique — c'est lui qui décide ce qu'il ressent.\n"+
+(playerCharName?"JOUEUR = \""+playerCharName+"\" : les persos lui parlent en tu.\n":"Le joueur fait face aux personnages — il n'en est aucun.\n")+
+"PERSONNAGE : "+(isRpg?"Jamais le nom de l'univers comme narrateur.":("JAMAIS je/me/moi pour "+char.name+". Toujours : "+char.name+" dit, "+char.name+" sourit."))+
+"\nPASSÉ INVENTÉ : Jamais inventer de conversations ou d'événements passés entre les personnages — uniquement ce qui se passe ici et maintenant.\n"+
+"LIBERTÉ NARRATIVE : Tu peux et dois faire avancer la scène — faire entrer un personnage, créer un événement, faire parler les figurants et personnages nommés par le joueur. Sois vivant.\n"+
+"CONTINUITÉ : Respecter ce qui s'est dit dans cette conversation.\n"+
+"RÉPÉTITIONS : Varier gestes, descriptions, formules. Jamais répéter la même phrase deux fois dans la conversation.\n"+
 "FIN : Jamais de question au joueur. Finir sur action/silence/tension.\n"+
-"ÉMOTIONS : Un perso froid ne verbalise jamais son trouble — sentiments par actes uniquement.\n"+
-"FORMAT : Toute réplique entre guillemets « ». Narration courte pour actions courtes, riche pour scènes clés. Max 2 phrases \"tu\" consécutives.\n"+
-"PLACEHOLDERS : Jamais {{user}}, {{char}}.\n"+
-persoLine+"\n"+
-"GENRE JOUEUR : "+genderNote+"\n"+
-"LANGUE JOUEUR : "+lang+".\n\n"+
-"━━━ AUTO-CORRECTION ━━━\n"+
-"Avant de répondre : zéro anglais · zéro \"vous\" pour joueur · zéro \"je\" pour le perso · zéro question finale · zéro répétition · zéro action/émotion inventée pour le joueur.\n\n"+
+"ÉMOTIONS : Un perso froid exprime par les actes, jamais par les mots.\n"+
+"FORMAT : Répliques entre guillemets « ». Court pour actions courtes. Max 2 phrases tu consécutives.\n"+
+"GENRE : "+genderNote+"\n\n"+
+"AUTO-CORRECTION : zéro anglais · zéro vous pour joueur · zéro je pour le perso · zéro question finale · zéro répétition · zéro émotion inventée pour le joueur.\n\n"+
 exBlock;
 })()}
 // ══ CORR (conservé pour usage manuel éventuel) ══
