@@ -687,8 +687,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 const MODELS = [
   {id:"groq-llama3",    label:"Llama 3.3 70B",     model:"llama-3.3-70b-versatile",                   url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:900},
   {id:"groq-scout",     label:"Llama 4 Scout",      model:"meta-llama/llama-4-scout-17b-16e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:900},
-  {id:"groq-llama8b",   label:"Llama 3.1 8B",       model:"llama-3.1-8b-instant",                     url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:900},
-  {id:"cbr-qwen3",      label:"Qwen 3 235B",        model:"qwen-3-235b-a22b-instruct-2507",            url:"https://api.cerebras.ai/v1/chat/completions",     provider:"cerebras", maxTokens:900},
+    {id:"cbr-qwen3",      label:"Qwen 3 235B",        model:"qwen-3-235b-a22b-instruct-2507",            url:"https://api.cerebras.ai/v1/chat/completions",     provider:"cerebras", maxTokens:900},
   {id:"cbr-gptoss",     label:"GPT-OSS 120B",       model:"gpt-oss-120b",                              url:"https://api.cerebras.ai/v1/chat/completions",     provider:"cerebras", maxTokens:900},
 ];
 const GROQ_KEY_STORE    = "inkmind_groq_key";
@@ -983,7 +982,7 @@ function renderModelList(){
   const list=document.getElementById("model-list");if(!list)return;
   list.innerHTML="";
   MODELS.forEach((m,i)=>{
-    const hasKey=groqKey.length>8;
+    const hasKey=m.provider==="cerebras"?cerebrasKey.length>8:groqKey.length>8;
     const btn=document.createElement("button");
     const isActive=i===activeModelIdx;
     btn.className="tgl-btn"+(isActive?" on":"");
@@ -1396,7 +1395,7 @@ function buildSystemPrompt(char){
 
   // Prompt court pour petits modèles
   const activeModel=MODELS[activeModelIdx];
-  const isSmallModel=activeModel&&(activeModel.id==="groq-llama8b"||activeModel.id==="groq-scout");
+  const isSmallModel=activeModel&&activeModel.id==="groq-scout";
   if(isSmallModel){
     const traitsBehavior=char.traits?.length?char.traits.map(t=>{const b=TRAITS_BEHAVIOR[t];return b?`${t}: ${b}`:t;}).join(" · "):"";
     return`Tu joues ${char.name}${char.description?` — ${char.description}`:""}${traits?`
