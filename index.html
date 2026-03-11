@@ -506,16 +506,6 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         </div>
       </div>
       <hr class="settings-divider">
-      <div class="field">
-        <label class="field-label">Langue</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.38rem;" id="lang-btns">
-          <button class="tgl-btn" onclick="setLang('fr')">🇫🇷 Français</button>
-          <button class="tgl-btn" onclick="setLang('en')">🇬🇧 English</button>
-          <button class="tgl-btn" onclick="setLang('es')">🇪🇸 Español</button>
-          <button class="tgl-btn" onclick="setLang('pt')">🇧🇷 Português</button>
-        </div>
-      </div>
-
       <hr class="settings-divider">
       <div class="field">
         <label class="field-label" style="color:var(--red);">Zone de danger</label>
@@ -688,17 +678,11 @@ const SESS_KEY   = "inkmind_sess_v7";
 const CHARS_KEY  = "inkmind_chars_v7";
 const WORLDS_KEY = "inkmind_worlds_v1";
 const PROF_KEY   = "inkmind_profile";
-const LANG_KEY   = "inkmind_lang";
 
 const TRAITS_EN=["Mysterious","Warm","Cold","Sarcastic","Playful","Serious","Protective","Dangerous","Gentle","Obsessive","Witty","Brooding","Charismatic","Shy","Ruthless","Caring","Cunning","Loyal","Volatile","Stoic"];
-const TRAITS_TRANS={
-  fr:["Mystérieux","Chaleureux","Froid","Sarcastique","Joueur","Sérieux","Protecteur","Dangereux","Doux","Obsessionnel","Spirituel","Mélancolique","Charismatique","Timide","Impitoyable","Attentionné","Rusé","Loyal","Impulsif","Stoïque"],
-  en:TRAITS_EN,
-  es:["Misterioso","Cálido","Frío","Sarcástico","Juguetón","Serio","Protector","Peligroso","Dulce","Obsesivo","Ingenioso","Melancólico","Carismático","Tímido","Despiadado","Atento","Astuto","Leal","Volátil","Estoico"],
-  pt:["Misterioso","Caloroso","Frio","Sarcástico","Brincalhão","Sério","Protetor","Perigoso","Gentil","Obsessivo","Espirituoso","Melancólico","Carismático","Tímido","Implacável","Atencioso","Astuto","Leal","Volátil","Estóico"]
-};
-function traitToKey(label){const langs=Object.values(TRAITS_TRANS);for(let i=0;i<TRAITS_EN.length;i++){for(const arr of langs){if(arr[i]===label)return TRAITS_EN[i];}}return label;}
-function keyToTrait(key){const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;const idx=TRAITS_EN.indexOf(key);return idx>=0?arr[idx]:key;}
+const TRAITS_FR=["Mystérieux","Chaleureux","Froid","Sarcastique","Joueur","Sérieux","Protecteur","Dangereux","Doux","Obsessionnel","Spirituel","Mélancolique","Charismatique","Timide","Impitoyable","Attentionné","Rusé","Loyal","Impulsif","Stoïque"];
+function traitToKey(label){const idx=TRAITS_FR.indexOf(label);return idx>=0?TRAITS_EN[idx]:label;}
+function keyToTrait(key){const idx=TRAITS_EN.indexOf(key);return idx>=0?TRAITS_FR[idx]:key;}
 
 // ══ STATE ══
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
@@ -711,7 +695,7 @@ if(activeModelIdx<0)activeModelIdx=0;
 // Compatibilité ancienne clé unique
 if(!groqKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;}
 let isDark=(localStorage.getItem("inkmind_theme")||"light")==="dark";
-let currentLang=localStorage.getItem(LANG_KEY)||"fr";
+const currentLang="fr";
 let busy=false,S=null;
 let editingCharId=null,editingWorldId=null,charCreatorFrom="home",worldCreatorFrom="home";
 let selectedTraits=new Set(),charPhoto=null,worldPhoto=null,profilePhoto=null;
@@ -919,7 +903,7 @@ function selectGender(g){
 function loadSettingsPage(){
   document.getElementById("settings-groq-key").value=groqKey;
   document.getElementById("settings-groq-key2").value=groqKey2;
-  updateApiStatus();updateThemeBtn();updateLangBtns();renderModelList();
+  updateApiStatus();updateThemeBtn();renderModelList();
 }
 function toggleReveal(inputId,btn){
   const inp=document.getElementById(inputId);
@@ -986,13 +970,7 @@ function updateThemeBtn(){
   if(lb)lb.classList.toggle("on",!isDark);
   if(db)db.classList.toggle("on",isDark);
 }
-function setLang(lang){currentLang=lang;localStorage.setItem(LANG_KEY,lang);updateLangBtns();}
-function updateLangBtns(){
-  document.querySelectorAll("#lang-btns button").forEach(btn=>{
-    const l=btn.getAttribute("onclick").match(/setLang\('(\w+)'\)/)?.[1];
-    btn.classList.toggle("on",l===currentLang);
-  });
-}
+
 
 // ══ TABS ══
 function switchTab(tab){
@@ -1279,7 +1257,7 @@ async function deleteWorld(id){
 // ══ TRAITS ══
 function buildTraitsGrid(){
   const g=document.getElementById("traits-grid");if(!g)return;g.innerHTML="";
-  const arr=TRAITS_TRANS[currentLang]||TRAITS_EN;
+  const arr=TRAITS_FR;
   arr.forEach((label,i)=>{
     const key=TRAITS_EN[i];
     const c=document.createElement("button");c.className="chip";c.textContent=label;c.dataset.key=key;
@@ -1386,9 +1364,10 @@ Backstory: ${char.backstory}`:""}
 RÈGLES ABSOLUES:
 - Toujours 3ᵉ personne: "${char.name} dit", "${char.name} sourit" — JAMAIS "je/me/moi"
 - Joueur = "tu/te/toi/ton/ta" — JAMAIS "vous" seul pour s'adresser au joueur
+${playerCharName?`- JOUEUR = "${playerCharName}" : TU ES ce personnage. Ses actions s'écrivent en 2ᵉ personne. JAMAIS son prénom comme sujet — remplace par "tu".`:""}
 - JAMAIS de question en fin de réponse
 - JAMAIS inventer une action pour le joueur
-- Tout en français, zéro mot anglais
+- Tout en français, zéro mot anglais. Tout mot anglais détecté (even/still/just/somehow/slowly/softly/quickly/finally/truly/deeply/suddenly/indeed/maybe/perhaps/quite/rather/yet/though/towards/around ou autre) → remplacer par l'équivalent français. Possessif anglais 's sur nom propre → reformuler en français
 - Max 1 didascalie *...* par réponse
 - 1 phrase de décor/atmosphère minimum par réponse
 - Réponses courtes et naturelles, phrases simples
@@ -1423,9 +1402,9 @@ ${examples}`:""}`;
 "BACKSTORY :\n"+backstory+"\n"+openBlock+focusBlock+
 identityBlock+"\n\n"+
 "━━━ RÈGLES ━━━\n"+
-"LANGUE : Français uniquement. Zéro mot anglais.\n"+
+"LANGUE : Français uniquement. Zéro mot anglais. Si un mot anglais apparaît (even/still/just/somehow/quite/rather/yet/though/towards/around/slowly/softly/quickly/finally/truly/deeply/suddenly/indeed/maybe/perhaps ou tout autre mot anglais) → le remplacer IMMÉDIATEMENT par son équivalent français naturel. Possessif anglais 's sur un nom propre (ex: Arnav's) → reformuler en français (son/sa/le ... de). Tournures anglaises traduites mot à mot → reformuler en français idiomatique.\n"+
 "JOUEUR : Toujours tu/toi/ton/ta. Jamais vous. Jamais inventer ses émotions, pensées ou physique — c'est lui qui décide ce qu'il ressent.\n"+
-(playerCharName?"JOUEUR = \""+playerCharName+"\" : les persos lui parlent en tu.\n":"Le joueur fait face aux personnages — il n'en est aucun.\n")+
+(playerCharName?"JOUEUR = \""+playerCharName+"\" : TU ES ce personnage. Toutes ses actions, pensées et perceptions s'écrivent en 2ᵉ personne (tu/toi/ton/ta). JAMAIS écrire \""+playerCharName+"\" comme sujet — remplace TOUJOURS par \"tu\". Exemple interdit : \""+playerCharName+" lève les yeux\" → Correct : \"tu lèves les yeux\". Les autres persos lui parlent en tu.\n":"Le joueur fait face aux personnages — il n'en est aucun.\n")+
 "PERSONNAGE : "+(isRpg?"Jamais le nom de l'univers comme narrateur.":("JAMAIS je/me/moi pour "+char.name+". Toujours : "+char.name+" dit, "+char.name+" sourit."))+
 "\nPASSÉ INVENTÉ : Jamais inventer de conversations ou d'événements passés entre les personnages — uniquement ce qui se passe ici et maintenant.\n"+
 "LIBERTÉ NARRATIVE : Tu peux et dois faire avancer la scène — faire entrer un personnage, créer un événement, faire parler les figurants et personnages nommés par le joueur. Sois vivant.\n"+
@@ -2506,7 +2485,7 @@ document.addEventListener("keydown",e=>{
 document.querySelectorAll(".modal-overlay").forEach(m=>m.addEventListener("click",e=>{if(e.target===e.currentTarget)m.classList.remove("open");}));
 
 // ══ INIT ══
-buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBtn();updateLangBtns();
+buildTraitsGrid();renderAll();renderSBSessions();updateSBProfile();updateThemeBtn();
 </script>
 </body>
 </html>
