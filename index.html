@@ -2593,20 +2593,25 @@ function confirmImportAll(){
     worlds.forEach(w=>{
       if(!w.name)return;
       if(!w.id)w.id="world_"+Date.now()+"_"+Math.random().toString(36).slice(2);
-      if(existingWorlds.find(x=>x.id===w.id))return;
+      if(existingWorlds.find(x=>x.id===w.id)){
+        w=Object.assign({},w,{id:"world_"+Date.now()+"_"+Math.random().toString(36).slice(2)});
+      }
       existingWorlds.unshift(w);addedW++;
     });
     chars.forEach(c=>{
       if(!c.name)return;
       if(!c.id)c.id="char_"+Date.now()+"_"+Math.random().toString(36).slice(2);
-      if(existingChars.find(x=>x.id===c.id))return;
+      // Si l'ID existe déjà, générer un nouvel ID au lieu de skipper
+      if(existingChars.find(x=>x.id===c.id)){
+        c=Object.assign({},c,{id:"char_"+Date.now()+"_"+Math.random().toString(36).slice(2)});
+      }
       existingChars.unshift(c);addedC++;
     });
 
     saveWorlds(existingWorlds);saveChars(existingChars);renderAll();
     document.getElementById("import-all-modal").style.display="none";
-    if(addedW===0&&addedC===0){alert("Rien importé — les éléments existent peut-être déjà, ou le format n'est pas reconnu.");}
-    else{alert(`Importé : ${addedW} univers, ${addedC} personnages.`);}
+    if(addedW===0&&addedC===0){alert(currentLang==="fr"?"Rien importé — format non reconnu.":"Nothing imported — format not recognized.");}
+    else{alert(currentLang==="fr"?`Importé : ${addedW} univers, ${addedC} personnages.`:`Imported: ${addedW} worlds, ${addedC} characters.`);}
   }catch(e){alert("JSON invalide — vérifie la syntaxe. "+e.message);}
 }
 
@@ -3096,3 +3101,4 @@ setTimeout(maybeShowWelcome, 2000);
   </div>
 </body>
 </html>
+
