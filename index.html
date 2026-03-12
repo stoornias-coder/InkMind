@@ -322,7 +322,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
   <div class="sb-top">
     <div class="sb-profile" onclick="closeSB();goProfile()">
       <div class="sb-av" id="sb-mini-av">?</div>
-      <span class="sb-uname" id="sb-mini-name">Mon profil</span>
+      <span class="sb-uname" id="sb-mini-name">My Profile</span>
     </div>
     <button class="sb-x" onclick="closeSB()">✕</button>
   </div>
@@ -333,8 +333,8 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
   <div class="sb-list" id="sb-sessions"></div>
   <div class="sb-footer">
     <div class="sb-footer-row">
-      <button class="sb-mini" onclick="closeSB();exportAll()">⬇ Exporter</button>
-      <button class="sb-mini" onclick="closeSB();importAll()">⬆ Importer</button>
+      <button class="sb-mini" id="sb-export-btn" onclick="closeSB();exportAll()">⬇ Export</button>
+      <button class="sb-mini" id="sb-import-btn" onclick="closeSB();importAll()">⬆ Import</button>
     </div>
     <div class="sb-settings-link" onclick="closeSB();goSettings()">
       <span>⚙ Settings</span>
@@ -360,14 +360,14 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     </div>
     <div class="tab-content active" id="tab-chars-content">
       <div class="section-hdr">
-        <span class="section-label">Mes personnages</span>
+        <span class="section-label" id="section-label-chars">My characters</span>
         <button class="new-btn" onclick="openCharCreator(null)">+ New</button>
       </div>
       <div id="chars-list" class="cards-list"></div>
     </div>
     <div class="tab-content" id="tab-worlds-content">
       <div class="section-hdr">
-        <span class="section-label">Mes univers</span>
+        <span class="section-label" id="section-label-worlds">My worlds</span>
         <button class="new-btn" onclick="openWorldCreator(null)">+ New</button>
       </div>
       <div id="worlds-list" class="cards-list"></div>
@@ -392,11 +392,11 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       </div>
       <div class="world-action-btns">
         <button class="action-btn" onclick="startWorldChat('free')">
-          <div class="action-btn-label">Chat libre</div>
+          <div class="action-btn-label" id="free-chat-label">Free Chat</div>
           <div class="action-btn-sub">Le bot joue tous les persos</div>
         </button>
         <button class="action-btn" onclick="showWorldCharPicker()">
-          <div class="action-btn-label">Focus</div>
+          <div class="action-btn-label" id="focus-label-btn">Focus</div>
           <div class="action-btn-sub">Chat avec un personnage</div>
         </button>
       </div>
@@ -409,8 +409,8 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
               <button class="new-btn" style="font-size:.62rem;padding:.25rem .55rem;" onclick="toggleDropdown(event,'wd-add')">+ Ajouter</button>
               <div class="dropdown" id="dd-wd-add" style="display:none;right:0;top:2rem;">
                 <button onclick="closeAllDropdowns();openCharCreatorForWorld()">✦ Nouveau personnage</button>
-                <button onclick="closeAllDropdowns();linkExistingChar()">🔗 Lier un existant</button>
-                <button onclick="closeAllDropdowns();importCharToWorld()">⬆ Importer un perso</button>
+                <button id="link-existing-btn" onclick="closeAllDropdowns();linkExistingChar()">🔗 Link existing</button>
+                <button id="import-char-world-btn" onclick="closeAllDropdowns();importCharToWorld()">⬆ Import character</button>
               </div>
             </div>
           </div>
@@ -442,15 +442,15 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         </div>
       </div>
       <div class="field">
-        <label>Prénom <span class="fhint">(devient {{user}})</span></label>
+        <label id="firstname-label">First name <span class="fhint" id="firstname-hint">(becomes {{user}})</span></label>
         <input class="fi" type="text" id="profile-firstname" placeholder="e.g. Alex, Luna...">
       </div>
       <div class="field">
-        <label>Nom de famille</label>
+        <label id="lastname-label">Last name</label>
         <input class="fi" type="text" id="profile-lastname" placeholder="e.g. Carter, Moreau...">
       </div>
       <div class="field">
-        <label>Genre <span class="fhint">(pour les accords)</span></label>
+        <label id="gender-label">Gender <span class="fhint" id="gender-hint">(for grammar)</span></label>
         <div class="toggle-group">
           <button id="gender-f-btn" class="tgl-btn" onclick="selectGender('f')">♀ Féminin</button>
           <button id="gender-m-btn" class="tgl-btn" onclick="selectGender('m')">♂ Masculin</button>
@@ -538,29 +538,29 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     </div>
     <div class="page-body">
       <div class="field">
-        <label>Photo</label>
+        <label id="char-photo-label">Photo</label>
         <div class="photo-row">
           <div class="photo-circle" id="char-photo-circle" onclick="document.getElementById('char-photo-file').click()" style="cursor:pointer;" title="Tap to choose an image">✦</div>
           <input type="file" id="char-photo-file" accept="image/*" style="display:none" onchange="onCharPhotoFile(this)">
           <div class="photo-col">
-            <span class="fhint">Tap the circle to choose an image</span>
+            <span class="fhint" id="char-photo-hint-span">Tap the circle to choose an image</span>
           </div>
         </div>
       </div>
-      <div class="field"><label>Name *</label><input class="fi" type="text" id="char-name" placeholder="e.g. Elena, Kane, Nyx..."></div>
-      <div class="field"><label>Short description</label><input class="fi" type="text" id="char-desc" placeholder="e.g. A cold detective who never forgets a face..."></div>
-      <div class="field"><label>Tags <span class="fhint">(comma separated)</span></label><input class="fi" type="text" id="char-tags" placeholder="e.g. action, rivals, mystery, slow burn..."></div>
-      <div class="field"><label>Backstory</label><textarea class="fi" id="char-backstory" rows="4" placeholder="Who are they? Where do they come from?"></textarea><span class="fhint" style="margin-top:.3rem;display:block;">💡 If the AI invents a relationship or fact, correct it here: <em>"Doesn't know [name]", "Never met [person]", "Hates [thing]"</em>.</span></div>
-      <div class="field"><label>Personality traits</label><div class="traits-wrap" id="traits-grid"></div></div>
-      <div class="field"><label>Way of speaking</label><input class="fi" type="text" id="char-voice" placeholder="e.g. Formal and cold, Warm but sarcastic..."></div>
+      <div class="field"><label id="char-name-label">Name *</label><input class="fi" type="text" id="char-name" placeholder="e.g. Elena, Kane, Nyx..."></div>
+      <div class="field"><label id="char-desc-label">Short description</label><input class="fi" type="text" id="char-desc" placeholder="e.g. A cold detective who never forgets a face..."></div>
+      <div class="field"><label id="char-tags-label">Tags <span class="fhint" id="char-tags-hint">(comma separated)</span></label><input class="fi" type="text" id="char-tags" placeholder="e.g. action, rivals, mystery, slow burn..."></div>
+      <div class="field"><label id="char-backstory-label">Backstory</label><textarea class="fi" id="char-backstory" rows="4" placeholder="Who are they? Where do they come from?"></textarea><span class="fhint" style="margin-top:.3rem;display:block;"><span id="char-backstory-tip">💡 If the AI invents a relationship or fact, correct it here: <em>"Doesn't know [name]", "Never met [person]", "Hates [thing]"</em>.</span></div>
+      <div class="field"><label id="char-traits-label">Personality traits</label><div class="traits-wrap" id="traits-grid"></div></div>
+      <div class="field"><label id="char-voice-label">Way of speaking</label><input class="fi" type="text" id="char-voice" placeholder="e.g. Formal and cold, Warm but sarcastic..."></div>
 
       <div class="field">
-        <label>✦ First message</label>
+        <label id="char-firstmsg-label">✦ First message</label>
         <textarea class="fi" id="char-firstmsg" rows="3" placeholder="e.g. You finally decided to show up..."></textarea>
       </div>
       <div class="field">
-        <label>Example messages <span class="fhint">(optional)</span></label>
-        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;">Use <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{char}}</code> & <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{user}}</code></div>
+        <label id="char-examples-label">Example messages <span class="fhint" id="char-examples-hint">(optional)</span></label>
+        <div id="char-examples-use" style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;">Use <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{char}}</code> & <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{user}}</code></div>
         <textarea class="fi" id="char-examples" rows="6" placeholder="{{char}}: ...&#10;{{user}}: ..."></textarea>
       </div>
       <button class="save-btn" id="char-save-btn" onclick="saveCharacter()">Save →</button>
@@ -576,21 +576,21 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     </div>
     <div class="page-body">
       <div class="field">
-        <label>Cover image</label>
+        <label id="world-cover-label">Cover image</label>
         <div class="photo-row">
           <div class="photo-sq" id="world-photo-sq" onclick="document.getElementById('world-photo-file').click()" style="cursor:pointer;">✦</div>
           <input type="file" id="world-photo-file" accept="image/*" style="display:none" onchange="onWorldPhotoFile(this)">
           <div class="photo-col">
-            <span class="fhint">Tap the square to choose an image</span>
+            <span class="fhint" id="world-cover-hint-span">Tap the square to choose an image</span>
           </div>
         </div>
       </div>
-      <div class="field"><label>World name *</label><input class="fi" type="text" id="world-name" placeholder="e.g. The Enchanted Kingdom, My Fantasy World..."></div>
+      <div class="field"><label id="world-name-label">World name *</label><input class="fi" type="text" id="world-name" placeholder="e.g. The Enchanted Kingdom, My Fantasy World..."></div>
       <div class="field"><label id="world-desc-label">Short description</label><input class="fi" type="text" id="world-desc" placeholder="e.g. A dark medieval kingdom torn by war and secrets..."></div>
-      <div class="field"><label>Tags <span class="fhint" id="world-tags-hint">(comma separated)</span></label><input class="fi" type="text" id="world-tags" placeholder="e.g. fantasy, thriller, medieval, sci-fi..."></div>
-      <div class="field"><label>Lore & world <span class="fhint">(describe the world in detail)</span></label><textarea class="fi" id="world-lore" rows="5" placeholder="World rules, important places, atmosphere, era..."></textarea><span class="fhint" style="margin-top:.3rem;display:block;">💡 If the AI invents events or relationships, add a rule here: <em>"No major event at the start", "X and Y don't know each other yet"</em>.</span></div>
+      <div class="field"><label id="world-tags-label">Tags <span class="fhint" id="world-tags-hint">(comma separated)</span></label><input class="fi" type="text" id="world-tags" placeholder="e.g. fantasy, thriller, medieval, sci-fi..."></div>
+      <div class="field"><label id="world-lore-label">Lore & world <span class="fhint" id="world-lore-hint">(describe the world in detail)</span></label><textarea class="fi" id="world-lore" rows="5" placeholder="World rules, important places, atmosphere, era..."></textarea><span class="fhint" style="margin-top:.3rem;display:block;"><span id="world-lore-tip">💡 If the AI invents events or relationships, add a rule here: <em>"No major event at the start", "X and Y don't know each other yet"</em>.</span></span></div>
       <div class="field">
-        <label>✦ Opening message</label>
+        <label id="world-firstmsg-label">✦ Opening message</label>
         <textarea class="fi" id="world-firstmsg" rows="3" placeholder="The intro scene when entering the world..."></textarea>
       </div>
       <div class="field">
@@ -599,8 +599,8 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         <textarea class="fi" id="world-examples" rows="6" placeholder="{{char}}: ...&#10;{{user}}: ..."></textarea>
       </div>
       <div class="field">
-        <label>Player character <span class="fhint">(optional — the character YOU play)</span></label>
-        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;line-height:1.5;">If you play a specific character from the world, enter their name here. The AI will know that's you.</div>
+        <label id="world-player-label">Player character <span class="fhint" id="world-player-hint">(optional — the character YOU play)</span></label>
+        <div id="world-player-tip" style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;line-height:1.5;">If you play a specific character from the world, enter their name here. The AI will know that's you.</div>
         <input class="fi" type="text" id="world-player-char" placeholder="e.g. Sarah, leave empty to play as yourself">
       </div>
       <button class="save-btn" id="world-save-btn" onclick="saveWorld()">Save world →</button>
@@ -651,11 +651,11 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 <!-- RENAME MODAL -->
 <div class="modal-overlay" id="rename-modal">
   <div class="modal-box">
-    <div class="modal-title">Renommer la conversation</div>
-    <input class="modal-input" type="text" id="rename-input" placeholder="Nouveau nom...">
+    <div class="modal-title" id="rename-modal-title">Rename conversation</div>
+    <input class="modal-input" type="text" id="rename-input" placeholder="New name...">
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal('rename-modal')">Annuler</button>
-      <button class="btn-ok" onclick="confirmRename()">Renommer</button>
+      <button class="btn-cancel" id="rename-cancel-btn" onclick="closeModal('rename-modal')">Cancel</button>
+      <button class="btn-ok" id="rename-ok-btn" onclick="confirmRename()">Rename</button>
     </div>
   </div>
 </div>
@@ -665,7 +665,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
   <div class="modal-content" style="max-width:320px;">
     <div id="world-char-focus-name" style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--gold);text-align:center;margin-bottom:.8rem;"></div>
     <div style="display:flex;flex-direction:column;gap:.5rem;">
-      <button class="btn-primary" id="world-char-focus-btn" onclick="">✦ Focus — jouer avec ce personnage</button>
+      <button class="btn-primary" id="world-char-focus-btn" onclick="">✦ Focus — play with this character</button>
       <button class="btn-secondary" id="world-char-solo-btn" onclick="">⬚ Chat solo indépendant</button>
     </div>
     <button class="btn-cancel" onclick="closeModal('world-char-focus-modal')" style="margin-top:.5rem;">Annuler</button>
@@ -674,9 +674,9 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 
 <div class="modal-overlay" id="world-char-picker">
   <div class="modal-box">
-    <div class="modal-title">Focus — choisir un personnage</div>
+    <div class="modal-title" id="focus-pick-title">Focus — pick a character</div>
     <div id="world-char-picker-list" style="display:flex;flex-direction:column;gap:.35rem;max-height:280px;overflow-y:auto;"></div>
-    <button class="btn-cancel" onclick="closeModal('world-char-picker')">Annuler</button>
+    <button class="btn-cancel" id="focus-cancel-btn" onclick="closeModal('world-char-picker')">Cancel</button>
   </div>
 </div>
 
@@ -715,7 +715,13 @@ if(activeModelIdx<0)activeModelIdx=0;
 if(!groqKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;}
 let isDark=(localStorage.getItem("inkmind_theme")||"light")==="dark";
 const LANG_KEY="inkmind_lang";
-let currentLang=localStorage.getItem(LANG_KEY)||"en";
+function detectLang(){
+  const saved=localStorage.getItem(LANG_KEY);
+  if(saved)return saved;
+  const nav=(navigator.language||navigator.userLanguage||"en").toLowerCase();
+  return nav.startsWith("fr")?"fr":"en";
+}
+let currentLang=detectLang();
 
 // ══ I18N ══
 const I18N={
@@ -779,7 +785,7 @@ en:{
   char_tags_ph:"e.g. action, rivals, mystery, adventure...",
   char_backstory_label:"Backstory",
   char_backstory_ph:"Who are they? Where do they come from?",
-  char_backstory_tip:'💡 If the bot makes a context error, add a rule here: <em>"Doesn\'t know X", "Never met Y", "Hates Z"</em>.',
+  char_backstory_tip:`💡 If the AI invents a relationship or fact, correct it here: <em>"Doesn't know [name]", "Never met [person]", "Hates [thing]"</em>.`,
   char_traits_label:"Personality traits",
   char_voice_label:"Way of speaking",
   char_voice_ph:"e.g. Formal and cold, Warm but sarcastic...",
@@ -789,16 +795,19 @@ en:{
   char_examples_hint:"(optional)",
   char_examples_tip:"Use {{char}} & {{user}}",
   save_char_btn:"Save →",
+  save_char_edit_btn:"Save changes →",
   new_world_title:"New World",
   edit_world_title:"Edit World",
   world_cover_hint:"Tap the square to choose an image",
   world_name_label:"World name *",
+  world_desc_label:"Short description",
   world_name_ph:"e.g. The Enchanted Kingdom, My Fantasy World...",
   world_desc_ph:"e.g. A dark medieval kingdom torn by war and secrets...",
+  world_tags_ph:"e.g. fantasy, thriller, medieval, sci-fi...",
   world_lore_label:"Lore & world",
   world_lore_hint:"(describe the world in detail)",
   world_lore_ph:"World rules, important places, atmosphere, era...",
-  world_lore_tip:`💡 If the bot invents events or relationships that don't exist, add a rule here: <em>"No arranged marriage at the start", "X and Y don't know each other yet"</em>.`,
+  world_lore_tip:`💡 If the AI invents events or relationships, add a rule here: <em>"No major event at the start", "X and Y don't know each other yet"</em>.`,
   world_firstmsg_label:"✦ Opening message",
   world_firstmsg_ph:"The intro scene when entering the world...",
   world_player_label:"Player character",
@@ -815,6 +824,51 @@ en:{
   welcome_title:"Welcome to InkMind ✦",
   welcome_body:`<p>InkMind is a free, private AI roleplay app. Your stories stay on <strong>your device</strong> — nothing is sent to any server.</p><p style="margin-top:.7rem"><strong>To get started:</strong></p><ol style="margin:.4rem 0 0 1.1rem;line-height:2;font-size:.82rem"><li>Go to <strong>⚙ Settings</strong></li><li>Enter your free <strong>Groq API key</strong> <span style="color:var(--text-dim)">(console.groq.com)</span></li><li>Optionally add a <strong>Gemini key</strong> for automatic fallback</li><li>Pick a ready-made character or world — or create your own!</li></ol><p style="margin-top:.65rem;font-size:.8rem;color:var(--text)"><strong>Want to create your own character?</strong><br>Tap <strong>+ New</strong> on the Characters tab. Fill in a name, personality traits, a backstory, and a first message.</p><p style="margin-top:.5rem;font-size:.8rem;color:var(--text)"><strong>Want to build your own world?</strong><br>Tap <strong>+ New</strong> on the Worlds tab. Describe your universe, add characters, and set an opening scene.</p><p style="margin-top:.65rem;color:var(--text-dim);font-size:.72rem">Your key is stored only on your device and never shared.</p>`,
   welcome_close:"Let's go ✦",
+  // Sidebar
+  export_btn:"⬇ Export",
+  import_btn:"⬆ Import",
+  my_profile:"My Profile",
+  // Dropdowns
+  new_chat:"New chat",
+  edit_btn:"Edit",
+  export_item:"Export",
+  delete_btn:"Delete",
+  link_existing:"🔗 Link existing",
+  import_char_world:"⬆ Import character",
+  // World detail buttons
+  free_chat_btn:"Free Chat",
+  focus_btn:"Focus",
+  focus_play:"✦ Focus — play with this character",
+  focus_pick_title:"Focus — pick a character",
+  // Profile page labels
+  firstname_label:"First name",
+  lastname_label:"Last name",
+  gender_label:"Gender",
+  // Modals
+  rename_modal_title:"Rename conversation",
+  rename_ph:"New name...",
+  cancel_btn:"Cancel",
+  rename_confirm:"Rename",
+  delete_char_title:"Delete character",
+  delete_char_msg:"will be permanently deleted.",
+  delete_world_title:"Delete world",
+  delete_world_msg:"will be permanently deleted.",
+  delete_session_title:"Delete conversation",
+  delete_session_msg:"will be permanently deleted.",
+  delete_btn_confirm:"Delete",
+  clear_all_confirm:"Delete all conversations?",
+  import_modal_title:"Import characters & worlds",
+  import_all_title:"Import everything",
+  import_ph:"Paste your JSON here...",
+  import_hint:"Accepts: full export, world export, or character list.",
+  import_confirm:"Import",
+  link_modal_title:"Link an existing character",
+  import_world_char_title:"Import a character into the world",
+  // Error messages
+  err_invalid_key:"Invalid or expired API key — check ⚙ Settings.",
+  err_bad_request:"Invalid request (400) — check your API key in ⚙ Settings.",
+  // Session sidebar
+  no_sessions_hint:"Start a chat to see it here.",
 },
 fr:{
   splash_sub:"où les histoires prennent vie",
@@ -876,7 +930,7 @@ fr:{
   char_tags_ph:"ex. action, rivaux, mystère, fantasy...",
   char_backstory_label:"Histoire / Backstory",
   char_backstory_ph:"Qui sont-ils ? D'où viennent-ils ?",
-  char_backstory_tip:`💡 Si le bot invente une relation ou un fait, corrige-le ici : <em>"Ne connaît pas [prénom]", "N'a jamais rencontré [personne]", "Déteste [chose]"</em>.`,
+  char_backstory_tip:`💡 Si le bot invente une relation ou un fait, corrige-le ici : <em>"Ne connaît pas [prénom]", "N'a jamais rencontré [personnage]", "Déteste [chose]"</em>.`,
   char_traits_label:"Traits de personnalité",
   char_voice_label:"Façon de parler",
   char_voice_ph:"ex. Formel et froid, Chaleureux mais sarcastique...",
@@ -886,16 +940,19 @@ fr:{
   char_examples_hint:"(optionnel)",
   char_examples_tip:"Utilise {{char}} & {{user}}",
   save_char_btn:"Enregistrer →",
+  save_char_edit_btn:"Enregistrer les modifications →",
   new_world_title:"Nouvel Univers",
   edit_world_title:"Modifier l'univers",
   world_cover_hint:"Appuie sur le carré pour choisir une image",
   world_name_label:"Nom de l'univers *",
+  world_desc_label:"Description courte",
   world_name_ph:"ex. Le Royaume des Ombres, Mon monde inventé...",
   world_desc_ph:"ex. Un royaume médiéval sombre déchiré par la guerre...",
+  world_tags_ph:"ex. fantasy, thriller, médiéval, sci-fi...",
   world_lore_label:"Lore & monde",
   world_lore_hint:"(décris l'univers en détail)",
   world_lore_ph:"Règles du monde, lieux importants, ambiance, époque...",
-  world_lore_tip:`💡 Si le bot invente des événements ou des relations inexistants, ajoute une règle ici : <em>"Pas de mariage au début", "X et Y ne se connaissent pas encore"</em>.`,
+  world_lore_tip:`💡 Si le bot invente des événements ou des relations, ajoute une règle ici : <em>"Pas d'événement majeur au début", "X et Y ne se connaissent pas encore"</em>.`,
   world_firstmsg_label:"✦ Message d'ouverture",
   world_firstmsg_ph:"La scène d'introduction quand on entre dans l'univers...",
   world_player_label:"Personnage joueur",
@@ -912,6 +969,51 @@ fr:{
   welcome_title:"Bienvenue sur InkMind ✦",
   welcome_body:`<p>InkMind est une app de roleplay IA gratuite et privée. Tes histoires restent sur <strong>ton appareil</strong> — rien n'est envoyé à un serveur.</p><p style="margin-top:.7rem"><strong>Pour commencer :</strong></p><ol style="margin:.4rem 0 0 1.1rem;line-height:2;font-size:.82rem"><li>Va dans <strong>⚙ Paramètres</strong></li><li>Entre ta <strong>clé API Groq</strong> gratuite <span style="color:var(--text-dim)">(console.groq.com)</span></li><li>Ajoute optionnellement une <strong>clé Gemini</strong> pour le basculement automatique</li><li>Choisis un personnage ou univers prêt à jouer — ou crée le tien !</li></ol><p style="margin-top:.65rem;font-size:.8rem;color:var(--text)"><strong>Créer ton propre personnage ?</strong><br>Appuie sur <strong>+ Nouveau</strong> dans l'onglet Personnages. Remplis le nom, les traits, une backstory et un premier message.</p><p style="margin-top:.5rem;font-size:.8rem;color:var(--text)"><strong>Créer ton propre univers ?</strong><br>Appuie sur <strong>+ Nouveau</strong> dans l'onglet Univers. Décris ton monde, ajoute des personnages et définis la scène d'ouverture.</p><p style="margin-top:.65rem;color:var(--text-dim);font-size:.72rem">Ta clé est stockée uniquement sur ton appareil et n'est jamais partagée.</p>`,
   welcome_close:"C'est parti ✦",
+  // Sidebar
+  export_btn:"⬇ Exporter",
+  import_btn:"⬆ Importer",
+  my_profile:"Mon profil",
+  // Dropdowns
+  new_chat:"Nouveau chat",
+  edit_btn:"Modifier",
+  export_item:"Exporter",
+  delete_btn:"Supprimer",
+  link_existing:"🔗 Lier un existant",
+  import_char_world:"⬆ Importer un perso",
+  // World detail buttons
+  free_chat_btn:"Chat libre",
+  focus_btn:"Focus",
+  focus_play:"✦ Focus — jouer avec ce personnage",
+  focus_pick_title:"Focus — choisir un personnage",
+  // Profile page labels
+  firstname_label:"Prénom",
+  lastname_label:"Nom de famille",
+  gender_label:"Genre",
+  // Modals
+  rename_modal_title:"Renommer la conversation",
+  rename_ph:"Nouveau nom...",
+  cancel_btn:"Annuler",
+  rename_confirm:"Renommer",
+  delete_char_title:"Supprimer le personnage",
+  delete_char_msg:"sera définitivement supprimé.",
+  delete_world_title:"Supprimer l'univers",
+  delete_world_msg:"sera définitivement supprimé.",
+  delete_session_title:"Supprimer la conversation",
+  delete_session_msg:"sera définitivement supprimée.",
+  delete_btn_confirm:"Supprimer",
+  clear_all_confirm:"Supprimer toutes les conversations ?",
+  import_modal_title:"Importer personnages & univers",
+  import_all_title:"Importer tout",
+  import_ph:"Colle ton JSON ici...",
+  import_hint:"Accepte : export complet, export univers, ou liste de personnages.",
+  import_confirm:"Importer",
+  link_modal_title:"Lier un personnage existant",
+  import_world_char_title:"Importer un personnage dans l'univers",
+  // Error messages
+  err_invalid_key:"Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.",
+  err_bad_request:"Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.",
+  // Session sidebar
+  no_sessions_hint:"Lance un chat pour le voir ici.",
 }
 };
 function t(k){return(I18N[currentLang]||I18N.en)[k]||(I18N.en[k]||k);}
@@ -1088,7 +1190,7 @@ function getUserName(){const p=loadProfile();return[p.firstname,p.lastname].filt
 function updateSBProfile(){
   const p=loadProfile();
   const name=[p.firstname,p.lastname].filter(Boolean).join(" ");
-  document.getElementById("sb-mini-name").textContent=name||"Mon profil";
+  document.getElementById("sb-mini-name").textContent=name||t("my_profile");
   const av=document.getElementById("sb-mini-av");
   if(p.photo)av.innerHTML=`<img src="${p.photo}" alt="profile">`;
   else av.innerHTML=p.firstname?p.firstname.charAt(0).toUpperCase():"?";
@@ -1218,7 +1320,7 @@ function renderChars(){
     const av=char.photo?`<img src="${char.photo}" alt="${char.name}">`:(char.name.charAt(0).toUpperCase());
     const tags=(char.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc2(t)}</span>`).join("");
     const row=document.createElement("div");row.className="card";row.dataset.charid=char.id;
-    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div>${tags?`<div class="card-tags">${tags}</div>`:""}</div><button class="card-more" onclick="toggleDropdown(event,'c_${char.id}')">···</button><div class="dropdown" id="dd-c_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();newChatWithChar('${char.id}')">Nouveau chat</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
+    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div>${tags?`<div class="card-tags">${tags}</div>`:""}</div><button class="card-more" onclick="toggleDropdown(event,'c_${char.id}')">···</button><div class="dropdown" id="dd-c_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();newChatWithChar('${char.id}')">${t("new_chat")}</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">${t("edit_btn")}</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">${t("export_item")}</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">${t("delete_btn")}</button></div>`;
     row.querySelector(".card-info").addEventListener("click",()=>startChatWithChar(char.id));
     row.querySelector(".card-img").addEventListener("click",()=>startChatWithChar(char.id));
     list.appendChild(row);
@@ -1243,7 +1345,7 @@ function renderWorlds(){
       return`<div class="world-char-pip">${pip}</div>`;
     }).join("")+(chars.length>5?`<div class="world-char-pip" style="font-size:.45rem;">+${chars.length-5}</div>`:"");
     const row=document.createElement("div");row.className="card";
-    row.innerHTML=`<div class="card-img" style="border-radius:7px;">${av}</div><div class="card-info"><div class="card-name">${esc2(world.name)}</div><div class="card-desc">${esc2(world.desc||"")}</div>${charPips?`<div class="world-chars-preview">${charPips}</div>`:""}</div><button class="card-more" onclick="toggleDropdown(event,'w_${world.id}')">···</button><div class="dropdown" id="dd-w_${world.id}" style="display:none;"><button onclick="closeAllDropdowns();newWorldChat('${world.id}')">Nouveau chat</button><button onclick="closeAllDropdowns();openWorldCreator('${world.id}')">Modifier</button><button onclick="closeAllDropdowns();exportWorld('${world.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteWorld('${world.id}')">Supprimer</button></div>`;
+    row.innerHTML=`<div class="card-img" style="border-radius:7px;">${av}</div><div class="card-info"><div class="card-name">${esc2(world.name)}</div><div class="card-desc">${esc2(world.desc||"")}</div>${charPips?`<div class="world-chars-preview">${charPips}</div>`:""}</div><button class="card-more" onclick="toggleDropdown(event,'w_${world.id}')">···</button><div class="dropdown" id="dd-w_${world.id}" style="display:none;"><button onclick="closeAllDropdowns();newWorldChat('${world.id}')">${t("new_chat")}</button><button onclick="closeAllDropdowns();openWorldCreator('${world.id}')">${t("edit_btn")}</button><button onclick="closeAllDropdowns();exportWorld('${world.id}')">${t("export_item")}</button><button class="danger" onclick="closeAllDropdowns();deleteWorld('${world.id}')">${t("delete_btn")}</button></div>`;
     row.querySelector(".card-info").addEventListener("click",()=>openWorldDetail(world.id));
     row.querySelector(".card-img").addEventListener("click",()=>openWorldDetail(world.id));
     list.appendChild(row);
@@ -1284,7 +1386,7 @@ function renderWorldChars(worldId){
   chars.forEach(char=>{
     const av=char.photo?`<img src="${char.photo}" alt="${char.name}">`:(char.name.charAt(0).toUpperCase());
     const row=document.createElement("div");row.className="card";
-    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div><button class="card-more" onclick="toggleDropdown(event,'wc_${char.id}')">···</button><div class="dropdown" id="dd-wc_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();startWorldFocusChat('${char.id}')">Nouveau chat</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">Modifier</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">Exporter</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">Supprimer</button></div>`;
+    row.innerHTML=`<div class="card-img round">${av}</div><div class="card-info"><div class="card-name">${esc2(char.name)}</div><div class="card-desc">${esc2(char.desc||"")}</div></div><button class="card-more" onclick="toggleDropdown(event,'wc_${char.id}')">···</button><div class="dropdown" id="dd-wc_${char.id}" style="display:none;"><button onclick="closeAllDropdowns();startWorldFocusChat('${char.id}')">${t("new_chat")}</button><button onclick="closeAllDropdowns();openCharCreator('${char.id}')">${t("edit_btn")}</button><button onclick="closeAllDropdowns();exportChar('${char.id}')">${t("export_item")}</button><button class="danger" onclick="closeAllDropdowns();deleteChar('${char.id}')">${t("delete_btn")}</button></div>`;
     row.querySelector(".card-info").addEventListener("click",()=>startWorldFocusChat(char.id));
     row.querySelector(".card-img").addEventListener("click",()=>startWorldFocusChat(char.id));
     list.appendChild(row);
@@ -1360,7 +1462,7 @@ function openCharCreator(charId){
       setTraits(char.traits);
     }
   }else{document.getElementById("char-creator-title").textContent=t("new_char_title");buildTraitsGrid();}
-  document.getElementById("char-save-btn").textContent=charId?"Enregistrer les modifications →":"Enregistrer →";
+  document.getElementById("char-save-btn").textContent=charId?t("save_char_edit_btn"):t("save_char_btn");
   navigateTo("char-creator",null);
 }
 function openCharCreatorForWorld(){
@@ -1411,7 +1513,7 @@ function saveCharacter(){
 }
 async function deleteChar(id){
   const c=loadChars().find(x=>x.id===id);
-  const ok=await askConfirm("Supprimer le personnage",`"${c?.name||"ce personnage"}" sera définitivement supprimé.`);
+  const ok=await askConfirm(t("delete_char_title"),`"${c?.name||t("delete_btn")}" ${t("delete_char_msg")}`);
   if(!ok)return;
   saveChars(loadChars().filter(x=>x.id!==id));
   renderAll();
@@ -1438,7 +1540,7 @@ function openWorldCreator(worldId){
       if(world.photo){worldPhoto=world.photo;document.getElementById("world-photo-sq").innerHTML=`<img src="${world.photo}" alt="photo">`;}
     }
   }else{document.getElementById("world-creator-title").textContent=t("new_world_title");}
-  document.getElementById("world-save-btn").textContent=worldId?"Enregistrer les modifications →":"Enregistrer l'univers →";
+  document.getElementById("world-save-btn").textContent=worldId?t("save_world_edit_btn"):t("save_world_btn");
   navigateTo("world-creator",null);
 }
 function worldCreatorBack(){
@@ -1471,7 +1573,7 @@ async function deleteWorld(id){
   const w=loadWorlds().find(x=>x.id===id);
   const linkedCount=loadChars().filter(c=>c.worldId===id).length;
   const extra=linkedCount?`${linkedCount} personnage(s) lié(s) seront aussi supprimés.`:"";
-  const ok=await askConfirm("Supprimer l'univers",`"${w?.name||"cet univers"}" sera définitivement supprimé. ${extra}`);
+  const ok=await askConfirm(t("delete_world_title"),`"${w?.name||t("delete_btn")}" ${t("delete_world_msg")} ${extra}`);
   if(!ok)return;
   saveChars(loadChars().filter(c=>c.worldId!==id));
   saveWorlds(loadWorlds().filter(x=>x.id!==id));
@@ -1729,9 +1831,9 @@ async function orStream(messages,onChunk){
 
       if(!r.ok){
         const e=await r.text();
-        if(r.status===401)throw new Error("Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.");
+        if(r.status===401)throw new Error(t("err_invalid_key"));
         if(r.status===404){allKeysLimited=true;continue;}// Modèle indispo
-        if(r.status===400)throw new Error("Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.");
+        if(r.status===400)throw new Error(t("err_bad_request"));
         continue;
       }
 
@@ -1816,7 +1918,7 @@ function autosave(){
 }
 function renderSBSessions(){
   const sessions=loadSessions().sort((a,b)=>(b.savedAt||b.createdAt)-(a.savedAt||a.createdAt)),container=document.getElementById("sb-sessions");
-  if(!sessions.length){container.innerHTML=`<p class="sb-empty">Aucune conversation</p>`;return;}
+  if(!sessions.length){container.innerHTML=`<p class="sb-empty">${t("no_sessions")}</p>`;return;}
   container.innerHTML="";
   sessions.forEach(sess=>{
     const date=new Date(sess.savedAt||sess.createdAt).toLocaleDateString("fr",{month:"short",day:"numeric"});
@@ -1832,11 +1934,12 @@ function renderSBSessions(){
     container.appendChild(item);
   });
 }
-async function deleteSession(sid){const sess=loadSessions().find(s=>s.id===sid);const ok=await askConfirm("Supprimer la conversation",`"${sess?.title||"cette conversation"}" sera définitivement supprimée.`);if(!ok)return;if(S?.id===sid){S=null;showScreen("home");renderAll();}localStorage.setItem(SESS_KEY,JSON.stringify(loadSessions().filter(s=>s.id!==sid)));renderSBSessions();}
-function clearAllHistory(){if(confirm("Supprimer toutes les conversations ?")){localStorage.removeItem(SESS_KEY);S=null;showScreen("home");renderAll();renderSBSessions();closeSB();}}
+async function deleteSession(sid){const sess=loadSessions().find(s=>s.id===sid);const ok=await askConfirm(t("delete_session_title"),`"${sess?.title||t("delete_btn")}" ${t("delete_session_msg")}`);if(!ok)return;if(S?.id===sid){S=null;showScreen("home");renderAll();}localStorage.setItem(SESS_KEY,JSON.stringify(loadSessions().filter(s=>s.id!==sid)));renderSBSessions();}
+function clearAllHistory(){if(confirm(t("clear_all_confirm"))){localStorage.removeItem(SESS_KEY);S=null;showScreen("home");renderAll();renderSBSessions();closeSB();}}
 function openRename(sid){renameTargetId=sid;const sess=loadSessions().find(s=>s.id===sid);document.getElementById("rename-input").value=sess?.title||"";document.getElementById("rename-modal").classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
-function askConfirm(title,msg,okLabel="Supprimer"){
+function askConfirm(title,msg,okLabel=null){
+  if(!okLabel)okLabel=t("delete_btn_confirm");
   return new Promise(resolve=>{
     window._confirmResolve=()=>resolve(true);
     window._confirmReject=()=>resolve(false);
@@ -2407,15 +2510,15 @@ function exportEverything(){
     <div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">${chars.length} personnage(s) · ${worlds.length} univers</div>
     <div style="display:flex;gap:.5rem;margin-top:.4rem;">
       <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button>
-      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button>
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">${t("cancel_btn")}</button>
     </div>`);
 }
 function importEverything(){
-  _showModal("import-modal","Importer personnages & univers",
-    `<textarea id="import-all-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" placeholder="Colle ton JSON ici..."></textarea>
+  _showModal("import-modal",t("import_modal_title"),
+    `<textarea id="import-all-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" id="import-json-ph" placeholder="Paste your JSON here..."></textarea>
     <div style="display:flex;gap:.5rem;margin-top:.4rem;">
-      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportEverything()">Importer</button>
-      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-modal').style.display='none'">Annuler</button>
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportEverything()">${t("import_confirm")}</button>
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-modal').style.display='none'">${t("cancel_btn")}</button>
     </div>`);
 }
 function confirmImportEverything(){
@@ -2453,10 +2556,10 @@ function exportAll(){
   const chars=loadChars();
   const bundle={worlds,chars,exportedAt:Date.now()};
   const json=JSON.stringify(bundle,null,2);
-  _showModal("export-modal","Export complet",`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">${worlds.length} univers · ${chars.length} personnages</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button></div>`);
+  _showModal("export-modal","Export complet",`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">${worlds.length} univers · ${chars.length} personnages</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">${t("cancel_btn")}</button></div>`);
 }
 function importAll(){
-  _showModal("import-all-modal","Importer tout",`<textarea id="import-all-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:150px;font-family:monospace;" placeholder="Colle ton JSON ici..."></textarea><div style="font-size:.6rem;color:var(--text-dim);margin-top:.25rem;">Accepte : export complet, export univers, ou liste de personnages.</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportAll()">Importer</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-all-modal').style.display='none'">Annuler</button></div>`);
+  _showModal("import-all-modal",t("import_all_title"),`<textarea id="import-all-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:150px;font-family:monospace;" placeholder="${t('import_ph')}"></textarea><div style="font-size:.6rem;color:var(--text-dim);margin-top:.25rem;">${t("import_hint")}</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportAll()">${t("import_confirm")}</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-all-modal').style.display='none'">${t("cancel_btn")}</button></div>`);
 }
 function confirmImportAll(){
   const box=document.getElementById("import-all-box");if(!box)return;
@@ -2512,27 +2615,27 @@ function exportWorld(id){
   const chars=loadChars().filter(c=>c.worldId===id);
   const bundle={world,chars};
   const json=JSON.stringify(bundle,null,2);
-  _showModal("export-modal","Export univers — "+world.name,`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Contient l'univers + ses personnages</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button></div>`);
+  _showModal("export-modal","Export univers — "+world.name,`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Contient l'univers + ses personnages</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">${t("cancel_btn")}</button></div>`);
 }
 
 function exportChar(id){
   const char=loadChars().find(c=>c.id===id);if(!char)return;
   const json=JSON.stringify(char,null,2);
-  _showModal("export-modal","Export — "+char.name,`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Sélectionne tout → Copie → Colle dans un fichier .json</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button></div>`);
+  _showModal("export-modal","Export — "+char.name,`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Sélectionne tout → Copie → Colle dans un fichier .json</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">${t("cancel_btn")}</button></div>`);
 }
 function exportAllChars(){
   const chars=loadChars();if(!chars.length){alert("Aucun personnage à exporter.");return;}
   const json=JSON.stringify(chars,null,2);
-  _showModal("export-modal","Export — tous les personnages",`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Sélectionne tout → Copie → Colle dans un fichier .json</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">Fermer</button></div>`);
+  _showModal("export-modal","Export — tous les personnages",`<textarea style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" readonly>${json}</textarea><div style="font-size:.63rem;color:var(--text-dim);margin-top:.3rem;">Sélectionne tout → Copie → Colle dans un fichier .json</div><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="this.closest('[id]').querySelector('textarea').select();document.execCommand('copy');this.textContent='Copié ✓'">Copier</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('export-modal').style.display='none'">${t("cancel_btn")}</button></div>`);
 }
 function importCharsClick(){
-  _showModal("import-modal","Importer des personnages",`<textarea id="import-json-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" placeholder="Colle ton JSON ici..."></textarea><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImport()">Importer</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-modal').style.display='none'">Annuler</button></div>`);
+  _showModal("import-modal","Importer des personnages",`<textarea id="import-json-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:170px;font-family:monospace;" placeholder="${t('import_ph')}"></textarea><div style="display:flex;gap:.5rem;margin-top:.4rem;"><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImport()">Importer</button><button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-modal').style.display='none'">${t("cancel_btn")}</button></div>`);
 }
 function linkExistingChar(){
   // Show all chars not already in this world
   const all=loadChars().filter(c=>c.worldId!==currentWorldId);
   if(!all.length){alert("Tous tes personnages sont déjà dans cet univers, ou tu n'en as pas encore.");return;}
-  _showModal("link-char-modal","Lier un personnage existant",
+  _showModal("link-char-modal",t("link_modal_title"),
     `<div style="display:flex;flex-direction:column;gap:.3rem;max-height:260px;overflow-y:auto;">
     ${all.map(c=>{
       const av=c.photo?`<img src="${c.photo}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:(c.name.charAt(0));
@@ -2542,7 +2645,7 @@ function linkExistingChar(){
       </div>`;
     }).join("")}
     </div>
-    <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;margin-top:.4rem;" onclick="document.getElementById('link-char-modal').style.display='none'">Annuler</button>`
+    <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;margin-top:.4rem;" onclick="document.getElementById('link-char-modal').style.display='none'">${t("cancel_btn")}</button>`
   );
 }
 function doLinkChar(charId){
@@ -2552,11 +2655,11 @@ function doLinkChar(charId){
   renderWorldChars(currentWorldId);renderAll();
 }
 function importCharToWorld(){
-  _showModal("import-world-char-modal","Importer un personnage dans l'univers",
+  _showModal("import-world-char-modal",t("import_world_char_title"),
     `<textarea id="import-wchar-box" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.68rem;padding:.6rem;resize:none;height:150px;font-family:monospace;" placeholder="Colle le JSON du personnage ici..."></textarea>
     <div style="display:flex;gap:.5rem;margin-top:.4rem;">
-      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportToWorld()">Importer</button>
-      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-world-char-modal').style.display='none'">Annuler</button>
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="confirmImportToWorld()">${t("import_confirm")}</button>
+      <button class="save-btn" style="font-size:.8rem;font-family:'Jost',sans-serif;" onclick="document.getElementById('import-world-char-modal').style.display='none'">${t("cancel_btn")}</button>
     </div>`
   );
 }
@@ -2862,6 +2965,97 @@ function applyLang(){
   const skb=document.querySelector("[onclick='saveApiKeys()']");
   if(skb&&skb.textContent!==t("saved_keys"))skb.textContent=t("save_keys_btn");
   updateApiStatus();renderModelList();renderAll();buildTraitsGrid();
+  // Sidebar
+  const seb=document.getElementById("sb-export-btn");if(seb)seb.textContent=t("export_btn");
+  const sib=document.getElementById("sb-import-btn");if(sib)sib.textContent=t("import_btn");
+  // World detail buttons
+  const fcl=document.getElementById("free-chat-label");if(fcl)fcl.textContent=t("free_chat_btn");
+  const fbl=document.getElementById("focus-label-btn");if(fbl)fbl.textContent=t("focus_btn");
+  const leb=document.getElementById("link-existing-btn");if(leb)leb.textContent=t("link_existing");
+  const icb=document.getElementById("import-char-world-btn");if(icb)icb.textContent=t("import_char_world");
+  // Focus modal
+  const wfb=document.getElementById("world-char-focus-btn");if(wfb&&wfb.textContent.includes("Focus"))wfb.textContent=t("focus_play");
+  const fpt=document.getElementById("focus-pick-title");if(fpt)fpt.textContent=t("focus_pick_title");
+  const fcc=document.getElementById("focus-cancel-btn");if(fcc)fcc.textContent=t("cancel_btn");
+  // Rename modal
+  const rmt=document.getElementById("rename-modal-title");if(rmt)rmt.textContent=t("rename_modal_title");
+  const rph=document.getElementById("rename-input");if(rph)rph.placeholder=t("rename_ph");
+  const rcb=document.getElementById("rename-cancel-btn");if(rcb)rcb.textContent=t("cancel_btn");
+  const rok=document.getElementById("rename-ok-btn");if(rok)rok.textContent=t("rename_confirm");
+  // Profile labels
+  const fnl=document.getElementById("firstname-label");if(fnl)fnl.childNodes[0].textContent=t("firstname_label")+" ";
+  const fnh=document.getElementById("firstname-hint");if(fnh)fnh.textContent=currentLang==="fr"?"(devient {{user}})":"(becomes {{user}})";
+  const lnl=document.getElementById("lastname-label");if(lnl)lnl.textContent=t("lastname_label");
+  const gnl=document.getElementById("gender-label");if(gnl)gnl.childNodes[0].textContent=t("gender_label")+" ";
+  const gnh=document.getElementById("gender-hint");if(gnh)gnh.textContent=currentLang==="fr"?"(pour les accords)":"(for grammar)";
+  // Section labels home
+  // ── CHAR CREATOR ──
+  const _id=s=>document.getElementById(s);
+  const _ph=(s,k)=>{const e=_id(s);if(e)e.placeholder=t(k);};
+  const _tx=(s,k)=>{const e=_id(s);if(e)e.textContent=t(k);};
+  // Labels
+  _tx("char-name-label","char_name_label");
+  _tx("char-desc-label","char_desc_label");
+  _tx("char-tags-label","char_tags_label");
+  _tx("char-tags-hint","char_tags_hint");
+  _tx("char-backstory-label","char_backstory_label");
+  _tx("char-backstory-tip","char_backstory_tip");
+  _tx("char-traits-label","char_traits_label");
+  _tx("char-voice-label","char_voice_label");
+  _tx("char-firstmsg-label","char_firstmsg_label");
+  _tx("char-examples-label","char_examples_label");
+  _tx("char-examples-hint","char_examples_hint");
+  _tx("char-photo-hint-span","char_photo_hint");
+  // Placeholders
+  _ph("char-name","char_name_ph");
+  _ph("char-desc","char_desc_ph");
+  _ph("char-tags","char_tags_ph");
+  _ph("char-backstory","char_backstory_ph");
+  _ph("char-voice","char_voice_ph");
+  _ph("char-firstmsg","char_firstmsg_ph");
+  // ── WORLD CREATOR ──
+  _tx("world-name-label","world_name_label");
+  _tx("world-desc-label","char_desc_label");
+  _tx("world-tags-label","char_tags_label");
+  _tx("world-tags-hint","char_tags_hint");
+  _tx("world-lore-label","world_lore_label");
+  _tx("world-lore-hint","world_lore_hint");
+  _tx("world-lore-tip","world_lore_tip");
+  _tx("world-firstmsg-label","world_firstmsg_label");
+  _tx("world-examples-label","char_examples_label");
+  _tx("world-examples-hint","char_examples_hint");
+  _tx("world-player-label","world_player_label");
+  _tx("world-player-hint","world_player_hint");
+  _tx("world-player-tip","world_player_tip");
+  // "Use {{char}} & {{user}}" dans world examples
+  // "Use/Utilise" pour char-examples et world-examples
+  // "Use/Utilise" pour char-examples et world-examples
+  ["char-examples-use","world-examples-use"].forEach(eid=>{
+    const eu=document.getElementById(eid);if(!eu)return;
+    const code1=eu.querySelector("code:first-of-type");
+    const code2=eu.querySelector("code:last-of-type");
+    const useWord=currentLang==="fr"?"Utilise ":"Use ";
+    if(code1&&code2){eu.childNodes[0].textContent=useWord;}
+  });
+  _ph("world-name","world_name_ph");
+  _ph("world-desc","world_desc_ph");
+  _ph("world-tags","world_tags_ph");
+  _ph("world-lore","world_lore_ph");
+  _ph("world-firstmsg","world_firstmsg_ph");
+  _ph("world-player-char","world_player_ph");
+  // Creator labels Photo/Cover
+  const cpl=document.getElementById("char-photo-label");if(cpl)cpl.textContent=currentLang==="fr"?"Photo":"Photo";
+  const wcl=document.getElementById("world-cover-label");if(wcl)wcl.textContent=currentLang==="fr"?"Image de couverture":"Cover image";
+  const scl=document.getElementById("section-label-chars");if(scl)scl.textContent=currentLang==="fr"?"Mes personnages":"My characters";
+  const swl=document.getElementById("section-label-worlds");if(swl)swl.textContent=currentLang==="fr"?"Mes univers":"My worlds";
+  // sb profile name fallback
+  // Photo hints
+  const pph=document.getElementById("profile-photo-hint");
+  if(pph)pph.textContent=currentLang==="fr"?"Appuie sur ta photo pour choisir une image":"Tap your photo to choose an image";
+  const cph2=document.querySelector("#char-creator .fhint");
+  // handled via placeholder updates below
+  const smn=document.getElementById("sb-mini-name");
+  if(smn&&(smn.textContent==="My Profile"||smn.textContent==="Mon profil"))smn.textContent=t("my_profile");
 }
 function setLang(lang){
   currentLang=lang;
@@ -2902,3 +3096,4 @@ setTimeout(maybeShowWelcome, 2000);
   </div>
 </body>
 </html>
+
