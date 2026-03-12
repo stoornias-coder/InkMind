@@ -1,9 +1,12 @@
 name: Build InkMind APK
 
 on:
-  push:
-    branches: [ main ]
+  release:
+    types: [published]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -77,9 +80,12 @@ jobs:
           cd android
           ./gradlew assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Rename APK with version
+        run: |
+          VERSION=${{ github.event.release.tag_name }}
+          cp android/app/build/outputs/apk/debug/app-debug.apk InkMind-${VERSION}.apk
+
+      - name: Attach APK to Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: InkMind-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
+          files: InkMind-${{ github.event.release.tag_name }}.apk
