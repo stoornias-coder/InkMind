@@ -2576,13 +2576,20 @@ function confirmImportAll(){
     if(Array.isArray(data)){
       // Liste de personnages OU liste mixte
       data.forEach(item=>{
-        if(item.lore||item.playerChar!==undefined) worlds.push(item); // c'est un monde
+        if(item.lore||item.playerChar!==undefined) worlds.push(item);
         else if(item.name) chars.push(item);
       });
+    } else if(data.name && !data.worlds && !data.world && !data.chars){
+      // Personnage unique exporté seul
+      chars=[data];
     } else if(data.world && !data.worlds){
       // Export univers seul : {world, chars}
       worlds=[data.world];
       chars=data.chars||[];
+    } else if(data.lore||data.playerChar!==undefined){
+      // Monde seul sans wrapper
+      worlds=[data];
+      chars=[];
     } else {
       // Export complet : {worlds, chars} ou {version, worlds, chars}
       worlds=data.worlds||[];
@@ -3101,4 +3108,3 @@ setTimeout(maybeShowWelcome, 2000);
   </div>
 </body>
 </html>
-
