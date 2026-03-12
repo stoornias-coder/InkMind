@@ -313,7 +313,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 <!-- SPLASH -->
 <div id="splash">
   <div class="sp-name">InkMind</div>
-  <div class="sp-sub">où les histoires prennent vie</div>
+  <div class="sp-sub">where stories come to life</div>
   <div class="sp-line"></div>
 </div>
 
@@ -327,9 +327,9 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     <button class="sb-x" onclick="closeSB()">✕</button>
   </div>
   <div class="sb-nav">
-    <button class="sb-nav-btn" onclick="closeSB();goHome()">⌂ &nbsp;Accueil</button>
+    <button class="sb-nav-btn" onclick="closeSB();goHome()">⌂ &nbsp;Home</button>
   </div>
-  <div class="sb-section-label">Conversations</div>
+  <div class="sb-section-label" id="sb-conv-label">Conversations</div>
   <div class="sb-list" id="sb-sessions"></div>
   <div class="sb-footer">
     <div class="sb-footer-row">
@@ -337,7 +337,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       <button class="sb-mini" onclick="closeSB();importAll()">⬆ Importer</button>
     </div>
     <div class="sb-settings-link" onclick="closeSB();goSettings()">
-      <span>⚙ Paramètres</span>
+      <span>⚙ Settings</span>
       <span style="color:var(--text-dim);font-size:.7rem;">›</span>
     </div>
   </div>
@@ -355,20 +355,20 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       <div style="width:26px"></div>
     </div>
     <div class="home-tabs">
-      <button class="tab-btn active" onclick="switchTab('chars')" id="tab-chars">Personnages</button>
-      <button class="tab-btn" onclick="switchTab('worlds')" id="tab-worlds">Univers</button>
+      <button class="tab-btn active" onclick="switchTab('chars')" id="tab-chars">Characters</button>
+      <button class="tab-btn" onclick="switchTab('worlds')" id="tab-worlds">Worlds</button>
     </div>
     <div class="tab-content active" id="tab-chars-content">
       <div class="section-hdr">
         <span class="section-label">Mes personnages</span>
-        <button class="new-btn" onclick="openCharCreator(null)">+ Nouveau</button>
+        <button class="new-btn" onclick="openCharCreator(null)">+ New</button>
       </div>
       <div id="chars-list" class="cards-list"></div>
     </div>
     <div class="tab-content" id="tab-worlds-content">
       <div class="section-hdr">
         <span class="section-label">Mes univers</span>
-        <button class="new-btn" onclick="openWorldCreator(null)">+ Nouveau</button>
+        <button class="new-btn" onclick="openWorldCreator(null)">+ New</button>
       </div>
       <div id="worlds-list" class="cards-list"></div>
     </div>
@@ -426,28 +426,28 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     <div class="page-topbar">
       <button class="hdr-btn" onclick="openSB()">☰</button>
       <button class="hdr-btn" onclick="handleBack()">←</button>
-      <span class="page-title">Mon Profil</span>
+      <span class="page-title">My Profile</span>
     </div>
     <div class="page-body">
       <div class="field">
-        <label>Photo</label>
+        <label id="photo-label">Photo</label>
         <div class="photo-row">
           <div class="photo-circle" id="profile-circle" onclick="document.getElementById('profile-photo-file').click()" style="cursor:pointer;">?</div>
           <div class="photo-col">
             <input type="file" id="profile-photo-file" accept="image/*" style="display:none" onchange="onProfilePhotoFile(this)">
 
 
-            <span class="fhint">Appuie sur ta photo pour choisir une image</span>
+            <span class="fhint" id="profile-photo-hint">Tap your photo to choose an image</span>
           </div>
         </div>
       </div>
       <div class="field">
         <label>Prénom <span class="fhint">(devient {{user}})</span></label>
-        <input class="fi" type="text" id="profile-firstname" placeholder="ex. Alex, Luna...">
+        <input class="fi" type="text" id="profile-firstname" placeholder="e.g. Alex, Luna...">
       </div>
       <div class="field">
         <label>Nom de famille</label>
-        <input class="fi" type="text" id="profile-lastname" placeholder="ex. Moreau, Carter...">
+        <input class="fi" type="text" id="profile-lastname" placeholder="e.g. Carter, Moreau...">
       </div>
       <div class="field">
         <label>Genre <span class="fhint">(pour les accords)</span></label>
@@ -457,7 +457,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
           <button id="gender-n-btn" class="tgl-btn" onclick="selectGender('n')">◈ Neutre</button>
         </div>
       </div>
-      <button class="save-btn" id="save-profile-btn" onclick="saveProfile()">Enregistrer le profil →</button>
+      <button class="save-btn" id="save-profile-btn" onclick="saveProfile()">Save profile →</button>
     </div>
   </div>
 
@@ -466,19 +466,19 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     <div class="page-topbar">
       <button class="hdr-btn" onclick="openSB()">☰</button>
       <button class="hdr-btn" onclick="handleBack()">←</button>
-      <span class="page-title">Paramètres</span>
+      <span class="page-title">Settings</span>
     </div>
     <div class="page-body">
       <div class="api-field">
-        <label class="field-label">Clé Groq 1 <span class="fhint">(console.groq.com)</span></label>
+        <label class="field-label">Groq Key 1 <span class="fhint" id="groq1-hint">— <a href="https://console.groq.com/keys" target="_blank" style="color:var(--gold-dim)">console.groq.com</a></span></label>
         <div class="api-row">
           <input class="api-input" type="password" id="settings-groq-key" placeholder="gsk_..." autocomplete="off" spellcheck="false">
-          <button class="api-reveal" onclick="toggleReveal('settings-groq-key',this)">Afficher</button>
+          <button class="api-reveal" onclick="toggleReveal('settings-groq-key',this)">Show</button>
         </div>
-        <div class="api-status" id="groq-status-line">Aucune clé</div>
+        <div class="api-status" id="groq-status-line">No key</div>
       </div>
       <div class="api-field" style="margin-top:.6rem;">
-        <label class="field-label">Clé Groq 2 <span class="fhint">optionnelle — rotation automatique</span></label>
+        <label class="field-label">Groq Key 2 <span class="fhint" id="groq2-hint">optional — <a href="https://console.groq.com/keys" target="_blank" style="color:var(--gold-dim)">console.groq.com</a></span></label>
         <div class="api-row">
           <input class="api-input" type="password" id="settings-groq-key2" placeholder="gsk_..." autocomplete="off" spellcheck="false">
           <button class="api-reveal" onclick="toggleReveal('settings-groq-key2',this)">Afficher</button>
@@ -486,20 +486,20 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         <div class="api-status" id="groq-status-line2">Aucune clé</div>
       </div>
       <div class="api-field" style="margin-top:.6rem;">
-        <label class="field-label">Clé Gemini <span class="fhint">optionnelle — <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold-dim)">aistudio.google.com</a></span></label>
+        <label class="field-label">Gemini Key <span class="fhint" id="gemini-hint">optional — <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold-dim)">aistudio.google.com</a></span></label>
         <div class="api-row">
           <input class="api-input" type="password" id="settings-gemini-key" placeholder="AIza..." autocomplete="off" spellcheck="false">
           <button class="api-reveal" onclick="toggleReveal('settings-gemini-key',this)">Afficher</button>
         </div>
-        <div class="api-status" id="gemini-status-line">Optionnelle</div>
+        <div class="api-status" id="gemini-status-line">Optional</div>
       </div>
 
 
-      <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Enregistrer les clés →</button>
+      <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Save keys →</button>
       <hr class="settings-divider">
       <div class="field">
-        <label class="field-label">Modèle actif</label>
-        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.4rem;">En cas de limite (429), l'app bascule automatiquement sur le suivant.</div>
+        <label class="field-label">Active model</label>
+        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.4rem;">If limit reached (429), the app switches automatically.</div>
         <div id="model-list" style="display:flex;flex-direction:column;gap:.28rem;"></div>
         <div style="display:flex;gap:.35rem;margin-top:.5rem;align-items:center;">
           <div id="active-model-indicator" style="font-size:.6rem;color:var(--gold-dim);letter-spacing:.08em;flex:1;"></div>
@@ -507,17 +507,24 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       </div>
       <hr class="settings-divider">
       <div class="field">
-        <label class="field-label">Apparence</label>
+        <label class="field-label">Appearance</label>
         <div class="toggle-group">
-          <button id="theme-light-btn" class="tgl-btn" onclick="setTheme(false)">☀ Clair</button>
-          <button id="theme-dark-btn" class="tgl-btn" onclick="setTheme(true)">◑ Sombre</button>
+          <button id="theme-light-btn" class="tgl-btn" onclick="setTheme(false)">☀ Light</button>
+          <button id="theme-dark-btn" class="tgl-btn" onclick="setTheme(true)">◑ Dark</button>
         </div>
       </div>
       <hr class="settings-divider">
+      <div class="field">
+        <label class="field-label" id="lang-label">Language</label>
+        <div class="toggle-group">
+          <button id="lang-en-btn" class="tgl-btn on" onclick="setLang('en')">English</button>
+          <button id="lang-fr-btn" class="tgl-btn" onclick="setLang('fr')">Français</button>
+        </div>
+      </div>
       <hr class="settings-divider">
       <div class="field">
-        <label class="field-label" style="color:var(--red);">Zone de danger</label>
-        <button class="save-btn" style="background:transparent;border-color:var(--red);color:var(--red);font-family:'Jost',sans-serif;font-size:.8rem;" onclick="clearAllHistory()">Supprimer toutes les conversations</button>
+        <label class="field-label" style="color:var(--red);" id="danger-label">Danger zone</label>
+        <button class="save-btn" id="delete-history-btn" style="background:transparent;border-color:var(--red);color:var(--red);font-family:'Jost',sans-serif;font-size:.8rem;" onclick="clearAllHistory()">Delete all conversations</button>
       </div>
     </div>
   </div>
@@ -527,36 +534,36 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     <div class="page-topbar">
       <button class="hdr-btn" onclick="openSB()">☰</button>
       <button class="hdr-btn" onclick="creatorBack()">←</button>
-      <span class="page-title" id="char-creator-title">Nouveau Personnage</span>
+      <span class="page-title" id="char-creator-title">New Character</span>
     </div>
     <div class="page-body">
       <div class="field">
         <label>Photo</label>
         <div class="photo-row">
-          <div class="photo-circle" id="char-photo-circle" onclick="document.getElementById('char-photo-file').click()" style="cursor:pointer;" title="Clique pour choisir une image">✦</div>
+          <div class="photo-circle" id="char-photo-circle" onclick="document.getElementById('char-photo-file').click()" style="cursor:pointer;" title="Tap to choose an image">✦</div>
           <input type="file" id="char-photo-file" accept="image/*" style="display:none" onchange="onCharPhotoFile(this)">
           <div class="photo-col">
-            <span class="fhint">Appuie sur le cercle pour choisir une image</span>
+            <span class="fhint">Tap the circle to choose an image</span>
           </div>
         </div>
       </div>
-      <div class="field"><label>Nom *</label><input class="fi" type="text" id="char-name" placeholder="ex. Elena, Kane, Nyx..."></div>
-      <div class="field"><label>Description courte</label><input class="fi" type="text" id="char-desc" placeholder="ex. Un détective froid qui n'oublie jamais un visage..."></div>
-      <div class="field"><label>Tags <span class="fhint">(séparés par virgule)</span></label><input class="fi" type="text" id="char-tags" placeholder="romance, mystère, garde du corps..."></div>
-      <div class="field"><label>Histoire / Backstory</label><textarea class="fi" id="char-backstory" rows="4" placeholder="Qui sont-ils ? D'où viennent-ils ?"></textarea><span class="fhint" style="margin-top:.3rem;display:block;">💡 Si le bot fait une erreur de contexte (invente une relation, un événement, un fait), note-le ici comme règle : <em>"Ne connaît pas X", "N'a jamais rencontré Y", "Déteste Z"</em>.</span></div>
-      <div class="field"><label>Traits de personnalité</label><div class="traits-wrap" id="traits-grid"></div></div>
-      <div class="field"><label>Façon de parler</label><input class="fi" type="text" id="char-voice" placeholder="ex. Formel et froid, Chaleureux mais sarcastique..."></div>
+      <div class="field"><label>Name *</label><input class="fi" type="text" id="char-name" placeholder="e.g. Elena, Kane, Nyx..."></div>
+      <div class="field"><label>Short description</label><input class="fi" type="text" id="char-desc" placeholder="e.g. A cold detective who never forgets a face..."></div>
+      <div class="field"><label>Tags <span class="fhint">(comma separated)</span></label><input class="fi" type="text" id="char-tags" placeholder="e.g. action, rivals, mystery, slow burn..."></div>
+      <div class="field"><label>Backstory</label><textarea class="fi" id="char-backstory" rows="4" placeholder="Who are they? Where do they come from?"></textarea><span class="fhint" style="margin-top:.3rem;display:block;">💡 If the AI invents a relationship or fact, correct it here: <em>"Doesn't know [name]", "Never met [person]", "Hates [thing]"</em>.</span></div>
+      <div class="field"><label>Personality traits</label><div class="traits-wrap" id="traits-grid"></div></div>
+      <div class="field"><label>Way of speaking</label><input class="fi" type="text" id="char-voice" placeholder="e.g. Formal and cold, Warm but sarcastic..."></div>
 
       <div class="field">
-        <label>✦ Premier message</label>
-        <textarea class="fi" id="char-firstmsg" rows="3" placeholder="ex. Tu as enfin daigné te montrer..."></textarea>
+        <label>✦ First message</label>
+        <textarea class="fi" id="char-firstmsg" rows="3" placeholder="e.g. You finally decided to show up..."></textarea>
       </div>
       <div class="field">
-        <label>Messages exemples <span class="fhint">(optionnel)</span></label>
-        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;">Utilise <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{char}}</code> & <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{user}}</code></div>
+        <label>Example messages <span class="fhint">(optional)</span></label>
+        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;">Use <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{char}}</code> & <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{user}}</code></div>
         <textarea class="fi" id="char-examples" rows="6" placeholder="{{char}}: ...&#10;{{user}}: ..."></textarea>
       </div>
-      <button class="save-btn" id="char-save-btn" onclick="saveCharacter()">Enregistrer →</button>
+      <button class="save-btn" id="char-save-btn" onclick="saveCharacter()">Save →</button>
     </div>
   </div>
 
@@ -565,38 +572,38 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     <div class="page-topbar">
       <button class="hdr-btn" onclick="openSB()">☰</button>
       <button class="hdr-btn" onclick="worldCreatorBack()">←</button>
-      <span class="page-title" id="world-creator-title">Nouvel Univers</span>
+      <span class="page-title" id="world-creator-title">New World</span>
     </div>
     <div class="page-body">
       <div class="field">
-        <label>Image de couverture</label>
+        <label>Cover image</label>
         <div class="photo-row">
           <div class="photo-sq" id="world-photo-sq" onclick="document.getElementById('world-photo-file').click()" style="cursor:pointer;">✦</div>
           <input type="file" id="world-photo-file" accept="image/*" style="display:none" onchange="onWorldPhotoFile(this)">
           <div class="photo-col">
-            <span class="fhint">Appuie sur le carré pour choisir une image</span>
+            <span class="fhint">Tap the square to choose an image</span>
           </div>
         </div>
       </div>
-      <div class="field"><label>Nom de l'univers *</label><input class="fi" type="text" id="world-name" placeholder="ex. Boys Over Flowers, Mon monde inventé..."></div>
-      <div class="field"><label>Description courte</label><input class="fi" type="text" id="world-desc" placeholder="ex. Un lycée de luxe coréen dominé par le F4..."></div>
-      <div class="field"><label>Tags <span class="fhint">(séparés par virgule)</span></label><input class="fi" type="text" id="world-tags" placeholder="romance, lycée, k-drama..."></div>
-      <div class="field"><label>Lore & monde <span class="fhint">(décris l'univers en détail)</span></label><textarea class="fi" id="world-lore" rows="5" placeholder="Règles du monde, lieux importants, ambiance, époque..."></textarea><span class="fhint" style="margin-top:.3rem;display:block;">💡 Si le bot invente des événements ou des relations qui n'existent pas, ajoute une règle ici : <em>"Aucun mariage arrangé au début de l'histoire", "Arnav et Khushi ne se connaissent pas encore"</em>.</span></div>
+      <div class="field"><label>World name *</label><input class="fi" type="text" id="world-name" placeholder="e.g. The Enchanted Kingdom, My Fantasy World..."></div>
+      <div class="field"><label id="world-desc-label">Short description</label><input class="fi" type="text" id="world-desc" placeholder="e.g. A dark medieval kingdom torn by war and secrets..."></div>
+      <div class="field"><label>Tags <span class="fhint" id="world-tags-hint">(comma separated)</span></label><input class="fi" type="text" id="world-tags" placeholder="e.g. fantasy, thriller, medieval, sci-fi..."></div>
+      <div class="field"><label>Lore & world <span class="fhint">(describe the world in detail)</span></label><textarea class="fi" id="world-lore" rows="5" placeholder="World rules, important places, atmosphere, era..."></textarea><span class="fhint" style="margin-top:.3rem;display:block;">💡 If the AI invents events or relationships, add a rule here: <em>"No major event at the start", "X and Y don't know each other yet"</em>.</span></div>
       <div class="field">
-        <label>✦ Message d'ouverture</label>
-        <textarea class="fi" id="world-firstmsg" rows="3" placeholder="La scène d'introduction quand on entre dans l'univers..."></textarea>
+        <label>✦ Opening message</label>
+        <textarea class="fi" id="world-firstmsg" rows="3" placeholder="The intro scene when entering the world..."></textarea>
       </div>
       <div class="field">
-        <label>Messages exemples <span class="fhint">(optionnel)</span></label>
-        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;">Utilise <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{char}}</code> & <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{user}}</code></div>
+        <label>Example messages <span class="fhint">(optional)</span></label>
+        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;">Use <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{char}}</code> & <code style="background:var(--bg3);border-radius:2px;padding:.02rem .25rem;color:var(--gold-dim);">{{user}}</code></div>
         <textarea class="fi" id="world-examples" rows="6" placeholder="{{char}}: ...&#10;{{user}}: ..."></textarea>
       </div>
       <div class="field">
-        <label>Personnage joueur <span class="fhint">(optionnel — le perso que TU incarnes)</span></label>
-        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;line-height:1.5;">Si tu joues un personnage de l'univers (ex : Geum Jan-di), indique son nom ici. Le bot saura que c'est toi.</div>
-        <input class="fi" type="text" id="world-player-char" placeholder="ex. Geum Jan-di, laisse vide si tu joues ton propre perso">
+        <label>Player character <span class="fhint">(optional — the character YOU play)</span></label>
+        <div style="font-size:.57rem;color:var(--text-dim);margin-bottom:.3rem;line-height:1.5;">If you play a specific character from the world, enter their name here. The AI will know that's you.</div>
+        <input class="fi" type="text" id="world-player-char" placeholder="e.g. Sarah, leave empty to play as yourself">
       </div>
-      <button class="save-btn" id="world-save-btn" onclick="saveWorld()">Enregistrer l'univers →</button>
+      <button class="save-btn" id="world-save-btn" onclick="saveWorld()">Save world →</button>
     </div>
   </div>
 
@@ -621,7 +628,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
     <div class="messages" id="messages"></div>
     <button id="scroll-down" onmousedown="event.preventDefault()" onclick="scrollBottom()" title="Bas">▼</button>
     <div class="input-area">
-      <textarea id="msg-input" placeholder="Écris ici..." rows="1" inputmode="text" autocomplete="on" autocorrect="on" spellcheck="true"></textarea>
+      <textarea id="msg-input" placeholder="Write here..." rows="1" inputmode="text" autocomplete="on" autocorrect="on" spellcheck="true"></textarea>
       <button id="send-btn" onmousedown="event.preventDefault()" onclick="sendMessage()">➤</button>
     </div>
   </div>
@@ -707,7 +714,208 @@ if(activeModelIdx<0)activeModelIdx=0;
 // Compatibilité ancienne clé unique
 if(!groqKey){const old=localStorage.getItem("inkmind_key")||"";if(old.startsWith("gsk_"))groqKey=old;}
 let isDark=(localStorage.getItem("inkmind_theme")||"light")==="dark";
-const currentLang="fr";
+const LANG_KEY="inkmind_lang";
+let currentLang=localStorage.getItem(LANG_KEY)||"en";
+
+// ══ I18N ══
+const I18N={
+en:{
+  splash_sub:"where stories come to life",
+  home_btn:"⌂ \u00a0Home",
+  conversations_label:"Conversations",
+  settings_link:"⚙ Settings",
+  no_sessions:"No conversations yet",
+  tab_chars:"Characters",
+  tab_worlds:"Worlds",
+  new_btn:"+ New",
+  no_chars:"No solo characters.",
+  no_chars_hint:'Tap "+ New" to create one.',
+  no_worlds:"No worlds.",
+  no_worlds_hint:"Create your first world!",
+  world_chars_title:"World characters",
+  new_char_btn:"✦ New character",
+  profile_title:"My Profile",
+  photo_hint:"Tap the circle to choose an image",
+  firstname_ph:"e.g. Alex, Luna...",
+  lastname_ph:"e.g. Carter, Moreau...",
+  gender_f:"♀ Female",
+  gender_m:"♂ Male",
+  gender_n:"◈ Neutral",
+  save_profile:"Save profile →",
+  settings_title:"Settings",
+  groq1_label:"Groq Key 1",
+  groq2_label:"Groq Key 2",
+  groq2_hint:"optional — automatic rotation",
+  gemini_hint:'optional — <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold-dim)">aistudio.google.com</a>',
+  reveal_btn:"Show",
+  hide_btn:"Hide",
+  save_keys_btn:"Save keys →",
+  saved_keys:"Saved ✓",
+  active_model_label:"Active model",
+  model_hint:"If limit reached (429), the app switches automatically.",
+  appearance_label:"Appearance",
+  light_theme:"☀ Light",
+  dark_theme:"◑ Dark",
+  language_label:"Language",
+  danger_zone:"Danger zone",
+  delete_history_btn:"Delete all conversations",
+  no_key:"No key",
+  key1_ok:"Key 1 saved ✓",
+  key2_ok:"Key 2 saved ✓ — rotation active",
+  gemini_ok:"Gemini key saved ✓ — rotation active",
+  key_optional:"Optional",
+  key_missing:"✗ key missing",
+  key_found:"✓ key ok",
+  active_prefix:"✦ Active: ",
+  new_char_title:"New Character",
+  edit_char_title:"Edit Character",
+  char_photo_hint:"Tap the circle to choose an image",
+  char_name_label:"Name *",
+  char_name_ph:"e.g. Elena, Kane, Nyx...",
+  char_desc_label:"Short description",
+  char_desc_ph:"e.g. A cold detective who never forgets a face...",
+  char_tags_label:"Tags",
+  char_tags_hint:"(comma separated)",
+  char_tags_ph:"e.g. action, rivals, mystery, adventure...",
+  char_backstory_label:"Backstory",
+  char_backstory_ph:"Who are they? Where do they come from?",
+  char_backstory_tip:'💡 If the bot makes a context error, add a rule here: <em>"Doesn\'t know X", "Never met Y", "Hates Z"</em>.',
+  char_traits_label:"Personality traits",
+  char_voice_label:"Way of speaking",
+  char_voice_ph:"e.g. Formal and cold, Warm but sarcastic...",
+  char_firstmsg_label:"✦ First message",
+  char_firstmsg_ph:"e.g. You finally decided to show up...",
+  char_examples_label:"Example messages",
+  char_examples_hint:"(optional)",
+  char_examples_tip:"Use {{char}} & {{user}}",
+  save_char_btn:"Save →",
+  new_world_title:"New World",
+  edit_world_title:"Edit World",
+  world_cover_hint:"Tap the square to choose an image",
+  world_name_label:"World name *",
+  world_name_ph:"e.g. The Enchanted Kingdom, My Fantasy World...",
+  world_desc_ph:"e.g. A dark medieval kingdom torn by war and secrets...",
+  world_lore_label:"Lore & world",
+  world_lore_hint:"(describe the world in detail)",
+  world_lore_ph:"World rules, important places, atmosphere, era...",
+  world_lore_tip:`💡 If the bot invents events or relationships that don't exist, add a rule here: <em>"No arranged marriage at the start", "X and Y don't know each other yet"</em>.`,
+  world_firstmsg_label:"✦ Opening message",
+  world_firstmsg_ph:"The intro scene when entering the world...",
+  world_player_label:"Player character",
+  world_player_hint:"(optional — the character YOU play)",
+  world_player_tip:`If you play a specific character from the world, enter their name here. The AI will know that's you.`,
+  world_player_ph:"e.g. Emma, leave empty to play as yourself",
+  save_world_btn:"Save world →",
+  save_world_edit_btn:"Save changes →",
+  write_here:"Write here...",
+  free_chat_label:"Free Chat",
+  free_chat_sub:"Bot plays all characters",
+  focus_label:"Focus",
+  focus_sub:"Chat with one character",
+  welcome_title:"Welcome to InkMind ✦",
+  welcome_body:`<p>InkMind is a free, private AI roleplay app. Your stories stay on <strong>your device</strong> — nothing is sent to any server.</p><p style="margin-top:.7rem"><strong>To get started:</strong></p><ol style="margin:.4rem 0 0 1.1rem;line-height:2;font-size:.82rem"><li>Go to <strong>⚙ Settings</strong></li><li>Enter your free <strong>Groq API key</strong> <span style="color:var(--text-dim)">(console.groq.com)</span></li><li>Optionally add a <strong>Gemini key</strong> for automatic fallback</li><li>Pick a ready-made character or world — or create your own!</li></ol><p style="margin-top:.65rem;font-size:.8rem;color:var(--text)"><strong>Want to create your own character?</strong><br>Tap <strong>+ New</strong> on the Characters tab. Fill in a name, personality traits, a backstory, and a first message.</p><p style="margin-top:.5rem;font-size:.8rem;color:var(--text)"><strong>Want to build your own world?</strong><br>Tap <strong>+ New</strong> on the Worlds tab. Describe your universe, add characters, and set an opening scene.</p><p style="margin-top:.65rem;color:var(--text-dim);font-size:.72rem">Your key is stored only on your device and never shared.</p>`,
+  welcome_close:"Let's go ✦",
+},
+fr:{
+  splash_sub:"où les histoires prennent vie",
+  home_btn:"⌂ \u00a0Accueil",
+  conversations_label:"Conversations",
+  settings_link:"⚙ Paramètres",
+  no_sessions:"Aucune conversation",
+  tab_chars:"Personnages",
+  tab_worlds:"Univers",
+  new_btn:"+ Nouveau",
+  no_chars:"No solo characters.",
+  no_chars_hint:'Appuie sur "+ Nouveau" pour en créer un.',
+  no_worlds:"No worlds.",
+  no_worlds_hint:"Crée ton premier univers !",
+  world_chars_title:"Personnages de l'univers",
+  new_char_btn:"✦ Nouveau personnage",
+  profile_title:"Mon Profil",
+  photo_hint:"Appuie sur le cercle pour choisir une image",
+  firstname_ph:"ex. Alex, Luna...",
+  lastname_ph:"ex. Moreau, Carter...",
+  gender_f:"♀ Féminin",
+  gender_m:"♂ Masculin",
+  gender_n:"◈ Neutre",
+  save_profile:"Enregistrer le profil →",
+  settings_title:"Paramètres",
+  groq1_label:"Clé Groq 1",
+  groq2_label:"Clé Groq 2",
+  groq2_hint:"optionnelle — rotation automatique",
+  gemini_hint:'optionnelle — <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold-dim)">aistudio.google.com</a>',
+  reveal_btn:"Afficher",
+  hide_btn:"Masquer",
+  save_keys_btn:"Enregistrer les clés →",
+  saved_keys:"Enregistré ✓",
+  active_model_label:"Modèle actif",
+  model_hint:"En cas de limite (429), l'app bascule automatiquement sur le suivant.",
+  appearance_label:"Apparence",
+  light_theme:"☀ Clair",
+  dark_theme:"◑ Sombre",
+  language_label:"Langue",
+  danger_zone:"Zone de danger",
+  delete_history_btn:"Supprimer toutes les conversations",
+  no_key:"Aucune clé",
+  key1_ok:"Clé 1 enregistrée ✓",
+  key2_ok:"Clé 2 enregistrée ✓ — rotation active",
+  gemini_ok:"Clé Gemini enregistrée ✓ — rotation active",
+  key_optional:"Optionnelle",
+  key_missing:"✗ clé manquante",
+  key_found:"✓ clé ok",
+  active_prefix:"✦ Actif : ",
+  new_char_title:"Nouveau Personnage",
+  edit_char_title:"Modifier le Personnage",
+  char_photo_hint:"Appuie sur le cercle pour choisir une image",
+  char_name_label:"Nom *",
+  char_name_ph:"ex. Elena, Kane, Nyx...",
+  char_desc_label:"Description courte",
+  char_desc_ph:"ex. Un détective froid qui n'oublie jamais un visage...",
+  char_tags_label:"Tags",
+  char_tags_hint:"(séparés par virgule)",
+  char_tags_ph:"ex. action, rivaux, mystère, fantasy...",
+  char_backstory_label:"Histoire / Backstory",
+  char_backstory_ph:"Qui sont-ils ? D'où viennent-ils ?",
+  char_backstory_tip:`💡 Si le bot invente une relation ou un fait, corrige-le ici : <em>"Ne connaît pas [prénom]", "N'a jamais rencontré [personne]", "Déteste [chose]"</em>.`,
+  char_traits_label:"Traits de personnalité",
+  char_voice_label:"Façon de parler",
+  char_voice_ph:"ex. Formel et froid, Chaleureux mais sarcastique...",
+  char_firstmsg_label:"✦ Premier message",
+  char_firstmsg_ph:"ex. Tu as enfin daigné te montrer...",
+  char_examples_label:"Messages exemples",
+  char_examples_hint:"(optionnel)",
+  char_examples_tip:"Utilise {{char}} & {{user}}",
+  save_char_btn:"Enregistrer →",
+  new_world_title:"Nouvel Univers",
+  edit_world_title:"Modifier l'univers",
+  world_cover_hint:"Appuie sur le carré pour choisir une image",
+  world_name_label:"Nom de l'univers *",
+  world_name_ph:"ex. Le Royaume des Ombres, Mon monde inventé...",
+  world_desc_ph:"ex. Un royaume médiéval sombre déchiré par la guerre...",
+  world_lore_label:"Lore & monde",
+  world_lore_hint:"(décris l'univers en détail)",
+  world_lore_ph:"Règles du monde, lieux importants, ambiance, époque...",
+  world_lore_tip:`💡 Si le bot invente des événements ou des relations inexistants, ajoute une règle ici : <em>"Pas de mariage au début", "X et Y ne se connaissent pas encore"</em>.`,
+  world_firstmsg_label:"✦ Message d'ouverture",
+  world_firstmsg_ph:"La scène d'introduction quand on entre dans l'univers...",
+  world_player_label:"Personnage joueur",
+  world_player_hint:"(optionnel — le perso que TU incarnes)",
+  world_player_tip:"Si tu joues un personnage spécifique de l'univers, indique son nom ici.",
+  world_player_ph:"ex. Emma, laisse vide si tu joues ton propre perso",
+  save_world_btn:"Enregistrer l'univers →",
+  save_world_edit_btn:"Enregistrer les modifications →",
+  write_here:"Écris ici...",
+  free_chat_label:"Chat libre",
+  free_chat_sub:"Le bot joue tous les persos",
+  focus_label:"Focus",
+  focus_sub:"Chat avec un personnage",
+  welcome_title:"Bienvenue sur InkMind ✦",
+  welcome_body:`<p>InkMind est une app de roleplay IA gratuite et privée. Tes histoires restent sur <strong>ton appareil</strong> — rien n'est envoyé à un serveur.</p><p style="margin-top:.7rem"><strong>Pour commencer :</strong></p><ol style="margin:.4rem 0 0 1.1rem;line-height:2;font-size:.82rem"><li>Va dans <strong>⚙ Paramètres</strong></li><li>Entre ta <strong>clé API Groq</strong> gratuite <span style="color:var(--text-dim)">(console.groq.com)</span></li><li>Ajoute optionnellement une <strong>clé Gemini</strong> pour le basculement automatique</li><li>Choisis un personnage ou univers prêt à jouer — ou crée le tien !</li></ol><p style="margin-top:.65rem;font-size:.8rem;color:var(--text)"><strong>Créer ton propre personnage ?</strong><br>Appuie sur <strong>+ Nouveau</strong> dans l'onglet Personnages. Remplis le nom, les traits, une backstory et un premier message.</p><p style="margin-top:.5rem;font-size:.8rem;color:var(--text)"><strong>Créer ton propre univers ?</strong><br>Appuie sur <strong>+ Nouveau</strong> dans l'onglet Univers. Décris ton monde, ajoute des personnages et définis la scène d'ouverture.</p><p style="margin-top:.65rem;color:var(--text-dim);font-size:.72rem">Ta clé est stockée uniquement sur ton appareil et n'est jamais partagée.</p>`,
+  welcome_close:"C'est parti ✦",
+}
+};
+function t(k){return(I18N[currentLang]||I18N.en)[k]||(I18N.en[k]||k);}
+
 let busy=false,S=null;
 let editingCharId=null,editingWorldId=null,charCreatorFrom="home",worldCreatorFrom="home";
 let selectedTraits=new Set(),charPhoto=null,worldPhoto=null,profilePhoto=null;
@@ -944,7 +1152,7 @@ function saveApiKeys(){
   updateApiStatus();
   renderModelList();
   const btn=document.querySelector("[onclick='saveApiKeys()']");
-  if(btn){btn.textContent="Enregistré ✓";setTimeout(()=>btn.textContent="Enregistrer les clés →",1500);}
+  if(btn){btn.textContent=t("saved_keys");setTimeout(()=>btn.textContent=t("save_keys_btn"),1500);}
   // Execute pending action if any (e.g. start chat after key was missing)
   const hasKey=groqKey.length>8||groqKey2.length>8||geminiKey.length>8;
   if(hasKey&&window._pendingAction){
@@ -955,11 +1163,11 @@ function saveApiKeys(){
 }
 function updateApiStatus(){
   const gl=document.getElementById("groq-status-line");
-  if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé 1 enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
+  if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">${t("key1_ok")}</span>`:`<span class="api-status bad">${t("no_key")}</span>`;
   const gl2=document.getElementById("groq-status-line2");
-  if(gl2)gl2.innerHTML=groqKey2.length>8?`<span class="api-status ok">Clé 2 enregistrée ✓ — rotation active</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
+  if(gl2)gl2.innerHTML=groqKey2.length>8?`<span class="api-status ok">${t("key2_ok")}</span>`:`<span class="api-status" style="color:var(--text-dim)">${t("key_optional")}</span>`;
   const gl3=document.getElementById("gemini-status-line");
-  if(gl3)gl3.innerHTML=geminiKey.length>8?`<span class="api-status ok">Clé Gemini enregistrée ✓ — rotation active</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
+  if(gl3)gl3.innerHTML=geminiKey.length>8?`<span class="api-status ok">${t("gemini_ok")}</span>`:`<span class="api-status" style="color:var(--text-dim)">${t("key_optional")}</span>`;
 }
 function renderModelList(){
   const list=document.getElementById("model-list");if(!list)return;
@@ -970,7 +1178,7 @@ function renderModelList(){
     const isActive=i===activeModelIdx;
     btn.className="tgl-btn"+(isActive?" on":"");
     btn.style.cssText="text-align:left;display:flex;align-items:center;gap:.5rem;width:100%;justify-content:space-between;";
-    btn.innerHTML=`<span>${isActive?"✦ ":""}${m.label}</span><span style="font-size:.55rem;color:${hasKey?"var(--gold-dim)":"var(--red)"}">${hasKey?"✓ clé ok":"✗ clé manquante"}</span>`;
+    btn.innerHTML=`<span>${isActive?"✦ ":""}${m.label}</span><span style="font-size:.55rem;color:${hasKey?"var(--gold-dim)":"var(--red)"}">${hasKey?t("key_found"):t("key_missing")}</span>`;
     btn.onclick=()=>{activeModelIdx=i;_lastShownModelIdx=null;localStorage.setItem(MODEL_KEY+"_id",MODELS[i]?.id||"");localStorage.setItem(MODEL_KEY,i);renderModelList();updateActiveIndicator();};
     list.appendChild(btn);
   });
@@ -1004,7 +1212,7 @@ function saveChars(c){localStorage.setItem(CHARS_KEY,JSON.stringify(c));}
 function renderChars(){
   closeAllDropdowns();
   const chars=loadChars().filter(c=>!c.worldId),list=document.getElementById("chars-list");
-  if(!chars.length){list.innerHTML=`<div class="no-items"><p>Aucun personnage solo.</p><span>Appuie sur "+ Nouveau" pour en créer un.</span></div>`;return;}
+  if(!chars.length){list.innerHTML=`<div class="no-items"><p>${t("no_chars")}</p><span>${t("no_chars_hint")}</span></div>`;return;}
   list.innerHTML="";
   chars.forEach(char=>{
     const av=char.photo?`<img src="${char.photo}" alt="${char.name}">`:(char.name.charAt(0).toUpperCase());
@@ -1024,7 +1232,7 @@ function saveWorlds(w){localStorage.setItem(WORLDS_KEY,JSON.stringify(w));}
 function renderWorlds(){
   closeAllDropdowns();
   const worlds=loadWorlds(),list=document.getElementById("worlds-list");
-  if(!worlds.length){list.innerHTML=`<div class="no-items"><p>Aucun univers.</p><span>Crée ton premier univers !</span></div>`;return;}
+  if(!worlds.length){list.innerHTML=`<div class="no-items"><p>${t("no_worlds")}</p><span>${t("no_worlds_hint")}</span></div>`;return;}
   list.innerHTML="";
   worlds.forEach(world=>{
     const chars=loadChars().filter(c=>(c.worldId===world.id));
@@ -1140,7 +1348,7 @@ function openCharCreator(charId){
   if(charId){
     const char=loadChars().find(c=>c.id===charId);
     if(char){
-      document.getElementById("char-creator-title").textContent="Modifier le personnage";
+      document.getElementById("char-creator-title").textContent=t("edit_char_title");
       document.getElementById("char-name").value=char.name||"";
       document.getElementById("char-desc").value=char.desc||"";
       document.getElementById("char-tags").value=(char.tags||[]).join(", ");
@@ -1151,7 +1359,7 @@ function openCharCreator(charId){
       if(char.photo){charPhoto=char.photo;document.getElementById("char-photo-circle").innerHTML=`<img src="${char.photo}" alt="photo">`;}
       setTraits(char.traits);
     }
-  }else{document.getElementById("char-creator-title").textContent="Nouveau Personnage";buildTraitsGrid();}
+  }else{document.getElementById("char-creator-title").textContent=t("new_char_title");buildTraitsGrid();}
   document.getElementById("char-save-btn").textContent=charId?"Enregistrer les modifications →":"Enregistrer →";
   navigateTo("char-creator",null);
 }
@@ -1219,7 +1427,7 @@ function openWorldCreator(worldId){
   if(worldId){
     const world=loadWorlds().find(w=>w.id===worldId);
     if(world){
-      document.getElementById("world-creator-title").textContent="Modifier l'univers";
+      document.getElementById("world-creator-title").textContent=t("edit_world_title");
       document.getElementById("world-name").value=world.name||"";
       document.getElementById("world-desc").value=world.desc||"";
       document.getElementById("world-tags").value=(world.tags||[]).join(", ");
@@ -1229,7 +1437,7 @@ function openWorldCreator(worldId){
       document.getElementById("world-player-char").value=world.playerChar||"";
       if(world.photo){worldPhoto=world.photo;document.getElementById("world-photo-sq").innerHTML=`<img src="${world.photo}" alt="photo">`;}
     }
-  }else{document.getElementById("world-creator-title").textContent="Nouvel Univers";}
+  }else{document.getElementById("world-creator-title").textContent=t("new_world_title");}
   document.getElementById("world-save-btn").textContent=worldId?"Enregistrer les modifications →":"Enregistrer l'univers →";
   navigateTo("world-creator",null);
 }
@@ -1274,7 +1482,7 @@ async function deleteWorld(id){
 // ══ TRAITS ══
 function buildTraitsGrid(){
   const g=document.getElementById("traits-grid");if(!g)return;g.innerHTML="";
-  const arr=TRAITS_FR;
+  const arr=currentLang==="fr"?TRAITS_FR:TRAITS_EN;
   arr.forEach((label,i)=>{
     const key=TRAITS_EN[i];
     const c=document.createElement("button");c.className="chip";c.textContent=label;c.dataset.key=key;
@@ -2516,7 +2724,7 @@ ta.addEventListener("focus",()=>{
   },300);
 });
 ta.addEventListener("input",()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,122)+"px";});
-ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
+// Enter = saut de ligne naturel. Envoi via bouton ➤ uniquement.
 
 // Fallback Escape pour navigateur desktop
 document.addEventListener("keydown",e=>{
@@ -2619,8 +2827,78 @@ function initDefaultContent(){
   localStorage.setItem("inkmind_defaults_loaded_v1","1");
 }
 
+// ══ LANG ══
+function applyLang(){
+  // Splash
+  const sub=document.querySelector(".sp-sub");if(sub)sub.textContent=t("splash_sub");
+  // Sidebar
+  const hb=document.querySelector(".sb-nav-btn");if(hb)hb.innerHTML=t("home_btn");
+  const sl=document.querySelector(".sb-section-label");if(sl)sl.textContent=t("conversations_label");
+  const stl=document.querySelector(".sb-settings-link span");if(stl)stl.textContent=t("settings_link");
+  // Home tabs
+  const tc=document.getElementById("tab-chars");if(tc)tc.textContent=t("tab_chars");
+  const tw=document.getElementById("tab-worlds");if(tw)tw.textContent=t("tab_worlds");
+  // New buttons
+  document.querySelectorAll(".new-btn").forEach(el=>{el.textContent=t("new_btn");});
+  // Chat input
+  const mi=document.getElementById("msg-input");if(mi)mi.placeholder=t("write_here");
+  // Profile
+  const pt=document.querySelector("#profile-page .page-title");if(pt)pt.textContent=t("profile_title");
+  const spb=document.getElementById("save-profile-btn");if(spb)spb.textContent=t("save_profile");
+  const gf=document.getElementById("gender-f-btn");if(gf)gf.textContent=t("gender_f");
+  const gm=document.getElementById("gender-m-btn");if(gm)gm.textContent=t("gender_m");
+  const gn=document.getElementById("gender-n-btn");if(gn)gn.textContent=t("gender_n");
+  // Settings
+  const spt=document.querySelector("#settings-page .page-title");if(spt)spt.textContent=t("settings_title");
+  const ltb=document.getElementById("theme-light-btn");if(ltb)ltb.textContent=t("light_theme");
+  const dtb=document.getElementById("theme-dark-btn");if(dtb)dtb.textContent=t("dark_theme");
+  const lbl=document.getElementById("lang-label");if(lbl)lbl.textContent=t("language_label");
+  const dbl=document.getElementById("danger-label");if(dbl)dbl.textContent=t("danger_zone");
+  const dhb=document.getElementById("delete-history-btn");if(dhb)dhb.textContent=t("delete_history_btn");
+  // Lang buttons active state
+  const lben=document.getElementById("lang-en-btn");if(lben)lben.classList.toggle("on",currentLang==="en");
+  const lbfr=document.getElementById("lang-fr-btn");if(lbfr)lbfr.classList.toggle("on",currentLang==="fr");
+  // Save keys btn (if not mid-save)
+  const skb=document.querySelector("[onclick='saveApiKeys()']");
+  if(skb&&skb.textContent!==t("saved_keys"))skb.textContent=t("save_keys_btn");
+  updateApiStatus();renderModelList();renderAll();buildTraitsGrid();
+}
+function setLang(lang){
+  currentLang=lang;
+  localStorage.setItem(LANG_KEY,lang);
+  applyLang();
+}
+
+// ══ WELCOME POPUP ══
+function showWelcome(){
+  const modal=document.getElementById("welcome-modal");if(!modal)return;
+  document.getElementById("welcome-title").textContent=t("welcome_title");
+  document.getElementById("welcome-body").innerHTML=t("welcome_body");
+  document.getElementById("welcome-close-btn").textContent=t("welcome_close");
+  modal.style.display="flex";
+}
+function closeWelcome(){
+  const modal=document.getElementById("welcome-modal");
+  if(modal)modal.style.display="none";
+  localStorage.setItem("inkmind_welcomed_v1","1");
+}
+function maybeShowWelcome(){
+  if(!localStorage.getItem("inkmind_welcomed_v1"))showWelcome();
+}
+
 // ══ INIT ══
-buildTraitsGrid();initDefaultContent();renderAll();renderSBSessions();updateSBProfile();updateThemeBtn();
+buildTraitsGrid();initDefaultContent();renderAll();renderSBSessions();updateSBProfile();updateThemeBtn();applyLang();
+// Afficher la popup de bienvenue APRÈS la disparition du splash (1800ms + 200ms marge)
+setTimeout(maybeShowWelcome, 2000);
 </script>
+
+  <!-- WELCOME POPUP -->
+  <div id="welcome-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9998;align-items:center;justify-content:center;padding:1.2rem;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;max-width:360px;width:100%;padding:1.4rem 1.3rem;box-shadow:0 8px 32px rgba(0,0,0,.5);">
+      <div id="welcome-title" style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:var(--gold);letter-spacing:.1em;margin-bottom:.9rem;text-align:center;">Welcome to InkMind ✦</div>
+      <div id="welcome-body" style="font-size:.82rem;color:var(--text);line-height:1.7;"></div>
+      <button id="welcome-close-btn" onclick="closeWelcome()" style="margin-top:1.1rem;width:100%;background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:1rem;letter-spacing:.1em;padding:.6rem;border-radius:7px;cursor:pointer;">Let's go ✦</button>
+    </div>
+  </div>
 </body>
 </html>
