@@ -5,8 +5,7 @@
 No account. No server. No data collection. Just you, your story, and the AI.
 
 [![Live Demo](https://img.shields.io/badge/▶%20Live%20Demo-Play%20Now-gold?style=for-the-badge)](https://stoornias-coder.github.io/InkMind/)
-[![Download APK](https://img.shields.io/badge/📱%20Android-Download%20APK-brightgreen?style=for-the-badge)](https://github.com/stoornias-coder/InkMind/releases/download/v0.1.0/app-debug.apk)
-[![itch.io](https://img.shields.io/badge/itch.io-Available-red?style=for-the-badge)](https://itch.io)
+[![Download APK](https://img.shields.io/badge/📱%20Android-Download%20APK-brightgreen?style=for-the-badge)](https://github.com/stoornias-coder/InkMind/releases/latest)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 ---
@@ -89,7 +88,7 @@ InkMind ships with **20+ fan-made characters** across popular universes:
 - [ ] Character image generation
 - [ ] Export conversations as PDF
 - [ ] Community character sharing
-- [x] Android app — [Download APK](https://github.com/stoornias-coder/InkMind/releases/download/v0.1.0/app-debug.apk)
+- [x] Android app — [Download APK](https://github.com/stoornias-coder/InkMind/releases/latest)
 
 ---
 
@@ -118,3 +117,4 @@ MIT — do whatever you want, just keep the credit.
 
 <p align="center">Made with 🖤 by <a href="https://github.com/stoornias-coder">stoornias-coder</a></p>
 <p align="center"><em>Your stories. Your device. Your rules.</em></p>
+
