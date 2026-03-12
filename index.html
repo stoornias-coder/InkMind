@@ -1459,61 +1459,75 @@ function toGeminiBody(messages,maxTokens){
   return body;
 }
 
-async function tryFetch(url,key,body,stream,attempt=0,provider="groq"){
-  let fetchUrl=url,fetchBody=body,fetchHeaders={"Content-Type":"application/json"};
+// Fait un fetch simple — retourne la response sans retry
+async function rawFetch(url,key,body,stream,provider){
+  const headers={"Content-Type":"application/json"};
+  let fetchUrl=url;
   if(provider==="gemini"){
     fetchUrl=url+(stream?"?alt=sse":"")+"&key="+encodeURIComponent(key);
   } else {
-    fetchHeaders["Authorization"]=`Bearer ${key}`;
+    headers["Authorization"]=`Bearer ${key}`;
   }
-  const r=await fetch(fetchUrl,{method:"POST",headers:fetchHeaders,body:JSON.stringify(fetchBody)});
-  if(r.status===429&&attempt<3){
-    if(provider==="groq")rotateKey();
-    const wait=[8000,15000,25000][attempt]||25000;
-    setStatus(`⏳ Limite atteinte — reprise dans ${wait/1000}s…`);
-    await sleep(wait);
-    removeStatus();
-    return tryFetch(url,key,body,stream,attempt+1,provider);
+  try{
+    return await fetch(fetchUrl,{method:"POST",headers,body:JSON.stringify(body)});
+  }catch(e){
+    // Network error → on retourne un objet fake avec status 0
+    return {ok:false,status:0,_networkError:true,text:async()=>e.message};
   }
-  if(r.status===503&&attempt<3){
-    const wait=[5000,10000,15000][attempt]||15000;
-    setStatus(`⏳ Serveur indisponible — reprise dans ${wait/1000}s…`);
-    await sleep(wait);
-    removeStatus();
-    return tryFetch(url,key,body,stream,attempt+1,provider);
-  }
-  return r;
 }
 
 async function orStream(messages,onChunk){
+  // Construire la liste ordonnée : modèle actif en premier, puis les autres
   const order=[activeModelIdx,...MODELS.map((_,i)=>i).filter(i=>i!==activeModelIdx)];
+
   for(const idx of order){
     const m=MODELS[idx];
-    const key=getKeyForProvider(m.provider);
-    if(!key)continue;
     const isGemini=m.provider==="gemini";
+    const keysToTry=isGemini
+      ?[geminiKey].filter(k=>k&&k.length>8)
+      :getKeys();
+    if(!keysToTry.length)continue;// Pas de clé pour ce provider → modèle suivant
+
     const bodyOai={model:m.model,max_tokens:m.maxTokens,stream:true,messages,frequency_penalty:0.6,presence_penalty:0.4};
-    const bodyGemini=toGeminiBody(messages,m.maxTokens);
-    const body=isGemini?bodyGemini:bodyOai;
-    // Pour Groq : rotation de clés en cas de 429
-    const groqKeys=getKeys();
-    const triedKeys=new Set();
-    let success=false;
-    const keysToTry=isGemini?[key]:groqKeys;
+    const body=isGemini?toGeminiBody(messages,m.maxTokens):bodyOai;
+
+    let allKeysLimited=true;
     for(let ki=0;ki<keysToTry.length;ki++){
-      const k=keysToTry[(_activeKeyIdx+ki)%keysToTry.length];
-      if(triedKeys.has(k))continue;
-      triedKeys.add(k);
-      const r=await tryFetch(m.url,k,body,true,0,m.provider);
-      if(r.status===429){continue;}
+      const k=keysToTry[ki];
+      let r=await rawFetch(m.url,k,body,true,m.provider);
+
+      // Network error → 2 retries silencieux
+      if(r.status===0){
+        setStatus("⚠️ Reconnexion...");
+        await sleep(3000);
+        r=await rawFetch(m.url,k,body,true,m.provider);
+        if(r.status===0){
+          await sleep(5000);
+          r=await rawFetch(m.url,k,body,true,m.provider);
+        }
+        removeStatus();
+      }
+
+      if(r.status===429||r.status===0){continue;}// Clé en limite ou toujours network error → clé suivante
+      allKeysLimited=false;
+
+      if(r.status===503){
+        setStatus("⏳ Serveur surchargé — reprise dans 5s…");
+        await sleep(5000);
+        removeStatus();
+        r=await rawFetch(m.url,k,body,true,m.provider);
+        if(!r.ok){continue;}
+      }
+
       if(!r.ok){
         const e=await r.text();
-        let msg=`Erreur ${r.status}`;
-        if(r.status===401)msg="Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.";
-        else if(r.status===404){continue;}
-        else if(r.status===400)msg="Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.";
-        throw new Error(msg);
+        if(r.status===401)throw new Error("Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.");
+        if(r.status===404){allKeysLimited=true;continue;}// Modèle indispo
+        if(r.status===400)throw new Error("Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.");
+        continue;
       }
+
+      // Succès — lire le stream
       if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);showModelIndicator(m.label,idx);}
       const reader=r.body.getReader(),dec=new TextDecoder();
       let buf="",full="";
@@ -1526,25 +1540,21 @@ async function orStream(messages,onChunk){
           const d=line.slice(5).trim();if(d==="[DONE]")continue;
           try{
             const j=JSON.parse(d);
-            let t="";
-            if(isGemini){
-              // Format Gemini SSE
-              t=j.candidates?.[0]?.content?.parts?.[0]?.text||"";
-            } else {
-              t=j.choices?.[0]?.delta?.content||"";
-            }
+            const t=isGemini
+              ?(j.candidates?.[0]?.content?.parts?.[0]?.text||"")
+              :(j.choices?.[0]?.delta?.content||"");
             if(t){full+=t;onChunk(full);}
           }catch{}
         }
       }
-      success=true;
-      return full;
+      return full;// ✅ Succès
     }
-    if(success)break;
+    // Toutes les clés de ce modèle sont en 429 → modèle suivant (Gemini)
   }
-  // Toutes les clés sont en limite
-  setStatus("⏳ Toutes les clés sont en limite — reprise dans 15s…");
-  await sleep(15000);
+
+  // Tous les modèles et toutes les clés sont épuisés
+  setStatus("⏳ Toutes les clés sont en limite — reprise dans 20s…");
+  await sleep(20000);
   removeStatus();
   return orStream(messages,onChunk);
 }
@@ -1553,12 +1563,13 @@ async function orCall(messages,maxTok=400){
   const order=[activeModelIdx,...MODELS.map((_,i)=>i).filter(i=>i!==activeModelIdx)];
   for(const idx of order){
     const m=MODELS[idx];
-    const key=getKeyForProvider(m.provider);
-    if(!key)continue;
     const isGemini=m.provider==="gemini";
+    const key=isGemini?geminiKey:getKeyForProvider(m.provider);
+    if(!key||key.length<8)continue;
     const body=isGemini?toGeminiBody(messages,maxTok):{model:m.model,max_tokens:maxTok,messages};
-    const r=await tryFetch(m.url,key,body,false,0,m.provider);
-    if(r.status===429){continue;}
+    let r=await rawFetch(m.url,key,body,false,m.provider);
+    if(r.status===0){await sleep(3000);r=await rawFetch(m.url,key,body,false,m.provider);}
+    if(r.status===429||r.status===0){continue;}
     if(!r.ok){const e=await r.text();throw new Error(`API ${r.status}: ${e.slice(0,100)}`);}
     const json=await r.json();
     if(isGemini)return(json.candidates?.[0]?.content?.parts?.[0]?.text||"").trim();
