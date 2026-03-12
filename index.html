@@ -2099,7 +2099,7 @@ async function sendMessage(overrideText=null,fromIndex=null){
     S.turn++;
     // Seuil tokens estimés (1 mot ≈ 1.3 tokens) — pas de résumé sur messages courts
     const _estTokens=S.hist.reduce((acc,[,m])=>acc+Math.ceil((m||"").split(" ").length*1.3),0);
-    if(_estTokens>2500&&S.hist.length>10){
+    if(_estTokens>5000&&S.hist.length>16){
       setStatus(currentLang==="fr"?"mémorisation...":"summarizing...");
       const toCompress=S.hist.slice(0,-6);
       const prevSummary=S.summary?`\nRésumé précédent à intégrer : ${S.summary}`:"";
@@ -3106,4 +3106,3 @@ setTimeout(maybeShowWelcome, 2000);
   </div>
 </body>
 </html>
-
