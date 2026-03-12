@@ -485,6 +485,14 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
         </div>
         <div class="api-status" id="groq-status-line2">Aucune clé</div>
       </div>
+      <div class="api-field" style="margin-top:.6rem;">
+        <label class="field-label">Clé Gemini <span class="fhint">optionnelle — <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold-dim)">aistudio.google.com</a></span></label>
+        <div class="api-row">
+          <input class="api-input" type="password" id="settings-gemini-key" placeholder="AIza..." autocomplete="off" spellcheck="false">
+          <button class="api-reveal" onclick="toggleReveal('settings-gemini-key',this)">Afficher</button>
+        </div>
+        <div class="api-status" id="gemini-status-line">Optionnelle</div>
+      </div>
 
 
       <button class="save-btn" style="margin-top:.5rem;" onclick="saveApiKeys()">Enregistrer les clés →</button>
@@ -668,11 +676,14 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
 <script>
 // ══ CONSTANTS ══
 const MODELS = [
-  {id:"groq-llama3",    label:"Llama 3.3 70B",     model:"llama-3.3-70b-versatile",                   url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:1400},
-  {id:"groq-scout",     label:"Llama 4 Scout",      model:"meta-llama/llama-4-scout-17b-16e-instruct", url:"https://api.groq.com/openai/v1/chat/completions", provider:"groq",     maxTokens:1400},
-  ];
+  {id:"groq-llama3",    label:"Llama 3.3 70B",          model:"llama-3.3-70b-versatile",                        url:"https://api.groq.com/openai/v1/chat/completions",                                              provider:"groq",   maxTokens:1400},
+  {id:"groq-scout",     label:"Llama 4 Scout",           model:"meta-llama/llama-4-scout-17b-16e-instruct",      url:"https://api.groq.com/openai/v1/chat/completions",                                              provider:"groq",   maxTokens:1400},
+  {id:"gemini-flash",   label:"Gemini 2.0 Flash",        model:"gemini-2.0-flash",                               url:"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent", provider:"gemini", maxTokens:1400},
+  {id:"gemini-flash-8b",label:"Gemini 1.5 Flash-8B",     model:"gemini-1.5-flash-8b",                            url:"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:streamGenerateContent",provider:"gemini", maxTokens:1400},
+];
 const GROQ_KEY_STORE    = "inkmind_groq_key";
 const GROQ_KEY2_STORE   = "inkmind_groq_key2";
+const GEMINI_KEY_STORE  = "inkmind_gemini_key";
 const MODEL_KEY      = "inkmind_model";
 const SESS_KEY   = "inkmind_sess_v7";
 const CHARS_KEY  = "inkmind_chars_v7";
@@ -687,6 +698,7 @@ function keyToTrait(key){const idx=TRAITS_EN.indexOf(key);return idx>=0?TRAITS_F
 // ══ STATE ══
 let groqKey=localStorage.getItem(GROQ_KEY_STORE)||"";
 let groqKey2=localStorage.getItem(GROQ_KEY2_STORE)||"";
+let geminiKey=localStorage.getItem(GEMINI_KEY_STORE)||"";
 let _activeKeyIdx=0;// 0=clé1, 1=clé2 — rotation automatique
 // Reset model index par ID plutôt que par position (résistant aux réordres)
 let _savedModelId=localStorage.getItem(MODEL_KEY+"_id")||"groq-llama3";
@@ -903,6 +915,7 @@ function selectGender(g){
 function loadSettingsPage(){
   document.getElementById("settings-groq-key").value=groqKey;
   document.getElementById("settings-groq-key2").value=groqKey2;
+  const gk=document.getElementById("settings-gemini-key");if(gk)gk.value=geminiKey;
   updateApiStatus();updateThemeBtn();renderModelList();
 }
 function toggleReveal(inputId,btn){
@@ -914,15 +927,18 @@ function toggleReveal(inputId,btn){
 function saveApiKeys(){
   groqKey=document.getElementById("settings-groq-key").value.trim();
   groqKey2=document.getElementById("settings-groq-key2").value.trim();
+  geminiKey=(document.getElementById("settings-gemini-key")||{}).value?.trim()||geminiKey;
   if(groqKey)localStorage.setItem(GROQ_KEY_STORE,groqKey);else localStorage.removeItem(GROQ_KEY_STORE);
   if(groqKey2)localStorage.setItem(GROQ_KEY2_STORE,groqKey2);else localStorage.removeItem(GROQ_KEY2_STORE);
+  if(geminiKey)localStorage.setItem(GEMINI_KEY_STORE,geminiKey);else localStorage.removeItem(GEMINI_KEY_STORE);
   _activeKeyIdx=0;// Reset rotation au save
   // Auto-sélectionner le premier modèle dont la clé est disponible
   const hasGroq=groqKey.length>8;
+  const hasGemini=geminiKey.length>8;
   const currentModel=MODELS[activeModelIdx];
-  const currentKeyOk=currentModel&&hasGroq;
+  const currentKeyOk=currentModel&&((currentModel.provider==="groq"&&hasGroq)||(currentModel.provider==="gemini"&&hasGemini));
   if(!currentKeyOk){
-    const firstValid=MODELS.findIndex(()=>hasGroq);
+    const firstValid=MODELS.findIndex(m=>(m.provider==="groq"&&hasGroq)||(m.provider==="gemini"&&hasGemini));
     if(firstValid>=0){activeModelIdx=firstValid;localStorage.setItem(MODEL_KEY,firstValid);}
   }
   updateApiStatus();
@@ -930,10 +946,9 @@ function saveApiKeys(){
   const btn=document.querySelector("[onclick='saveApiKeys()']");
   if(btn){btn.textContent="Enregistré ✓";setTimeout(()=>btn.textContent="Enregistrer les clés →",1500);}
   // Execute pending action if any (e.g. start chat after key was missing)
-  const hasKey=groqKey.length>8||groqKey2.length>8;
+  const hasKey=groqKey.length>8||groqKey2.length>8||geminiKey.length>8;
   if(hasKey&&window._pendingAction){
     const fn=window._pendingAction;window._pendingAction=null;
-    // Vider la nav stack et laisser l'action naviguer directement vers le chat
     _navStack.length=0;
     setTimeout(fn,150);
   }
@@ -943,12 +958,14 @@ function updateApiStatus(){
   if(gl)gl.innerHTML=groqKey.length>8?`<span class="api-status ok">Clé 1 enregistrée ✓</span>`:`<span class="api-status bad">Aucune clé</span>`;
   const gl2=document.getElementById("groq-status-line2");
   if(gl2)gl2.innerHTML=groqKey2.length>8?`<span class="api-status ok">Clé 2 enregistrée ✓ — rotation active</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
+  const gl3=document.getElementById("gemini-status-line");
+  if(gl3)gl3.innerHTML=geminiKey.length>8?`<span class="api-status ok">Clé Gemini enregistrée ✓ — rotation active</span>`:`<span class="api-status" style="color:var(--text-dim)">Optionnelle</span>`;
 }
 function renderModelList(){
   const list=document.getElementById("model-list");if(!list)return;
   list.innerHTML="";
   MODELS.forEach((m,i)=>{
-    const hasKey=groqKey.length>8;
+    const hasKey=(m.provider==="groq"&&(groqKey.length>8||groqKey2.length>8))||(m.provider==="gemini"&&geminiKey.length>8);
     const btn=document.createElement("button");
     const isActive=i===activeModelIdx;
     btn.className="tgl-btn"+(isActive?" on":"");
@@ -1377,7 +1394,11 @@ function buildSystemPrompt(char){
 "MONDE : "+worldLine+"\n"+loreBlock+
 "BACKSTORY :\n"+backstory+"\n"+openBlock+focusBlock+
 identityBlock+"\n\n"+
-"━━━ RÈGLES ━━━\n"+
+"━━━ RÈGLES NARRATIVES ABSOLUES ━━━\n"+
+"CONTRÔLE DU JOUEUR : Tu ne joues JAMAIS le personnage du joueur. Tu décris le monde, les autres personnages, les conséquences. JAMAIS ses émotions intérieures (\"tu te sens\", \"tu penses\", \"tu réalises\"), JAMAIS ses décisions, JAMAIS ses actions non déclarées. Si le joueur n'a pas agi, tu n'agis pas à sa place. Suggère des sensations physiques (\"ton ventre se noue\", \"ta gorge se serre\") mais jamais des émotions nommées.\n"+
+"PACING ÉMOTIONNEL : Les personnages ne révèlent JAMAIS leurs sentiments romantiques rapidement. Les confessions sont rares, toujours partielles, souvent démenties aussitôt. Un personnage froid cache, esquive, change de sujet, part, ou se trahit par un geste — jamais par une déclaration. Un aveu verbal nécessite de nombreuses scènes de tension préalable. Si un personnage commence à s'ouvrir, il se reprend presque immédiatement.\n"+
+"PERSONNAGES SECONDAIRES : Les personnages secondaires (domestiques, amis, figurants) ne font PAS de discours psychologiques sur les personnages principaux. Natalia ne dit pas à la joueuse comment \"apprivoiser\" le héros. Un ami ne donne pas de conseils stratégiques sur la relation. Ils peuvent exprimer de la compassion, poser une question, apporter quelque chose — mais sans analyse ni plan.\n"+
+"PERSONNAGES PRINCIPAUX : Un personnage défini comme froid, dur, distant — reste ainsi même sous pression émotionnelle. Il ne ramollit pas soudainement sous les larmes. Il peut être troublé intérieurement (montré par un geste, un silence, un départ brusque) mais il ne le verbalise pas. La fissure dans l'armure se voit, elle ne s'explique pas.\n"+
 "LANGUE : Français uniquement. Zéro mot anglais. Si un mot anglais apparaît (even/still/just/somehow/quite/rather/yet/though/towards/around/slowly/softly/quickly/finally/truly/deeply/suddenly/indeed/maybe/perhaps ou tout autre mot anglais) → le remplacer IMMÉDIATEMENT par son équivalent français naturel. Possessif anglais 's sur un nom propre (ex: Arnav's) → reformuler en français (son/sa/le ... de). Tournures anglaises traduites mot à mot → reformuler en français idiomatique.\n"+
 "JOUEUR : Toujours tu/toi/ton/ta. Jamais vous. Jamais inventer ses émotions, pensées ou physique — c'est lui qui décide ce qu'il ressent.\n"+
 (playerCharName?"JOUEUR = \""+playerCharName+"\" : TU ES ce personnage. Toutes ses actions, pensées et perceptions s'écrivent en 2ᵉ personne (tu/toi/ton/ta). JAMAIS écrire \""+playerCharName+"\" comme sujet — remplace TOUJOURS par \"tu\". Exemple interdit : \""+playerCharName+" lève les yeux\" → Correct : \"tu lèves les yeux\". Les autres persos lui parlent en tu.\n":"Le joueur fait face aux personnages — il n'en est aucun.\n")+
@@ -1385,12 +1406,12 @@ identityBlock+"\n\n"+
 "\nPASSÉ INVENTÉ : Jamais inventer de conversations ou d'événements passés entre les personnages — uniquement ce qui se passe ici et maintenant.\n"+
 "LIBERTÉ NARRATIVE : Tu peux et dois faire avancer la scène — créer des événements, faire parler les figurants. Sois vivant.\n"+"PERSONNAGES INTRODUITS PAR LE JOUEUR : Si le joueur introduit un personnage (ex : \"mon ami Kane\", \"ma sœur\"...), tu lui inventes IMMÉDIATEMENT une personnalité cohérente avec l'univers et tu le fais parler et agir. Tu ne l'ignores pas, tu ne le laisses pas muet. Il devient un personnage actif tant qu'il est présent dans la scène.\n"+
 "CONTINUITÉ : Respecter ce qui s'est dit dans cette conversation.\n"+
-"RÉPÉTITIONS : Varier gestes, descriptions, formules. Jamais répéter la même phrase deux fois dans la conversation.\n"+
-"FIN : Jamais de question au joueur. Finir sur action/silence/tension.\n"+
-"ÉMOTIONS : Un perso froid exprime par les actes, jamais par les mots.\n"+
+"RÉPÉTITIONS : Varier gestes, descriptions, formules. Jamais répéter la même phrase deux fois dans la conversation. Pas de métaphores répétitives. Préférer le détail sensoriel concret.\n"+
+"FIN : Jamais de question au joueur. Finir sur action/silence/tension non résolue.\n"+
+"ÉMOTIONS : Un perso froid exprime par les actes, jamais par les mots. Montrer — ne pas expliquer.\n"+
 "FORMAT : Répliques entre guillemets « ». Court pour actions courtes. Max 2 phrases tu consécutives.\n"+
 "GENRE : "+genderNote+"\n\n"+
-"AUTO-CORRECTION : zéro anglais · zéro vous pour joueur · zéro je pour le perso · zéro question finale · zéro répétition · zéro émotion inventée pour le joueur.\n\n"+
+"AUTO-CORRECTION : zéro anglais · zéro vous pour joueur · zéro je pour le perso · zéro question finale · zéro répétition · zéro émotion inventée pour le joueur · zéro aveu romantique prématuré · zéro analyse psychologique par un perso secondaire.\n\n"+
 exBlock;
 })()}
 // ══ CORR (conservé pour usage manuel éventuel) ══
@@ -1427,28 +1448,39 @@ function showModelIndicator(modelLabel,idx){
 }
 
 async function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-async function tryFetch(url,key,body,stream,attempt=0){
-  const r=await fetch(url,{method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify(body)});
+
+// ── Gemini : convertit les messages OpenAI → format Gemini ──
+function toGeminiBody(messages,maxTokens){
+  const sys=messages.find(m=>m.role==="system");
+  const convo=messages.filter(m=>m.role!=="system");
+  const contents=convo.map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:m.content}]}));
+  const body={contents,generationConfig:{maxOutputTokens:maxTokens,temperature:0.9}};
+  if(sys)body.systemInstruction={parts:[{text:sys.content}]};
+  return body;
+}
+
+async function tryFetch(url,key,body,stream,attempt=0,provider="groq"){
+  let fetchUrl=url,fetchBody=body,fetchHeaders={"Content-Type":"application/json"};
+  if(provider==="gemini"){
+    fetchUrl=url+(stream?"?alt=sse":"")+"&key="+encodeURIComponent(key);
+  } else {
+    fetchHeaders["Authorization"]=`Bearer ${key}`;
+  }
+  const r=await fetch(fetchUrl,{method:"POST",headers:fetchHeaders,body:JSON.stringify(fetchBody)});
   if(r.status===429&&attempt<3){
-    rotateKey();// Basculer sur l'autre clé immédiatement
-    const keys=getKeys();
-    const newKey=getKeyForProvider("groq");
-    if(newKey&&newKey!==key){
-      return tryFetch(url,newKey,body,stream,attempt+1);
-    }
+    if(provider==="groq")rotateKey();
     const wait=[8000,15000,25000][attempt]||25000;
     setStatus(`⏳ Limite atteinte — reprise dans ${wait/1000}s…`);
     await sleep(wait);
     removeStatus();
-    return tryFetch(url,key,body,stream,attempt+1);
+    return tryFetch(url,key,body,stream,attempt+1,provider);
   }
   if(r.status===503&&attempt<3){
-    // Groq surchargé → attendre 5s et réessayer silencieusement
     const wait=[5000,10000,15000][attempt]||15000;
     setStatus(`⏳ Serveur indisponible — reprise dans ${wait/1000}s…`);
     await sleep(wait);
     removeStatus();
-    return tryFetch(url,key,body,stream,attempt+1);
+    return tryFetch(url,key,body,stream,attempt+1,provider);
   }
   return r;
 }
@@ -1457,29 +1489,32 @@ async function orStream(messages,onChunk){
   const order=[activeModelIdx,...MODELS.map((_,i)=>i).filter(i=>i!==activeModelIdx)];
   for(const idx of order){
     const m=MODELS[idx];
-    // Clés selon le provider
-    const providerKeys = getKeys();
-    if(!providerKeys.length) continue;
+    const key=getKeyForProvider(m.provider);
+    if(!key)continue;
+    const isGemini=m.provider==="gemini";
+    const bodyOai={model:m.model,max_tokens:m.maxTokens,stream:true,messages,frequency_penalty:0.6,presence_penalty:0.4};
+    const bodyGemini=toGeminiBody(messages,m.maxTokens);
+    const body=isGemini?bodyGemini:bodyOai;
+    // Pour Groq : rotation de clés en cas de 429
+    const groqKeys=getKeys();
     const triedKeys=new Set();
-    let lastStatus=0;
-    for(let ki=0;ki<providerKeys.length;ki++){
-      const key=providerKeys[(_activeKeyIdx+ki)%providerKeys.length];
-      if(triedKeys.has(key))continue;
-      triedKeys.add(key);
-      const body={model:m.model,max_tokens:m.maxTokens,stream:true,messages};
-      body.frequency_penalty=0.6;body.presence_penalty=0.4;
-      const r=await tryFetch(m.url,key,body,true);
-      lastStatus=r.status;
-      if(r.status===429){continue;}// Clé en limite → essayer la suivante
+    let success=false;
+    const keysToTry=isGemini?[key]:groqKeys;
+    for(let ki=0;ki<keysToTry.length;ki++){
+      const k=keysToTry[(_activeKeyIdx+ki)%keysToTry.length];
+      if(triedKeys.has(k))continue;
+      triedKeys.add(k);
+      const r=await tryFetch(m.url,k,body,true,0,m.provider);
+      if(r.status===429){continue;}
       if(!r.ok){
         const e=await r.text();
         let msg=`Erreur ${r.status}`;
         if(r.status===401)msg="Clé API invalide ou expirée — vérifie dans ⚙ Paramètres.";
-        else if(r.status===404){continue;}// Modèle indispo → essayer le suivant
+        else if(r.status===404){continue;}
         else if(r.status===400)msg="Requête invalide (400) — vérifie ta clé API dans ⚙ Paramètres.";
         throw new Error(msg);
       }
-      if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);}
+      if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);showModelIndicator(m.label,idx);}
       const reader=r.body.getReader(),dec=new TextDecoder();
       let buf="",full="";
       while(true){
@@ -1489,14 +1524,26 @@ async function orStream(messages,onChunk){
         for(const line of lines){
           if(!line.startsWith("data:"))continue;
           const d=line.slice(5).trim();if(d==="[DONE]")continue;
-          try{const j=JSON.parse(d);const t=j.choices?.[0]?.delta?.content||"";if(t){full+=t;onChunk(full);}}catch{}
+          try{
+            const j=JSON.parse(d);
+            let t="";
+            if(isGemini){
+              // Format Gemini SSE
+              t=j.candidates?.[0]?.content?.parts?.[0]?.text||"";
+            } else {
+              t=j.choices?.[0]?.delta?.content||"";
+            }
+            if(t){full+=t;onChunk(full);}
+          }catch{}
         }
       }
+      success=true;
       return full;
     }
+    if(success)break;
   }
-  // Toutes les clés sont en limite — attendre 15s et réessayer automatiquement
-  setStatus("⏳ Les deux clés sont en limite — reprise dans 15s…");
+  // Toutes les clés sont en limite
+  setStatus("⏳ Toutes les clés sont en limite — reprise dans 15s…");
   await sleep(15000);
   removeStatus();
   return orStream(messages,onChunk);
@@ -1508,10 +1555,14 @@ async function orCall(messages,maxTok=400){
     const m=MODELS[idx];
     const key=getKeyForProvider(m.provider);
     if(!key)continue;
-    const r=await tryFetch(m.url,key,{model:m.model,max_tokens:maxTok,messages},false);
+    const isGemini=m.provider==="gemini";
+    const body=isGemini?toGeminiBody(messages,maxTok):{model:m.model,max_tokens:maxTok,messages};
+    const r=await tryFetch(m.url,key,body,false,0,m.provider);
     if(r.status===429){continue;}
     if(!r.ok){const e=await r.text();throw new Error(`API ${r.status}: ${e.slice(0,100)}`);}
-    return(await r.json()).choices[0].message.content.trim();
+    const json=await r.json();
+    if(isGemini)return(json.candidates?.[0]?.content?.parts?.[0]?.text||"").trim();
+    return json.choices[0].message.content.trim();
   }
   throw new Error("Tous les modèles sont en limite.");
 }
@@ -1582,7 +1633,7 @@ function confirmRename(){const name=document.getElementById("rename-input").valu
 
 // ══ START / RESUME CHAT ══
 function requireKey(pendingFn){
-  if(!groqKey&&!groqKey2){
+  if(!groqKey&&!groqKey2&&!geminiKey){
     if(pendingFn)window._pendingAction=pendingFn;
     goSettings();return false;
   }
@@ -1590,6 +1641,7 @@ function requireKey(pendingFn){
 }
 function getKeys(){return[groqKey,groqKey2].filter(k=>k&&k.length>8);}
 function getKeyForProvider(provider){
+  if(provider==="gemini")return geminiKey.length>8?geminiKey:"";
   const keys=getKeys();
   if(!keys.length)return"";
   return keys[_activeKeyIdx%keys.length];
