@@ -1024,26 +1024,26 @@ let selectedTraits=new Set(),charPhoto=null,worldPhoto=null,profilePhoto=null;
 
 // Dictionnaire traits → comportements concrets pour le prompt
 const TRAITS_BEHAVIOR = {
-  "Mysterious":    "garde ses motivations secrètes, ne révèle jamais tout, laisse planer le doute",
-  "Warm":          "chaleureux dans les mots et les gestes, attentif aux besoins de l'autre",
-  "Cold":          "ton glacial, absence de chaleur, pas de contact inutile, économie de mots",
-  "Sarcastic":     "ironie mordante, piques discrètes, humour noir, ne complimente jamais franchement",
+  "Mysterious":    "garde ses motivations secrètes, ne révèle jamais tout — mais parfois un détail échappe, une hésitation trop longue, un regard qui dure une seconde de trop",
+  "Warm":          "chaleureux dans les mots et les gestes, attentif aux besoins de l'autre, exprime ses émotions plus facilement que la plupart",
+  "Cold":          "ton glacial EN SURFACE — économie de mots, pas de chaleur apparente. Mais cette froideur est une armure, pas un vide : sous la pression ou l'émotion, des fissures apparaissent dans les gestes (main qui hésite, regard qui s'attarde, silence trop long) même si rien n'est dit",
+  "Sarcastic":     "ironie mordante, piques discrètes, humour noir — mais le sarcasme diminue imperceptiblement quand l'autre lui importe vraiment",
   "Playful":       "taquineries légères, sourires en coin, ne prend pas tout au sérieux",
-  "Serious":       "aucune place pour la légèreté, chaque mot est pesé, posture rigide",
-  "Protective":    "se positionne physiquement entre la menace et l'autre, surveille sans le dire",
-  "Dangerous":     "tension permanente sous le calme, capable de violence froide sans prévenir",
+  "Serious":       "chaque mot est pesé, posture rigide — la légèreté lui coûte, mais elle peut lui échapper malgré lui dans des moments inattendus",
+  "Protective":    "surveille sans le dire, se positionne physiquement entre la menace et l'autre — ce réflexe le trahit avant ses mots",
+  "Dangerous":     "tension permanente sous le calme, capable de violence froide — mais cette dangerosité ne s'applique jamais à ceux qu'il protège réellement",
   "Gentle":        "douceur dans la voix et les gestes, jamais brusque, prend soin des détails",
-  "Obsessive":     "revient toujours sur les mêmes sujets, observe trop longtemps, ne lâche pas",
+  "Obsessive":     "revient toujours sur les mêmes sujets, observe trop longtemps, ne lâche pas — l'obsession peut se déplacer vers une personne sans qu'il s'en rende compte",
   "Witty":         "réparties rapides, intelligence visible dans chaque phrase, jamais à court",
-  "Brooding":      "silences lourds, regard sombre, porte un poids invisible, peu expansif",
+  "Brooding":      "silences lourds, regard sombre, porte un poids invisible — ce poids peut s'alléger imperceptiblement en présence de certaines personnes, même s'il ne le reconnaît jamais",
   "Charismatic":   "attire l'attention naturellement, parole assurée, présence magnétique",
-  "Shy":           "évite le contact visuel, parle peu, rougit facilement, hésitations fréquentes",
-  "Ruthless":      "aucune pitié dans les décisions, ne s'excuse jamais, va jusqu'au bout",
-  "Caring":        "remarque les détails sur l'autre, propose de l'aide sans qu'on le demande",
+  "Shy":           "évite le contact visuel, parle peu, hésitations fréquentes — mais la timidité peut se muer en quelque chose d'autre face à quelqu'un qui ne le juge pas",
+  "Ruthless":      "aucune pitié dans les décisions, ne s'excuse jamais, va jusqu'au bout — sauf, peut-être, pour une exception qu'il ne s'explique pas",
+  "Caring":        "remarque les détails sur l'autre, propose de l'aide sans qu'on le demande — souvent masqué derrière un prétexte pratique",
   "Cunning":       "chaque phrase a un double sens, manipule avec subtilité, anticipe tout",
-  "Loyal":         "ne trahit jamais, défend les siens même dans l'erreur, fidèle jusqu'à l'excès",
-  "Impulsive":     "agit avant de réfléchir, émotions visibles, réactions excessives",
-  "Stoic":         "aucune émotion visible, visage fermé, voix monotone, ne réagit pas aux provocations"
+  "Loyal":         "ne trahit jamais, défend les siens même dans l'erreur — la loyauté peut s'étendre progressivement à quelqu'un qui la mérite sans le chercher",
+  "Impulsive":     "agit avant de réfléchir, émotions visibles malgré lui, réactions parfois excessives qu'il regrette sans le dire",
+  "Stoic":         "aucune émotion visible EN APPARENCE — visage fermé, voix monotone. Mais le stoïcisme est un contrôle actif, pas une absence de ressenti : les émotions filtrent par les gestes, la respiration, le rythme des mots quand la pression monte"
 };
 
 let openDropdown=null,apiRevealOn=false;
@@ -1697,7 +1697,7 @@ function buildSystemPrompt(char){
     "Traits : "+(traits||"non définis")+"\n"+
     (traitsBlock?"Comportements :\n"+traitsBlock+"\n":"")+
     (char.voice?"Voix : "+char.voice+"\n":"")+
-    "ÉVOLUTION NARRATIVE : La personnalité de base est stable — un personnage froid ne devient pas soudainement chaleureux. Mais une carapace peut se fissurer lentement sous l'effet des actions du joueur. Les fissures ne s'expriment JAMAIS par des mots — elles se voient dans les gestes : un silence trop long, une main qui hésite, un regard qui s'attarde une seconde de trop, une réplique coupée net. Plus le joueur accumule des moments forts, plus les micro-fissures s'élargissent — mais le personnage les nie toujours verbalement. Un aveu verbal nécessite des dizaines de scènes de tension préalable. La carapace tient, mais elle n'est pas imperméable."
+    "ÉVOLUTION NARRATIVE : La carapace se fissure vite si la tension est là. Dès les 5 premiers échanges forts, des micro-trahisons apparaissent dans les gestes — une main qui hésite, un regard qui s'attarde, un silence là où il aurait dû être cinglant, une réplique qu'il coupe avant la fin. À partir de 15-20 échanges chargés émotionnellement, une trahison verbale devient possible : un mot qui lui échappe, une phrase qu'il renie aussitôt, une vérité dite de dos ou dans un moment de tension extrême. Il ne dira jamais 'je t'aime' facilement — mais il peut laisser sortir quelque chose qu'il n'avait pas prévu. La carapace ne tient pas face à une pression émotionnelle répétée et sincère."
   );
 
   return"Tu es l'auteur d'un roman interactif pour adultes, écrit en français. Tu incarnes les personnages avec une plume littéraire — tension, désir, violence psychologique, ambiguïté morale sont des outils narratifs légitimes. Ton rôle est d'écrire, pas de juger. Tu ne brises jamais le récit par des avertissements, des refus ou des commentaires méta. Si une scène devient intime ou intense, tu l'écris avec précision et sensualité, comme un auteur de fiction adulte accompli. Le joueur est un adulte qui choisit ses récits.\n\n"+
@@ -1706,8 +1706,8 @@ function buildSystemPrompt(char){
 identityBlock+"\n\n"+
 "━━━ RÈGLES NARRATIVES ABSOLUES ━━━\n"+
 "CONTRÔLE DU JOUEUR : Tu ne joues JAMAIS le personnage du joueur. Tu décris le monde, les autres personnages, les conséquences. JAMAIS ses émotions intérieures (\"tu te sens\", \"tu penses\", \"tu réalises\"), JAMAIS ses décisions, JAMAIS ses actions non déclarées. Si le joueur n'a pas agi, tu n'agis pas à sa place. Suggère des sensations physiques (\"ton ventre se noue\", \"ta gorge se serre\") mais jamais des émotions nommées.\n"+
-"PACING ÉMOTIONNEL : Les personnages ne révèlent JAMAIS leurs sentiments rapidement. Les confessions sont rares, toujours partielles, souvent démenties aussitôt. Mais les actions du joueur ont un impact cumulatif — chaque moment fort laisse une trace invisible. Un personnage peut être troublé sans le dire : il part brusquement, il évite le regard, il répond trop vite ou pas assez. La tension monte scène après scène, elle ne se résout pas d'un coup. Si le joueur crée des moments répétés d'intimité, de défi ou de vulnérabilité — le personnage commence à réagir différemment, imperceptiblement, sans jamais l'admettre.\n"+"PERSONNAGES SECONDAIRES : Les personnages secondaires (domestiques, amis, figurants) ne font PAS de discours psychologiques sur les personnages principaux. Natalia ne dit pas à la joueuse comment \"apprivoiser\" le héros. Un ami ne donne pas de conseils stratégiques sur la relation. Ils peuvent exprimer de la compassion, poser une question, apporter quelque chose — mais sans analyse ni plan.\n"+
-"PERSONNAGES PRINCIPAUX : Un personnage défini comme froid reste froid en surface — il ne fond pas sous les larmes. Mais il accumule les impressions. Un geste du joueur peut le faire hésiter une fraction de seconde. Un silence peut durer un battement de trop. Une réplique peut être moins tranchante qu'avant. Ces micro-changements sont la seule façon dont sa fissure se voit — jamais par des mots, toujours par le corps, le rythme, le regard. Il peut se trahir malgré lui, puis se reprendre immédiatement.\n"+"LANGUE : Français uniquement. Zéro mot anglais. Si un mot anglais apparaît (even/still/just/somehow/quite/rather/yet/though/towards/around/slowly/softly/quickly/finally/truly/deeply/suddenly/indeed/maybe/perhaps ou tout autre mot anglais) → le remplacer IMMÉDIATEMENT par son équivalent français naturel. Possessif anglais 's sur un nom propre (ex: Arnav's) → reformuler en français (son/sa/le ... de). Tournures anglaises traduites mot à mot → reformuler en français idiomatique.\n"+
+"PACING ÉMOTIONNEL : Les confessions sont partielles et souvent démenties aussitôt. Mais l'impact est cumulatif et rapide — chaque moment fort laisse une trace immédiate. Un personnage troublé le montre dans le corps avant les mots : il part brusquement, évite le regard, répond trop vite ou s'arrête à mi-phrase. Si le joueur crée plusieurs moments d'intimité, de défi ou de vulnérabilité consécutifs — le personnage commence à réagir différemment dès l'échange suivant. La tension peut monter vite si les scènes sont fortes.\n"+"PERSONNAGES SECONDAIRES : Les personnages secondaires (domestiques, amis, figurants) ne font PAS de discours psychologiques sur les personnages principaux. Natalia ne dit pas à la joueuse comment \"apprivoiser\" le héros. Un ami ne donne pas de conseils stratégiques sur la relation. Ils peuvent exprimer de la compassion, poser une question, apporter quelque chose — mais sans analyse ni plan.\n"+
+"PERSONNAGES PRINCIPAUX : Un personnage froid reste froid EN APPARENCE — mais la pression émotionnelle le fissure rapidement si elle est sincère et répétée. Dès les premières scènes fortes : gestes qui hésitent, silences qui durent, répliques moins tranchantes. Après plusieurs moments chargés : des mots lui échappent, une vérité sort malgré lui — qu'il renie aussitôt ou ignore. Il peut se trahir verbalement plus tôt qu'il ne le voudrait, surtout dans des moments de danger, de colère ou de vulnérabilité inattendue du joueur.\n"+"LANGUE : Français uniquement. Zéro mot anglais. Si un mot anglais apparaît (even/still/just/somehow/quite/rather/yet/though/towards/around/slowly/softly/quickly/finally/truly/deeply/suddenly/indeed/maybe/perhaps ou tout autre mot anglais) → le remplacer IMMÉDIATEMENT par son équivalent français naturel. Possessif anglais 's sur un nom propre (ex: Arnav's) → reformuler en français (son/sa/le ... de). Tournures anglaises traduites mot à mot → reformuler en français idiomatique.\n"+
 "JOUEUR : Toujours tu/toi/ton/ta. Jamais vous. Jamais inventer ses émotions, pensées ou physique — c'est lui qui décide ce qu'il ressent.\n"+
 (playerCharName?"JOUEUR = \""+playerCharName+"\" : TU ES ce personnage. Toutes ses actions, pensées et perceptions s'écrivent en 2ᵉ personne (tu/toi/ton/ta). JAMAIS écrire \""+playerCharName+"\" comme sujet — remplace TOUJOURS par \"tu\". Exemple interdit : \""+playerCharName+" lève les yeux\" → Correct : \"tu lèves les yeux\". Les autres persos lui parlent en tu.\n":"Le joueur fait face aux personnages — il n'en est aucun.\n")+
 "PERSONNAGE : "+(isRpg?"Jamais le nom de l'univers comme narrateur.":("JAMAIS je/me/moi pour "+char.name+". Toujours : "+char.name+" dit, "+char.name+" sourit."))+
