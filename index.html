@@ -1835,8 +1835,8 @@ async function orStream(messages,onChunk){
         continue;
       }
 
-      // Succès — lire le stream
-      if(idx!==activeModelIdx){activeModelIdx=idx;localStorage.setItem(MODEL_KEY,idx);showModelIndicator(m.label,idx);}
+      // Succès — lire le stream (fallback temporaire, ne sauvegarde pas le choix utilisateur)
+      if(idx!==activeModelIdx){showModelIndicator(m.label,idx);}
       const reader=r.body.getReader(),dec=new TextDecoder();
       let buf="",full="";
       while(true){
@@ -1860,11 +1860,28 @@ async function orStream(messages,onChunk){
     // Toutes les clés de ce modèle sont en 429 → modèle suivant (Gemini)
   }
 
-  // Tous les modèles et toutes les clés sont épuisés
-  setStatus("⏳ Toutes les clés sont en limite — reprise dans 20s…");
-  await sleep(20000);
+  // Tous les modèles et toutes les clés sont épuisés — attente progressive
+  let waited=0;
+  const waits=[20,30,45,60];
+  for(const w of waits){
+    setStatus(currentLang==="fr"?`⏳ Toutes les clés sont en limite — reprise dans ${w}s…`:`⏳ All keys rate-limited — retrying in ${w}s…`);
+    await sleep(w*1000);
+    // Retenter une fois avant de continuer
+    for(const idx2 of order){
+      const m2=MODELS[idx2];
+      const isG2=m2.provider==="gemini";
+      const k2=isG2?geminiKey:getKeyForProvider(m2.provider);
+      if(!k2||k2.length<8)continue;
+      const b2=isG2?toGeminiBody(messages,2000):{model:m2.model,max_tokens:2000,stream:true,messages};
+      const r2=await rawFetch(m2.url,k2,b2,!isG2,m2.provider);
+      if(r2.ok){removeStatus();return streamResponse(r2,onChunk,m2);}
+    }
+  }
   removeStatus();
-  return orStream(messages,onChunk);
+  setBusy(false);
+  setStatus(currentLang==="fr"?"❌ Limite atteinte. Réessaie dans quelques minutes.":"❌ Rate limit. Please try again in a few minutes.");
+  setTimeout(removeStatus,5000);
+  return "";
 }
 
 async function orCall(messages,maxTok=400){
@@ -2097,24 +2114,11 @@ async function sendMessage(overrideText=null,fromIndex=null){
   rebuildHist();addUser(txt,true);setBusy(true);
   try{
     S.turn++;
-    // Seuil tokens estimés (1 mot ≈ 1.3 tokens) — pas de résumé sur messages courts
-    const _estTokens=S.hist.reduce((acc,[,m])=>acc+Math.ceil((m||"").split(" ").length*1.3),0);
-    if(_estTokens>40000&&S.hist.length>60){
-      setStatus(currentLang==="fr"?"mémorisation...":"summarizing...");
-      const toCompress=S.hist.slice(0,-6);
-      const prevSummary=S.summary?`\nRésumé précédent à intégrer : ${S.summary}`:"";
-      try{
-        S.summary=await orCall([
-          {role:"system",content:`Tu résumes une session de roleplay interactif. Retourne UNIQUEMENT un résumé factuel structuré en 2 parties :\nIDENTITÉ : qui joue le joueur (son rôle, son nom si établi, sa relation avec les personnages).\nÉVÉNEMENTS : ce qui s'est passé (rencontres, lieux, révélations, tensions, décisions importantes).\n${prevSummary?"Fusionne avec le résumé précédent sans répétition. ":""}Maximum 6 phrases. Sois précis et factuel — pas de suppositions.`},
-          {role:"user",content:(prevSummary||"")+"\n\nContenu à résumer :\n"+toCompress.map(([r,m])=>`${r}: ${m}`).join("\n")}
-        ],350);
-      }catch{}
-      S.hist=S.hist.slice(-20);
-    }
+    // Mémorisation automatique désactivée — fenêtre glissante uniquement
     const sys=buildSystemPrompt(S.char);
     const msgs=[{role:"system",content:sys}];
     if(S.summary)msgs.push({role:"system",content:`MÉMOIRE DE LA SESSION (rappel crucial — ne jamais oublier ces faits) :\n${S.summary}\nCes informations sont établies et ne peuvent pas être contredites.`});
-    S.hist.slice(-20).forEach(([r,c])=>msgs.push({role:r==="user"?"user":"assistant",content:c}));
+    S.hist.slice(-40).forEach(([r,c])=>msgs.push({role:r==="user"?"user":"assistant",content:c}));
     msgs.push({role:"user",content:txt});
     removeStatus();
     const el=document.createElement("div");el.className="msg bot";
