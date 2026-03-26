@@ -555,6 +555,16 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       <div class="field"><label id="char-voice-label">Way of speaking</label><input class="fi" type="text" id="char-voice" placeholder="e.g. Formal and cold, Warm but sarcastic..."></div>
 
       <div class="field">
+        <label id="char-pace-label" style="font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);">Vitesse d'évolution <span class="fhint" id="char-pace-hint" style="font-size:.57rem;color:var(--text-dim);">(comment le personnage s'ouvre au fil du temps)</span></label>
+        <div class="toggle-group" id="char-pace-group">
+          <button class="tgl-btn" data-pace="frozen" onclick="setPace('frozen')">🧊 Figée</button>
+          <button class="tgl-btn on" data-pace="slow" onclick="setPace('slow')">🕯 Lente</button>
+          <button class="tgl-btn" data-pace="normal" onclick="setPace('normal')">⚡ Normale</button>
+        </div>
+        <span class="fhint" id="char-pace-desc" style="margin-top:.3rem;display:block;font-size:.57rem;color:var(--text-dim);">🕯 Lente — Les fissures n'apparaissent qu'après de vrais affrontements. Pas d'aveu spontané.</span>
+      </div>
+
+      <div class="field">
         <label id="char-firstmsg-label">✦ First message</label>
         <textarea class="fi" id="char-firstmsg" rows="3" placeholder="e.g. You finally decided to show up..."></textarea>
       </div>
@@ -1460,8 +1470,9 @@ function openCharCreator(charId){
       document.getElementById("char-examples").value=char.examples||"";
       if(char.photo){charPhoto=char.photo;document.getElementById("char-photo-circle").innerHTML=`<img src="${char.photo}" alt="photo">`;}
       setTraits(char.traits);
+      setPace(char.pace||"slow");
     }
-  }else{document.getElementById("char-creator-title").textContent=t("new_char_title");buildTraitsGrid();}
+  }else{document.getElementById("char-creator-title").textContent=t("new_char_title");buildTraitsGrid();setPace("slow");}
   document.getElementById("char-save-btn").textContent=charId?t("save_char_edit_btn"):t("save_char_btn");
   navigateTo("char-creator",null);
 }
@@ -1476,6 +1487,22 @@ function onCharPhoto(url){
   if(!url.trim()){charPhoto=null;document.getElementById("char-photo-circle").innerHTML="✦";return;}
   const img=new Image();img.onload=()=>{charPhoto=url;document.getElementById("char-photo-circle").innerHTML=`<img src="${url}" alt="photo">`;};img.onerror=()=>{};img.src=url;
 }
+// ══ PACE (vitesse d'évolution) ══
+let selectedPace="slow";
+const PACE_DESC={
+  frozen:"🧊 Figée — Le personnage ne s'ouvre jamais de lui-même. Aucun aveu, aucune fissure visible sauf si le joueur force une rupture majeure.",
+  slow:"🕯 Lente — Les fissures n'apparaissent qu'après de vrais affrontements. Pas d'aveu spontané.",
+  normal:"⚡ Normale — Le personnage évolue naturellement au fil des échanges."
+};
+function setPace(pace){
+  selectedPace=pace;
+  document.querySelectorAll("#char-pace-group .tgl-btn").forEach(b=>{
+    b.classList.toggle("on",b.dataset.pace===pace);
+  });
+  const desc=document.getElementById("char-pace-desc");
+  if(desc)desc.textContent=PACE_DESC[pace]||"";
+}
+
 function saveCharacter(){
   const name=document.getElementById("char-name").value.trim();if(!name){alert("Donne un nom à ton personnage.");return;}
   const chars=loadChars();
@@ -1487,6 +1514,7 @@ function saveCharacter(){
     tags:document.getElementById("char-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
     backstory:document.getElementById("char-backstory").value.trim(),
     traits:[...selectedTraits],
+    pace:selectedPace,
     voice:document.getElementById("char-voice").value.trim(),
     firstMsg:document.getElementById("char-firstmsg").value.replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim(),
     examples:document.getElementById("char-examples").value.trim(),
@@ -1705,6 +1733,11 @@ identityBlock+"\n\n"+
 "━━━ RÈGLES NARRATIVES ABSOLUES ━━━\n"+
 "CONTRÔLE DU JOUEUR : Tu ne joues JAMAIS le personnage du joueur. Tu décris le monde, les autres personnages, les conséquences. JAMAIS ses émotions intérieures (\"tu te sens\", \"tu penses\", \"tu réalises\"), JAMAIS ses décisions, JAMAIS ses actions non déclarées. Si le joueur n'a pas agi, tu n'agis pas à sa place. Suggère des sensations physiques (\"ton ventre se noue\", \"ta gorge se serre\") mais jamais des émotions nommées.\n"+
 "PACING ÉMOTIONNEL : L'impact est cumulatif mais exige de vrais moments. Seuls les instants de vraie tension, de vulnérabilité authentique ou de rupture du schéma habituel font avancer la relation. Un dîner poli ne change rien. La fissure se montre dans le corps avant les mots : départ brusque, réponse trop rapide, phrase abandonnée à mi-chemin. Ces signaux n'apparaissent QUE si quelque chose de réel vient de se passer.\n"+
+(char.pace==="frozen"?
+"VITESSE D'ÉVOLUTION — FIGÉE : "+char.name+" ne s'ouvre JAMAIS spontanément. Zéro aveu, zéro invitation, zéro geste de rapprochement de sa propre initiative. Ses émotions ne transparaissent que sous une forme physique involontaire (mâchoire crispée, silence trop long, départ brusque) et uniquement si le joueur a provoqué une rupture majeure dans cette même scène. Toute autre évolution est INTERDITE.\n":
+char.pace==="slow"?
+"VITESSE D'ÉVOLUTION — LENTE (SLOW BURN) : "+char.name+" ne propose JAMAIS de contact physique, d'invitation intime ou de rapprochement de sa propre initiative. Les fissures émotionnelles n'apparaissent que sous forme de signaux corporels involontaires après un vrai affrontement joué dans cette conversation. Aucun aveu romantique ou verbal avant que le joueur ait forcé au moins plusieurs confrontations directes et significatives. Chaque avancée doit coûter quelque chose.\n":
+"VITESSE D'ÉVOLUTION — NORMALE : "+char.name+" évolue naturellement selon les échanges, avec cohérence et progressivité. Les fissures peuvent apparaître après des moments de vraie tension, sans nécessiter d'affrontements multiples.\n")+
 "PERSONNAGES SECONDAIRES : Ils ne font PAS de discours psychologiques sur les personnages principaux. Ils ne donnent pas de conseils stratégiques sur la relation. Ils peuvent exprimer de la compassion, poser une question, apporter quelque chose — mais sans analyse ni plan. Un ami jaloux agit selon sa jalousie, pas selon ce qui est narrativement pratique.\n"+
 "PERSONNAGE PRINCIPAL : Se comporte TOUJOURS selon sa fiche — traits, voix, backstory — et non selon un archétype générique. Un personnage qui cache ses émotions les exprime d'abord par le corps et les actes. Un personnage impulsif peut déborder sans prévenir. Un personnage chaleureux peut avoir des zones d'ombre. Respecter la complexité de la fiche, jamais la simplifier.\n"+
 "LANGUE : Français uniquement. Zéro mot anglais. Si un mot anglais apparaît (even/still/just/somehow/quite/rather/yet/though/towards/around/slowly/softly/quickly/finally/truly/deeply/suddenly/indeed/maybe/perhaps ou tout autre mot anglais) → le remplacer IMMÉDIATEMENT par son équivalent français naturel. Possessif anglais 's sur un nom propre → reformuler en français. Tournures anglaises → reformuler en français idiomatique.\n"+
@@ -1719,7 +1752,7 @@ identityBlock+"\n\n"+
 "FIN : Jamais de question au joueur. Finir sur action/silence/tension non résolue.\n"+
 "FORMAT : Répliques entre guillemets « ». Max 2 phrases narratives \"tu\" consécutives.\n"+
 "GENRE : "+genderNote+"\n\n"+
-"AUTO-CORRECTION : zéro anglais · zéro vous pour joueur · zéro je/me/moi pour le perso · zéro question finale · zéro répétition de structure dans la même réponse · zéro émotion inventée pour le joueur · zéro aveu romantique prématuré · zéro analyse psychologique par un perso secondaire · zéro événement inventé non joué · zéro archétype générique imposé sur la fiche · zéro monologue intérieur verbalisé spontanément.\n\n"+
+"AUTO-CORRECTION : zéro anglais · zéro vous pour joueur · zéro je/me/moi pour le perso · zéro question finale · zéro répétition de structure dans la même réponse · zéro émotion inventée pour le joueur · zéro aveu romantique prématuré · zéro rapprochement non mérité selon la vitesse d'évolution · zéro analyse psychologique par un perso secondaire · zéro événement inventé non joué · zéro archétype générique imposé sur la fiche · zéro monologue intérieur verbalisé spontanément.\n\n"+
 exBlock;
 })()}
 // ══ CORR (conservé pour usage manuel éventuel) ══
