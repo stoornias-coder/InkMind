@@ -557,11 +557,11 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);}
       <div class="field">
         <label id="char-pace-label" style="font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);">Vitesse d'évolution <span class="fhint" id="char-pace-hint" style="font-size:.57rem;color:var(--text-dim);">(comment le personnage s'ouvre au fil du temps)</span></label>
         <div class="toggle-group" id="char-pace-group">
-          <button class="tgl-btn" data-pace="frozen" onclick="setPace('frozen')">🧊 Figée</button>
-          <button class="tgl-btn on" data-pace="slow" onclick="setPace('slow')">🕯 Lente</button>
-          <button class="tgl-btn" data-pace="normal" onclick="setPace('normal')">⚡ Normale</button>
+          <button class="tgl-btn" data-pace="frozen" onclick="setPace('frozen')">Figée</button>
+          <button class="tgl-btn on" data-pace="slow" onclick="setPace('slow')">Lente</button>
+          <button class="tgl-btn" data-pace="normal" onclick="setPace('normal')">Normale</button>
         </div>
-        <span class="fhint" id="char-pace-desc" style="margin-top:.3rem;display:block;font-size:.57rem;color:var(--text-dim);">🕯 Lente — Les fissures n'apparaissent qu'après de vrais affrontements. Pas d'aveu spontané.</span>
+        <span class="fhint" id="char-pace-desc" style="margin-top:.3rem;display:block;font-size:.57rem;color:var(--text-dim);">Lente — Les fissures n'apparaissent qu'après de vrais affrontements. Pas d'aveu spontané.</span>
       </div>
 
       <div class="field">
@@ -1457,6 +1457,7 @@ function openCharCreator(charId){
   ["char-photo-url","char-name","char-desc","char-tags","char-backstory","char-voice","char-firstmsg","char-examples"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   document.getElementById("char-photo-circle").innerHTML="✦";
   document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
+  let paceToSet="slow";
   if(charId){
     const char=loadChars().find(c=>c.id===charId);
     if(char){
@@ -1470,11 +1471,13 @@ function openCharCreator(charId){
       document.getElementById("char-examples").value=char.examples||"";
       if(char.photo){charPhoto=char.photo;document.getElementById("char-photo-circle").innerHTML=`<img src="${char.photo}" alt="photo">`;}
       setTraits(char.traits);
-      setPace(char.pace||"slow");
+      paceToSet=char.pace||"slow";
     }
-  }else{document.getElementById("char-creator-title").textContent=t("new_char_title");buildTraitsGrid();setPace("slow");}
+  }else{document.getElementById("char-creator-title").textContent=t("new_char_title");buildTraitsGrid();}
   document.getElementById("char-save-btn").textContent=charId?t("save_char_edit_btn"):t("save_char_btn");
   navigateTo("char-creator",null);
+  // Appel APRÈS navigateTo pour que les boutons soient visibles dans le DOM
+  setTimeout(()=>setPace(paceToSet),0);
 }
 function openCharCreatorForWorld(){
   openCharCreator(null);
@@ -1490,9 +1493,9 @@ function onCharPhoto(url){
 // ══ PACE (vitesse d'évolution) ══
 let selectedPace="slow";
 const PACE_DESC={
-  frozen:"🧊 Figée — Le personnage ne s'ouvre jamais de lui-même. Aucun aveu, aucune fissure visible sauf si le joueur force une rupture majeure.",
-  slow:"🕯 Lente — Les fissures n'apparaissent qu'après de vrais affrontements. Pas d'aveu spontané.",
-  normal:"⚡ Normale — Le personnage évolue naturellement au fil des échanges."
+  frozen:"Figée — Le personnage ne s'ouvre jamais de lui-même. Aucun aveu, aucune fissure visible sauf si le joueur force une rupture majeure.",
+  slow:"Lente — Les fissures n'apparaissent qu'après de vrais affrontements. Pas d'aveu spontané.",
+  normal:"Normale — Le personnage évolue naturellement au fil des échanges."
 };
 function setPace(pace){
   selectedPace=pace;
